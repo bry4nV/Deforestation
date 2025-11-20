@@ -1,0 +1,15 @@
+# Ignorar entorno virtual
+venv/
+O1/venv/
+
+# Ignorar archivos temporales
+__pycache__/
+*.pyc
+
+# Ignorar configuraciones
+.env
+.DS_Store
+
+# Datasets pesados
+Dataset/
+O1/Dataset/
