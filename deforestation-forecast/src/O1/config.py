@@ -1,0 +1,88 @@
+import os
+
+# =============================
+# R1 y R2 - PIPELINE
+# =============================
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DATA_DIR = os.path.join(BASE_DIR, "data")
+RAW_DIR = os.path.join(DATA_DIR, "raw")
+MAPAS_RAW_DIR = os.path.join(RAW_DIR, "mapbiomas-peru")
+INTERIM_DIR = os.path.join(DATA_DIR, "interim")
+OUTPUTS_DIR = os.path.join(BASE_DIR, "outputs")
+O1_INTERIM_DIR = os.path.join(INTERIM_DIR, "O1")
+
+MAPAS_RECLAS_DIR = os.path.join(O1_INTERIM_DIR, "mapas-reclasificados")
+METADATOS_DIR = os.path.join(O1_INTERIM_DIR, "metadatos")
+
+for d in [O1_INTERIM_DIR, MAPAS_RECLAS_DIR, METADATOS_DIR, OUTPUTS_DIR]:
+    os.makedirs(d, exist_ok=True)
+
+ANIOS = list(range(1985, 2025))
+
+# Clases de bosque (ATBD – MapBiomas Perú – C3)
+CLASES_BOSQUE = {3, 4, 5, 6}
+
+# Clases válidas para Amazonía Perú (C3)
+CLASES_VALIDAS = {
+    3,4,5,6,              # Bosques
+    11,12,29,66,70,13,    # Naturales no boscosas
+    15,18,35,40,72,9,21,  # Agropecuario
+    23,24,30,32,61,68,25, # Sin vegetación
+    33,31,34              # Agua
+}
+
+CLASE_NOBSERVADO = 27
+
+NODATA_OUT = 255
+
+# =============================
+# R3 - ZONIFICACIÓN
+# =============================
+
+MAPAS_REPROYECTADOS_DIR = os.path.join(O1_INTERIM_DIR, "mapas-reproyectados")
+MAPAS_CAMBIO_DIR = os.path.join(O1_INTERIM_DIR, "mapas-cambio")
+for d in [MAPAS_CAMBIO_DIR, MAPAS_REPROYECTADOS_DIR]:
+    os.makedirs(d, exist_ok=True)
+
+CRS_PROYECTADO = "EPSG:32718"  # UTM zona 18 sur
+
+'''MAPAS_REPROYECTADOS_DIR = os.path.join(O1_INTERIM_DIR, "mapas-reproyectados")
+MAPAS_PERDIDA_DIR = os.path.join(O1_INTERIM_DIR, "mapas-perdida")
+FEATURES_DIR = os.path.join(O1_INTERIM_DIR, "features")
+NUCLEOS_DIR = os.path.join(O1_INTERIM_DIR, "nucleos")
+ZONAS_DIR = os.path.join(O1_INTERIM_DIR, "zonas")
+PANEL_DIR = os.path.join(OUTPUTS_DIR, "panel")
+
+for d in [MAPAS_PERDIDA_DIR, FEATURES_DIR, MAPAS_REPROYECTADOS_DIR, 
+          NUCLEOS_DIR, ZONAS_DIR, PANEL_DIR]:
+    os.makedirs(d, exist_ok=True)
+
+# Parámetros de zonificación
+PARAMS_ZONIFICACION = {
+    # Features
+    'radio_densidad': 2,  # ventana 5×5 para densidad local
+    
+    # Score (pesos)
+    'w_frecuencia': 0.10,
+    'w_recencia': 0.30,
+    'w_persistencia': 0.15,
+    'w_exposicion': 0.20,
+    'w_densidad': 0.25,
+    
+    # Núcleos
+    'sigma_suavizado': 2.0,  # desviación estándar para Gaussian filter
+    'percentil_umbral': 75,   # percentil para umbralizar score
+    'area_min_nucleo_km2': 10,  # núcleos menores se descartan
+    
+    # Expansión
+    'distancia_max_expansion_km': 5.0,
+    'area_objetivo_zona_km2': 500,  # tamaño objetivo de zona
+    
+    # Regularización
+    'area_min_zona_km2': 50,
+    'area_max_zona_km2': 2000,
+    'bosque_remanente_min_pct': 20,
+    'anios_activos_min': 5,
+    'cv_max_heterogeneidad': 2.0,  # coeficiente de variación máximo
+}'''

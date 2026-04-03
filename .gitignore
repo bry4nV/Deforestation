@@ -1,6 +1,5 @@
 # Ignorar entorno virtual
-venv/
-O1/venv/
+deforestation-forecast/venv/
 
 # Ignorar archivos temporales
 __pycache__/
@@ -10,6 +9,5 @@ __pycache__/
 .env
 .DS_Store
 
-# Datasets pesados
-Dataset/
-O1/Dataset/
+# Ignorar archivos raster
+*.tif
