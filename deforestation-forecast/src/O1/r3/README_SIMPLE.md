@@ -1,15 +1,8 @@
-# R3 - Detección de Cambios y Zonificación (VERSIÓN SIMPLIFICADA)
+# R3 - Detección de Cambios y Zonificación
 
 ## 📋 Cambio de Enfoque
 
-### ❌ **Enfoque anterior (deprecado):**
-- Reproyección a sistema métrico (EPSG:32718)
-- Cálculo de 5 features complejos por píxel
-- Score ponderado de potencial histórico
-- Núcleos, expansión, regularización...
-
-### ✅ **Enfoque nuevo (simplificado):**
-- **SIN reproyección** - trabajamos directamente en EPSG:4326
+### ✅ **Enfoque nuevo:**
 - **Detección simple**: ¿El píxel cambió (bosque ↔ no bosque) en algún momento?
 - Procesamiento por tiles para manejar memoria
 - Generación de mapa binario de cambios
@@ -32,17 +25,7 @@ Este mapa de cambios será la base para:
 ```
 r3/
 ├── deteccion_cambios.py     ✅ ACTIVO - Detección de píxeles con cambios
-├── main_simple.py            ✅ ACTIVO - Pipeline simplificado
-│
-├── reproyeccion.py           ⚠️ DEPRECADO - No se usa por ahora
-├── eventos.py                ⚠️ DEPRECADO - No se usa por ahora
-├── features.py               ⚠️ DEPRECADO - No se usa por ahora
-├── score.py                  ⚠️ DEPRECADO - No se usa por ahora
-├── nucleos.py                ⚠️ DEPRECADO - No se usa por ahora
-├── expansion.py              ⚠️ DEPRECADO - No se usa por ahora
-├── regularizacion.py         ⚠️ DEPRECADO - No se usa por ahora
-├── zonas.py                  ⚠️ DEPRECADO - No se usa por ahora
-└── panel.py                  ⚠️ DEPRECADO - No se usa por ahora
+├── main.py            ✅ ACTIVO - Pipeline
 ```
 
 ---
@@ -53,7 +36,7 @@ r3/
 
 ```bash
 cd d:\VisualCode\Tesis\deforestation-forecast
-python -m O1.r3.main_simple
+python -m O1.r3.main
 ```
 
 Esto ejecutará:
@@ -199,29 +182,6 @@ ESTADÍSTICAS DE CAMBIOS
 
 ---
 
-## 🛠️ Dependencias
-
-```
-numpy>=2.2.6
-rasterio>=1.4.4
-```
-
-**No se requieren:**
-- ~~scipy~~ (no usamos filtros espaciales ahora)
-- ~~scikit-image~~ (no usamos componentes conexas aún)
-
----
-
-## ⚡ Rendimiento
-
-### **Tiempos estimados (hardware típico):**
-
-| Configuración | Tiempo estimado |
-|---------------|----------------|
-| Serie completa (40 años, Amazonía) | 15-30 minutos |
-| RAM mínima requerida | 2-4 GB |
-| Espacio en disco (output) | ~500 MB |
-
 ### **Optimizaciones aplicadas:**
 
 - ✅ Procesamiento por tiles
@@ -258,34 +218,6 @@ tile_size=3000  # En lugar de 5000
 ```python
 tile_size=8000  # En lugar de 5000
 ```
-
----
-
-## 📝 Notas Importantes
-
-1. **No se hace reproyección:** Los resultados están en el sistema original (EPSG:4326)
-
-2. **Cambios bidireccionales:** Se detectan tanto deforestación (1→0) como recuperación (0→1)
-
-3. **Análisis binario:** Solo se detecta SI hubo cambio, no CUÁNTAS veces ni CUÁNDO
-
-4. **Para análisis más detallado:** Puedes modificar `hubo_cambio()` para detectar:
-   - Solo deforestación (1→0)
-   - Solo recuperación (0→1)
-   - Número de transiciones
-   - Año de primera/última transición
-
----
-
-## 📚 Referencias
-
-Este enfoque simplificado prioriza:
-- ✅ Eficiencia de memoria
-- ✅ Simplicidad metodológica
-- ✅ Interpretabilidad de resultados
-- ✅ Escalabilidad a series largas
-
----
 
 **Versión:** 2.0 (Simplificada)  
 **Fecha:** Abril 2026  
