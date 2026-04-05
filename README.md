@@ -1,7 +1,6 @@
 # 🌳 Pronóstico de Deforestación en la Amazonía Peruana
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-En%20Desarrollo-yellow.svg)]()
 
 **Proyecto de tesis:** Aplicación de deep learning para el pronóstico anual de zonas de riesgo de deforestación basada en series temporales (1985-2024).
@@ -13,9 +12,11 @@
 Este proyecto desarrolla una metodología para **predecir la deforestación anual** en la Amazonía peruana utilizando:
 
 - **Datos históricos:** Mapas anuales de cobertura bosque/no bosque (1985-2024) de MapBiomas
-- **Zonificación espacial:** Identificación de áreas dinámicas mediante componentes conectados
+- **Zonificación espacial:** Identificación de áreas dinámicas de cambio de bosque
 - **Series temporales:** Panel zona-año para análisis predictivo
+- **Variables locales:** Integración de factores socioeconómicos, demográficos, infraestructura, etc.
 - **Deep Learning:** Modelos de series temporales (LSTM, ...)
+- **Capacidad de generalización:** Evaluación en distintas zonas de estudio
 
 **Objetivo:** Predecir la pérdida de cobertura forestal (km²) por zona para el año t+1, proporcionando herramientas para políticas de conservación y monitoreo temprano.
 
@@ -87,8 +88,9 @@ python -m O1.r1_r2.main
 ```
 
 > **📂 Entregables:**  
-> - [ ] Código fuente (GitHub)  
-> - [ ] Documentación metodológica  
+> - [ ] Código fuente (GitHub)
+> - [ ] Diagrama metodológico
+>   Incluido en el documento de tesis
 
 ---
 
@@ -105,12 +107,12 @@ python -m O1.r1_r2.main
 **Especificaciones:** GeoTIFF, EPSG:4326, ~30m/píxel
 
 > **📂 Entregables:**  
-> _(Agregar links a carpeta compartida)_  
-> - [ ] 40 mapas raster bosque/no bosque  
-> - [ ] Documento de criterios de reclasificación  
-> - [ ] Estadísticas de cobertura por año  
+> - [ ] 40 mapas raster bosque/no bosque
+>   Disponible en: _(https://drive.google.com/drive/folders/1vsw7WqRPHYCx2Khfrn27XH1i-QYw6Go6?usp=sharing)_
+> - [ ] Documento de criterios de reclasificación
+>   Incluido en el documento de tesis
 
-**Ubicación:** `deforestation-forecast/data/interim/O1/mapas-reclas/`
+**Ubicación:** `deforestation-forecast/data/interim/O1/mapas-reclasificados/`
 
 ---
 
@@ -122,7 +124,7 @@ Delimitación de zonas espaciales con dinámica de deforestación y extracción 
 **Metodología:**
 - Detección de cambios bosque ↔ no bosque
 - Zonificación por componentes conectados (conectividad 8)
-- Filtrado por área: 50-2000 km²
+- Filtrado por área: 
 - Extracción de series temporales por zona
 
 **Ejecución:**
@@ -133,16 +135,12 @@ python -m O1.r3.main
 
 **Estructura del panel zona-año:**
 ```
-zona_id | año | perdida_km2 | perdida_pct | acumulada_km2
+zona_id | año | pixeles_perdida | perdida_km2
 ```
 
-> **📂 Entregables:**  
-> _(Agregar links a carpeta compartida)_  
-> - [ ] Mapa raster de zonas (.tif)  
-> - [ ] Archivo vectorial de zonas (.shp/.gpkg)  
-> - [ ] CSV con estadísticas de zonas (área, centroide, etc.)  
-> - [ ] CSV con series históricas completas (zona-año)  
-> - [ ] Gráficos de series temporales por zona  
+> **📂 Entregables:**
+> - [ ] Mapa raster de zonas (.tif)
+> - [ ] CSV con estadísticas de las series históricas de las zonas (área, centroide, etc.)
 > - [ ] Documento de criterios de delimitación  
 
 **Ubicación:** `deforestation-forecast/data/interim/O1/zonas/`  
