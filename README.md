@@ -107,10 +107,11 @@ python -m O1.r1_r2.main
 **Especificaciones:** GeoTIFF, EPSG:4326, ~30m/píxel
 
 > **📂 Entregables:**  
-> - [ ] 40 mapas raster bosque/no bosque
->   Disponible en: _(https://drive.google.com/drive/folders/1vsw7WqRPHYCx2Khfrn27XH1i-QYw6Go6?usp=sharing)_
+> - [ ] Mapas raster bosque/no bosque (40 años, 1985-2024)
+>   → [Descargar de Google Drive](https://drive.google.com/drive/folders/1vsw7WqRPHYCx2Khfrn27XH1i-QYw6Go6?usp=sharing)
+>
 > - [ ] Documento de criterios de reclasificación
->   Incluido en el documento de tesis
+>   → Incluido en documento de tesis
 
 **Ubicación:** `deforestation-forecast/data/interim/O1/mapas-reclasificados/`
 
