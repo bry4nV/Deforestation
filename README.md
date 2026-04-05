@@ -1,10 +1,10 @@
 # 🌳 Pronóstico de Deforestación en la Amazonía Peruana
 
-[![Python](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-En%20Desarrollo-yellow.svg)]()
 
-**Proyecto de tesis:** Sistema de pronóstico anual de deforestación en la Amazonía peruana mediante deep learning y zonificación espacial basada en series temporales (1985-2024).
+**Proyecto de tesis:** Aplicación de deep learning para el pronóstico anual de zonas de riesgo de deforestación basada en series temporales (1985-2024).
 
 ---
 
@@ -15,7 +15,7 @@ Este proyecto desarrolla una metodología para **predecir la deforestación anua
 - **Datos históricos:** Mapas anuales de cobertura bosque/no bosque (1985-2024) de MapBiomas
 - **Zonificación espacial:** Identificación de áreas dinámicas mediante componentes conectados
 - **Series temporales:** Panel zona-año para análisis predictivo
-- **Deep Learning:** Modelos de series temporales (LSTM, Transformers, N-BEATS)
+- **Deep Learning:** Modelos de series temporales (LSTM, ...)
 
 **Objetivo:** Predecir la pérdida de cobertura forestal (km²) por zona para el año t+1, proporcionando herramientas para políticas de conservación y monitoreo temprano.
 
@@ -27,12 +27,10 @@ Este proyecto desarrolla una metodología para **predecir la deforestación anua
 Desarrollar un sistema de pronóstico de deforestación anual en la Amazonía peruana mediante modelos de deep learning entrenados sobre series temporales de pérdida de cobertura forestal por zona.
 
 ### Objetivos Específicos
-1. ✅ **[Completado]** Procesar y reclasificar mapas anuales de cobertura forestal (1985-2024)
-2. ✅ **[Completado]** Implementar zonificación espacial mediante componentes conectados
-3. 🔄 **[En desarrollo]** Extraer series temporales de pérdida por zona
-4. ⏳ **[Pendiente]** Entrenar modelos de deep learning para pronóstico
-5. ⏳ **[Pendiente]** Evaluar y comparar arquitecturas de modelos
-6. ⏳ **[Pendiente]** Desplegar sistema de predicción operacional
+1. 🔄 **[En desarrollo]** Identificar y delimitar zonas de estudio potenciales a partir de MapBiomas Perú y construir series históricas anuales de pérdida de bosque por zona.
+2. ⏳ **[Pendiente]** Diseñar y evaluar un modelo de pronóstico a partir de las series históricas de deforestación por zona, para estimar la pérdida de bosque en km² en horizonte anual.
+3. ⏳ **[Pendiente]** Integrar un conjunto de variables locales en el modelo de pronóstico y evaluar su aporte en las estimaciones anuales por zona.
+4. ⏳ **[Pendiente]** Evaluar la capacidad de generalización espacial de los pronósticos de deforestación en distintas zonas de estudio.
 
 ---
 
@@ -51,18 +49,14 @@ Tesis/
 │   │           └── zonas/          # Mapas de zonificación y estadísticas
 │   │
 │   ├── src/                        # Código fuente
-│   │   ├── O1/                     # Objetivo 1: Zonificación espacial
+│   │   ├── O1/                     # Objetivo 1: Identificación de zonas de estudio de deforestación
 │   │   │   ├── config.py           # Configuración general
 │   │   │   ├── r1_r2/              # R1/R2: Procesamiento y reclasificación
-│   │   │   └── r3/                 # ✅ R3: Detección de cambios y zonificación
-│   │   │       ├── main.py         # Pipeline principal
-│   │   │       ├── deteccion_cambios.py
-│   │   │       ├── zonificacion.py
-│   │   │       └── README.md       # Documentación detallada R3
+│   │   │   └── r3/                 # R3: Detección de cambios y zonificación espacial
 │   │   │
-│   │   ├── O2/                     # ⏳ Objetivo 2: Series temporales
-│   │   ├── O3/                     # ⏳ Objetivo 3: Modelado predictivo
-│   │   └── O4/                     # ⏳ Objetivo 4: Evaluación y despliegue
+│   │   ├── O2/                     # ⏳ Objetivo 2: Modelo pronóstico temporal de pérdida anual de bosque
+│   │   ├── O3/                     # ⏳ Objetivo 3: Modelado pronóstico temporal extendido con variables locales
+│   │   └── O4/                     # ⏳ Objetivo 4: Evaluación de capacidad de generalización
 │   │
 │   ├── outputs/                    # Resultados finales (gráficos, reportes)
 │   ├── requirements.txt            # Dependencias de Python
@@ -75,50 +69,60 @@ Tesis/
 
 ## 📊 Estado de Implementación
 
-### ✅ Fase 1: Procesamiento de Datos (R1/R2)
-**Estado:** Completado
-
-- Descarga y procesamiento de mapas MapBiomas (1985-2024)
-- Reclasificación a formato binario bosque/no bosque
-- Alineamiento espacial y temporal de rasters
-- Validación de integridad de datos
-
-**Outputs:**
-- 40 mapas anuales reclasificados (1985-2024)
-- Sistema de coordenadas: EPSG:4326
-- Resolución: ~30m por píxel
-
-> **📁 Resultados R1/R2:**  
-> _(Agregar link a carpeta compartida con mapas reclasificados)_  
-> - [ ] Mapas bosque/no bosque por año  
-> - [ ] Estadísticas de cobertura  
-> - [ ] Mapas de validación  
+### ⏳ Objetivo 1 (O1): Identificar zonas de estudio potenciales de deforestación
 
 ---
 
-### ✅ Fase 2: Detección de Cambios y Zonificación (R3)
-**Estado:** Completado
+### 📌 R1: Pipeline de Reprocesamiento
+**Estado:** ✅ Completado
 
-**Componentes implementados:**
+Pipeline automatizado para procesar mapas MapBiomas Perú (1985-2024): descarga, validación espacial y preparación para reclasificación.
 
-#### 1. Detección de Cambios
-- Identificación de píxeles con transiciones bosque ↔ no bosque
-- Procesamiento por tiles para eficiencia de memoria (5000×5000 px)
-- Generación de mapa binario de cambios (1985-2024)
+**Código:** [`deforestation-forecast/src/O1/r1_r2/`](deforestation-forecast/src/O1/r1_r2/)
 
-**Características técnicas:**
-- Algoritmo: Comparación temporal píxel a píxel
-- Memoria requerida: 2-4 GB RAM
-- Tiempo de ejecución: ~5-15 minutos
+**Ejecución:**
+```bash
+cd deforestation-forecast/src
+python -m O1.r1_r2.main
+```
 
-#### 2. Zonificación Espacial
-- Agrupación de píxeles contiguos mediante **componentes conectados**
-- Conectividad 8 (incluye diagonales) para capturar patrones reales
-- Filtrado por área mínima (50 km²) y máxima (2000 km²)
-- Cálculo de métricas: área, centroide, bounding box
+> **📂 Entregables:**  
+> - [ ] Código fuente (GitHub)  
+> - [ ] Documentación metodológica  
 
-**Algoritmo:** Two-Pass Connected Components Labeling  
-**Librería:** `scipy.ndimage.label` + `skimage.measure.regionprops`
+---
+
+### 📌 R2: Mapas Bosque/No Bosque
+**Estado:** ✅ Completado
+
+40 mapas anuales reclasificados (1985-2024) en formato binario.
+
+**Criterio de reclasificación:**
+- Bosque (1): Formación Forestal, Manglar, Bosque Inundable
+- No Bosque (0): Resto de clases
+- NoData (255)
+
+**Especificaciones:** GeoTIFF, EPSG:4326, ~30m/píxel
+
+> **📂 Entregables:**  
+> _(Agregar links a carpeta compartida)_  
+> - [ ] 40 mapas raster bosque/no bosque  
+> - [ ] Documento de criterios de reclasificación  
+> - [ ] Estadísticas de cobertura por año  
+
+**Ubicación:** `deforestation-forecast/data/interim/O1/mapas-reclas/`
+
+---
+
+### 📌 R3: Zonas de Estudio y Series Históricas
+**Estado:** 🔄 En desarrollo
+
+Delimitación de zonas espaciales y extracción de series temporales de pérdida (1985-2024).
+
+#### Zonificación Espacial ✅
+- Componentes conectados (conectividad 8)
+- Filtrado por área: 50-2000 km²
+- Metadata: ID, área, centroide, bounding box
 
 **Ejecución:**
 ```bash
@@ -126,94 +130,45 @@ cd deforestation-forecast/src
 python -m O1.r3.main
 ```
 
-> **📁 Resultados R3:**  
-> _(Agregar links a carpeta compartida con resultados de zonificación)_  
-> - [ ] Mapa de cambios 1985-2024  
-> - [ ] Mapa de zonas identificadas  
-> - [ ] Estadísticas de zonas (CSV)  
-> - [ ] Histogramas y visualizaciones  
+> **📂 Entregables (Zonificación):**  
+> _(Agregar links)_  
+> - [ ] Mapa raster de zonas (.tif)  
+> - [ ] Archivo vectorial de zonas (.shp/.gpkg)  
+> - [ ] CSV con estadísticas de zonas  
+> - [ ] Documento de criterios de delimitación  
 
-**Documentación detallada:** [`deforestation-forecast/src/O1/r3/README.md`](deforestation-forecast/src/O1/r3/README.md)
+**Ubicación:** `deforestation-forecast/data/interim/O1/zonas/`
 
 ---
 
-### 🔄 Fase 3: Series Temporales por Zona (O2)
-**Estado:** En desarrollo
+#### Series Históricas ⏳
+Panel zona-año con pérdida anual de bosque.
 
-**Objetivos:**
-- Extraer serie temporal de pérdida anual por zona (1985-2024)
-- Construir panel largo: `[zona_id, año, perdida_km2, ...]`
-- Calcular features adicionales (tendencias, estacionalidad)
-- Preparar datasets train/validation/test
-
-**Estructura esperada del panel:**
+**Estructura esperada:**
 ```
-zona_id | año  | perdida_km2 | perdida_pct | acumulada_km2 | ...
---------|------|-------------|-------------|---------------|----
-   1    | 1985 |    12.34    |    0.45     |    12.34      | ...
-   1    | 1986 |    15.67    |    0.58     |    28.01      | ...
+zona_id | año | perdida_km2 | perdida_pct | acumulada_km2
 ```
 
-**Pendiente:**
-- [ ] Extracción de series temporales por zona
-- [ ] Cálculo de métricas derivadas
-- [ ] Análisis exploratorio de datos (EDA)
-- [ ] División train/val/test estratificada
+> **📂 Entregables (Series):**  
+> - [ ] CSV con series históricas completas  
+> - [ ] Gráficos de series por zona  
 
-> **📁 Resultados O2:**  
-> _(Espacio reservado para panel zona-año y análisis)_  
-> - [ ] Panel zona-año (CSV/Parquet)  
-> - [ ] Gráficos de series temporales  
-> - [ ] Análisis de tendencias  
+**Documentación:** [`deforestation-forecast/src/O1/r3/README.md`](deforestation-forecast/src/O1/r3/README.md)
 
 ---
 
-### ⏳ Fase 4: Modelado Predictivo (O3)
+### ⏳ Objetivo 2 (O2): Modelo pronóstico temporal de pérdida anual de bosque
 **Estado:** Pendiente
-
-**Modelos a implementar:**
-- LSTM (Long Short-Term Memory)
-- Transformers con atención temporal
-- N-BEATS (Neural Basis Expansion Analysis)
-- TFT (Temporal Fusion Transformers)
-
-**Experimentos planeados:**
-1. Baseline: Modelos estadísticos (ARIMA, Prophet)
-2. Deep Learning: Arquitecturas modernas
-3. Ensemble: Combinación de modelos
-
-**Métricas de evaluación:**
-- RMSE, MAE, MAPE
-- R² por zona
-- Validación espacial y temporal
-
-**Pendiente:**
-- [ ] Diseño de arquitecturas
-- [ ] Pipeline de entrenamiento
-- [ ] Optimización de hiperparámetros
-- [ ] Evaluación comparativa
-
-> **📁 Resultados O3:**  
-> _(Espacio reservado para modelos y evaluaciones)_  
-> - [ ] Pesos de modelos entrenados  
-> - [ ] Métricas de evaluación  
-> - [ ] Gráficos predicciones vs reales  
 
 ---
 
-### ⏳ Fase 5: Despliegue (O4)
+### ⏳ Objetivo 3 (O3): Modelado pronóstico temporal extendido con variables locales
 **Estado:** Pendiente
 
-**Componentes planeados:**
-- [ ] API REST para predicciones
-- [ ] Dashboard interactivo
-- [ ] Sistema de alertas tempranas
-- [ ] Documentación de usuario
+---
 
-> **📁 Resultados O4:**  
-> _(Espacio reservado para sistema desplegado)_  
-> - [ ] Dashboard de predicciones  
-> - [ ] Mapas de riesgo proyectados  
+### ⏳ Objetivo 4 (O4): Evaluación de capacidad de generalización
+**Estado:** Pendiente
 
 ---
 
