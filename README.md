@@ -112,6 +112,8 @@ python -m O1.r1_r2.main
 
 **Ubicación:** `deforestation-forecast/data/interim/O1/mapas-reclas/`
 
+---
+
 ### 📌 R3: Zonas de Estudio y Series Históricas
 **Estado:** 🔄 En desarrollo
 
