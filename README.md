@@ -112,17 +112,16 @@ python -m O1.r1_r2.main
 
 **Ubicación:** `deforestation-forecast/data/interim/O1/mapas-reclas/`
 
----
-
 ### 📌 R3: Zonas de Estudio y Series Históricas
 **Estado:** 🔄 En desarrollo
 
-Delimitación de zonas espaciales y extracción de series temporales de pérdida (1985-2024).
+Delimitación de zonas espaciales con dinámica de deforestación y extracción de sus series temporales de pérdida anual (1985-2024).
 
-#### Zonificación Espacial ✅
-- Componentes conectados (conectividad 8)
+**Metodología:**
+- Detección de cambios bosque ↔ no bosque
+- Zonificación por componentes conectados (conectividad 8)
 - Filtrado por área: 50-2000 km²
-- Metadata: ID, área, centroide, bounding box
+- Extracción de series temporales por zona
 
 **Ejecución:**
 ```bash
@@ -130,29 +129,21 @@ cd deforestation-forecast/src
 python -m O1.r3.main
 ```
 
-> **📂 Entregables (Zonificación):**  
-> _(Agregar links)_  
-> - [ ] Mapa raster de zonas (.tif)  
-> - [ ] Archivo vectorial de zonas (.shp/.gpkg)  
-> - [ ] CSV con estadísticas de zonas  
-> - [ ] Documento de criterios de delimitación  
-
-**Ubicación:** `deforestation-forecast/data/interim/O1/zonas/`
-
----
-
-#### Series Históricas ⏳
-Panel zona-año con pérdida anual de bosque.
-
-**Estructura esperada:**
+**Estructura del panel zona-año:**
 ```
 zona_id | año | perdida_km2 | perdida_pct | acumulada_km2
 ```
 
-> **📂 Entregables (Series):**  
-> - [ ] CSV con series históricas completas  
-> - [ ] Gráficos de series por zona  
+> **📂 Entregables:**  
+> _(Agregar links a carpeta compartida)_  
+> - [ ] Mapa raster de zonas (.tif)  
+> - [ ] Archivo vectorial de zonas (.shp/.gpkg)  
+> - [ ] CSV con estadísticas de zonas (área, centroide, etc.)  
+> - [ ] CSV con series históricas completas (zona-año)  
+> - [ ] Gráficos de series temporales por zona  
+> - [ ] Documento de criterios de delimitación  
 
+**Ubicación:** `deforestation-forecast/data/interim/O1/zonas/`  
 **Documentación:** [`deforestation-forecast/src/O1/r3/README.md`](deforestation-forecast/src/O1/r3/README.md)
 
 ---
@@ -212,23 +203,6 @@ matplotlib >= 3.10.0
 
 ---
 
-## 🔬 Metodología
-
-### Zonificación Espacial
-- **Enfoque:** Componentes conectados sobre mapa de cambios
-- **Conectividad:** 8 vecinos (incluye diagonales)
-- **Filtros:** Área 50-2000 km²
-
-### Series Temporales (En desarrollo)
-- **Panel:** Zona-año (40 años)
-- **Target:** Pérdida anual en km²
-
-### Modelado (Pendiente)
-- **Arquitecturas:** LSTM, Transformers, N-BEATS
-- **Estrategia:** Modelo global para todas las zonas
-
----
-
 ## 🗺️ Datos
 
 **Fuente:** [MapBiomas Perú](https://peru.mapbiomas.org/)  
@@ -238,29 +212,10 @@ matplotlib >= 3.10.0
 
 ---
 
-## 📚 Referencias
-
-- MapBiomas Project. (2024). *Annual Land Use Land Cover Maps of Peru*.
-- Rosenfeld & Pfaltz (1966). Sequential operations in digital picture processing.
-
----
-
 ## 👤 Autor
 
-**Bryan Valdiviezo & Edwin Villanueva**  
-_[Universidad]_ | Tesis de [Grado]
-
----
-
-## 📌 Roadmap
-
-- [x] ✅ Procesamiento de datos (R1/R2)
-- [x] ✅ Detección de cambios (R3)
-- [x] ✅ Zonificación espacial (R3)
-- [ ] 🔄 Series temporales (O2)
-- [ ] ⏳ Modelado predictivo (O3)
-- [ ] ⏳ Evaluación (O3)
-- [ ] ⏳ Despliegue (O4)
+**Bryan Valdiviezo**  
+Pontificia Universidad Católica del Perú | Tesis de pregrado en Ingeniería Informática
 
 ---
 
