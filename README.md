@@ -90,7 +90,7 @@ python -m O1.r1_r2.main
 > **📂 Entregables:**  
 > - [ ] Código fuente (GitHub)
 > - [ ] Diagrama metodológico
->   Incluido en el documento de tesis
+>   → Incluido en documento de tesis
 
 ---
 
