@@ -125,7 +125,7 @@ Delimitación de zonas espaciales con dinámica de deforestación y extracción 
 **Metodología:**
 - Detección de cambios bosque ↔ no bosque
 - Zonificación por componentes conectados (conectividad 8)
-- Filtrado por área: 
+- Filtrado por área
 - Extracción de series temporales por zona
 
 **Ejecución:**
@@ -182,16 +182,7 @@ source venv/bin/activate  # Linux/Mac
 pip install -r requirements.txt
 ```
 
-### Ejecución Pipeline R3
-
-```bash
-cd deforestation-forecast/src
-python -m O1.r3.main
-```
-
----
-
-## 📦 Dependencias Principales
+### Dependencias Principales
 
 ```
 numpy >= 2.2.0
