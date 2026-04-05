@@ -110,8 +110,8 @@ def etapa4_exportar(bosque_bin, meta, ruta_salida):
 
     with rasterio.open(ruta_salida, "w", **meta_out) as dst:
         dst.write(bosque_bin, 1)
-
         valores, cuentas = np.unique(bosque_bin, return_counts=True)
+
     dist = dict(zip(valores.tolist(), cuentas.tolist()))
     total = bosque_bin.size
 

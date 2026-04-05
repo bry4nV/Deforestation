@@ -42,7 +42,8 @@ NODATA_OUT = 255
 
 MAPAS_REPROYECTADOS_DIR = os.path.join(O1_INTERIM_DIR, "mapas-reproyectados")
 MAPAS_CAMBIOS_DIR = os.path.join(O1_INTERIM_DIR, "mapas-cambios")
-for d in [MAPAS_CAMBIOS_DIR, MAPAS_REPROYECTADOS_DIR]:
+ZONAS_DIR = os.path.join(O1_INTERIM_DIR, "zonas")
+for d in [MAPAS_CAMBIOS_DIR, MAPAS_REPROYECTADOS_DIR, ZONAS_DIR]:
     os.makedirs(d, exist_ok=True)
 
 CRS_PROYECTADO = "EPSG:32718"  # UTM zona 18 sur
@@ -51,7 +52,6 @@ CRS_PROYECTADO = "EPSG:32718"  # UTM zona 18 sur
 MAPAS_PERDIDA_DIR = os.path.join(O1_INTERIM_DIR, "mapas-perdida")
 FEATURES_DIR = os.path.join(O1_INTERIM_DIR, "features")
 NUCLEOS_DIR = os.path.join(O1_INTERIM_DIR, "nucleos")
-ZONAS_DIR = os.path.join(O1_INTERIM_DIR, "zonas")
 PANEL_DIR = os.path.join(OUTPUTS_DIR, "panel")
 
 for d in [MAPAS_PERDIDA_DIR, FEATURES_DIR, MAPAS_REPROYECTADOS_DIR, 
