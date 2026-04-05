@@ -8,10 +8,8 @@ ENFOQUE NUEVO:
 - Generación de mapa de cambios como base para zonificación futura
 """
 import os
-import numpy as np
-import rasterio
 from O1.config import (
-    ANIOS, MAPAS_RECLAS_DIR, O1_INTERIM_DIR
+    ANIOS, MAPAS_RECLAS_DIR, MAPAS_CAMBIOS_DIR
 )
 from O1.r3.deteccion_cambios import (
     detectar_cambios_por_tiles, 
@@ -31,15 +29,10 @@ def main():
     """
     
     print("\n" + "="*70)
-    print(" PIPELINE DE DETECCIÓN DE CAMBIOS - R3 (VERSIÓN SIMPLIFICADA)")
+    print(" PIPELINE DE DETECCIÓN DE CAMBIOS - R3")
     print("="*70)
     print(f"  Años: {ANIOS[0]} - {ANIOS[-1]} ({len(ANIOS)} años)")
-    print(f"  Sistema: EPSG:4326 (sin reproyección)")
     print("="*70 + "\n")
-    
-    # Crear directorio de salida
-    CAMBIOS_DIR = os.path.join(O1_INTERIM_DIR, "mapas-cambios")
-    os.makedirs(CAMBIOS_DIR, exist_ok=True)
     
     # ========================================================================
     # PASO 1: DETECCIÓN DE CAMBIOS
@@ -77,11 +70,11 @@ def main():
     # ========================================================================
     
     # Guardar mapa de cambios
-    output_cambios = os.path.join(CAMBIOS_DIR, "mapa_cambios_1985_2024.tif")
+    output_cambios = os.path.join(MAPAS_CAMBIOS_DIR, "mapa_cambios_1985_2024.tif")
     guardar_mapa_cambios(mapa_cambios, transform, crs, output_cambios)
     
     # Exportar estadísticas
-    output_stats = os.path.join(CAMBIOS_DIR, "estadisticas_cambios.txt")
+    output_stats = os.path.join(MAPAS_CAMBIOS_DIR, "estadisticas_cambios.txt")
     exportar_estadisticas_cambios(stats, output_stats)
     
     # ========================================================================
