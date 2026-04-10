@@ -118,15 +118,15 @@ python -m O1.r1_r2.main
 ---
 
 ### 📌 R3: Zonas de Estudio y Series Históricas
-**Estado:** 🔄 En desarrollo
+**Estado:** ✅ Completado
 
-Delimitación de zonas espaciales con dinámica de deforestación y extracción de sus series temporales de pérdida anual (1985-2024).
+Delimitación de zonas espaciales con dinámica de cambio de cobertura forestal y extracción de sus series temporales de pérdida anual (1986-2024).
 
 **Metodología:**
-- Detección de cambios bosque ↔ no bosque
+- Detección de cambios bosque ↔ no bosque (variación bidireccional)
 - Zonificación por componentes conectados (conectividad 8)
-- Filtrado por área
-- Extracción de series temporales por zona
+- Filtrado por área mínima (1000 píxeles)
+- Extracción de series temporales de pérdida (bosque → no bosque) por zona
 
 **Ejecución:**
 ```bash
@@ -140,8 +140,11 @@ zona_id | año | pixeles_perdida | perdida_km2
 ```
 
 > **📂 Entregables:**
-> - [ ] Mapa raster de zonas (.tif)
-> - [ ] CSV con estadísticas de las series históricas de las zonas (área, centroide, etc.)
+> - [x] Mapa raster de zonas de cambio (.tif)
+> - [x] CSV con estadísticas de las series históricas de las zonas (área, centroide, etc.)
+> - [x] **Panel zona-año con pérdida anual de bosque (1986-2024)**
+> - [x] **Estadísticas de series temporales por zona**
+> - [x] **Visualizaciones de series temporales**
 > - [ ] Documento de criterios de delimitación  
 
 **Ubicación:** `deforestation-forecast/data/interim/O1/zonas/`  

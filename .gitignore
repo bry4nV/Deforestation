@@ -11,3 +11,4 @@ __pycache__/
 
 # Ignorar archivos raster
 *.tif
+*.rmf*

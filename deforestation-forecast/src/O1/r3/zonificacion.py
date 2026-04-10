@@ -6,13 +6,14 @@ que hayan experimentado cambios (bosque <=> no bosque), usando el algoritmo de
 componentes conectados con conectividad 8.
 """
 import numpy as np
+import pandas as pd
 import rasterio
 from scipy.ndimage import label
 from skimage.measure import regionprops
 import os
+from O1.config import (NODATA)
 
-
-def identificar_zonas_por_conectividad(ruta_mapa_cambios, pixeles_min=20):
+def identificar_zonas_por_conectividad(ruta_mapa_cambios, pixeles_min):
     """
     Identifica zonas de deforestación mediante componentes conectados.
     
@@ -21,7 +22,7 @@ def identificar_zonas_por_conectividad(ruta_mapa_cambios, pixeles_min=20):
     ruta_mapa_cambios : str
         Ruta al mapa de cambios (1=cambió, 0=sin cambio)
     pixeles_min : float
-        Número mínimo de píxeles para considerar una zona válida (default: 20)
+        Número mínimo de píxeles para considerar una zona válida
     
     Returns:
     --------
@@ -29,10 +30,8 @@ def identificar_zonas_por_conectividad(ruta_mapa_cambios, pixeles_min=20):
         Raster con IDs de zonas (0=sin zona, 1,2,3,...=zonas)
     zonas_info : list
         Lista de diccionarios con información de cada zona
-    transform : affine.Affine
-        Transformación geoespacial
-    crs : CRS
-        Sistema de coordenadas
+    meta : dict
+        Metadatos del raster (transform, crs, etc.)
     """
     
     print("\n" + "="*70)
@@ -44,42 +43,53 @@ def identificar_zonas_por_conectividad(ruta_mapa_cambios, pixeles_min=20):
     # ========================================
     
     with rasterio.open(ruta_mapa_cambios) as src:
-        cambios = src.read(1)
+        mapa_cambios = src.read(1)
         transform = src.transform
-        crs = src.crs
-        meta = src.meta
+        meta = src.meta.copy()
     
-    print(f"[INFO] Mapa cargado: {cambios.shape[1]} x {cambios.shape[0]} píxeles")
+    print(f"[INFO] Mapa cargado: {mapa_cambios.shape[1]} x {mapa_cambios.shape[0]} píxeles")
     
     # Máscara de píxeles con cambio
-    mascara_cambio = (cambios == 1)
+    mascara_valida = (mapa_cambios != NODATA)
+    mascara_cambio = (mapa_cambios == 1) & mascara_valida
     n_pixels_cambio = np.sum(mascara_cambio)
     
     print(f"[INFO] Píxeles con cambio: {n_pixels_cambio:,}")
     
     if n_pixels_cambio == 0:
-        print("\n[WARN] No hay píxeles con cambio. No se pueden identificar zonas.")
-        return np.zeros_like(cambios, dtype=np.int32), [], transform, crs
+        zonas_vacias = np.zeros_like(mapa_cambios, dtype=np.int32)
+        zonas_vacias[mapa_cambios == NODATA] = NODATA
+        return zonas_vacias, [], meta
     
     # ========================================
     # PASO 2: Calcular área de píxel
     # ========================================
     
     # Para EPSG:4326, aproximación simple
+    # Resolución en grados
     res_deg_x = abs(transform.a)
     res_deg_y = abs(transform.e)
 
-    print(f"\n[INFO] Resolución espacial:")
-    print(f"  Grados:    {res_deg_x:.6f}° x {res_deg_y:.6f}°")
+    # Latitud representativa (centro del raster)
+    h, w = mapa_cambios.shape
+    _, lat = transform * (w // 2, h // 2)
 
-    res_deg = abs(transform[0])
-    res_km = res_deg * 111  # 1 grado ≈ 111 km
-    area_pixel_km2 = res_km ** 2
+    # Conversión grados → metros
+    m_per_deg_lat = 110574.0
+    m_per_deg_lon = 111320.0 * np.cos(np.deg2rad(lat))
+
+    # Resolución en metros
+    res_m_x = res_deg_x * m_per_deg_lon
+    res_m_y = res_deg_y * m_per_deg_lat
     
+    # Área
+    area_pixel_m2 = res_m_x * res_m_y
+    area_pixel_km2 = area_pixel_m2 / 1e6
+
     print(f"\n[INFO] Resolución espacial:")
-    print(f"  Grados:    {res_deg:.6f}°")
-    print(f"  Metros:    {res_km * 1000:.1f} m")
-    print(f"  Área/píxel: {area_pixel_km2 * 1e6:.0f} m² ({area_pixel_km2:.6f} km²)")
+    print(f"  Grados: {res_deg_x:.6f}° x {res_deg_y:.6f}°")
+    print(f"  Metros: {res_m_x:.2f} m x {res_m_y:.2f} m")
+    print(f"  Área/píxel: {area_pixel_m2:.0f} m² ({area_pixel_km2:.6f} km²)")
     
     # ========================================
     # PASO 3: Aplicar componentes conectados
@@ -88,52 +98,60 @@ def identificar_zonas_por_conectividad(ruta_mapa_cambios, pixeles_min=20):
     print(f"\n[INFO] Aplicando componentes conectados (conectividad 8)...")
     
     # Estructura de conectividad 8 (incluye diagonales)
-    structure_8 = np.ones((3, 3), dtype=np.int8)
+    estructura_8 = np.ones((3, 3), dtype=np.int8)
+
+    estructura_4 = np.array([
+        [0, 1, 0],
+        [1, 1, 1],
+        [0, 1, 0]
+    ], dtype=np.int8)
     
     # Identificar componentes
-    labels_raw, n_parches_raw = label(mascara_cambio, structure=structure_8)
+    zonas_cambio, n_zonas_cambio = label(mascara_cambio, structure=estructura_8)
     
-    print(f"[OK] Componentes identificados: {n_parches_raw:,}")
+    print(f"[OK] Componentes identificados: {n_zonas_cambio:,}")
     
     # ========================================
-    # PASO 4: Filtrar por área
+    # PASO 4: Filtrar por cantidad de píxeles
     # ========================================
     
-    print(f"\n[INFO] Filtrando parches por área...")
+    print(f"\n[INFO] Filtrando zonas por cantidad de píxeles...")
     print(f"  Píxeles mínimos: {pixeles_min}")
     
     # Calcular propiedades de cada parche
-    props = regionprops(labels_raw)
+    propiedades_zonas = regionprops(zonas_cambio)
     
     # Filtrar y renumerar
-    zonas_labels = np.zeros_like(labels_raw, dtype=np.int32)
-    zonas_info = []
+    zonas_cambio_filtradas = np.zeros_like(zonas_cambio, dtype=np.int32)
+    zonas_cambio_filtradas_info = []
     zona_id = 1
     
     n_descartados_pequeños = 0
-    n_descartados_grandes = 0
     
-    for region in props:
+    for region in propiedades_zonas:
+
+        n_pixeles_region = region.area
         area_km2 = region.area * area_pixel_km2
         
-        # Verificar criterios
-        if area_km2 < pixeles_min:
+        # Verificar si supera la cantidad de píxeles mínimos
+        if n_pixeles_region < pixeles_min:
             n_descartados_pequeños += 1
-            continue  # Descartar (demasiado pequeño)
+            continue
         
+        print(f"Evaluated zone {region.label}: {region.area} pixels")
+
         # Asignar zona
-        mask_zona = (labels_raw == region.label)
-        zonas_labels[mask_zona] = zona_id
+        mascara_zona = (zonas_cambio == region.label)
+        zonas_cambio_filtradas[mascara_zona] = zona_id
         
         # Calcular centroide en coordenadas geográficas
         centroid_y, centroid_x = region.centroid
-        geo_x = transform[2] + centroid_x * transform[0]
-        geo_y = transform[5] + centroid_y * transform[4]
+        geo_x, geo_y = transform * (centroid_x, centroid_y)
         
         # Calcular bounding box
         minr, minc, maxr, maxc = region.bbox
         
-        zonas_info.append({
+        zonas_cambio_filtradas_info.append({
             'zona_id': zona_id,
             'area_km2': area_km2,
             'n_pixels': region.area,
@@ -146,8 +164,11 @@ def identificar_zonas_por_conectividad(ruta_mapa_cambios, pixeles_min=20):
         })
         
         zona_id += 1
+
+        if zona_id == 255:
+            zona_id += 1
     
-    n_zonas_validas = len(zonas_info)
+    n_zonas_validas = len(zonas_cambio_filtradas_info)
     
     print(f"\n[OK] Filtrado completado:")
     print(f"  Zonas válidas:        {n_zonas_validas:,}")
@@ -158,66 +179,54 @@ def identificar_zonas_por_conectividad(ruta_mapa_cambios, pixeles_min=20):
     # ========================================
     
     if n_zonas_validas > 0:
-        areas = [z['area_km2'] for z in zonas_info]
+        areas = [z['area_km2'] for z in zonas_cambio_filtradas_info]
         
         print(f"\n" + "="*70)
         print("ESTADÍSTICAS DE ZONAS")
         print("="*70)
         print(f"  Total zonas:       {n_zonas_validas:,}")
-        print(f"\n  Área (km²):")
-        print(f"    Media:           {np.mean(areas):.2f}")
-        print(f"    Mediana:         {np.median(areas):.2f}")
-        print(f"    Mínima:          {np.min(areas):.2f}")
-        print(f"    Máxima:          {np.max(areas):.2f}")
-        print(f"    Desv. estándar:  {np.std(areas):.2f}")
-        
-        print(f"\n  Número de píxeles:")
-        n_pixels = [z['n_pixels'] for z in zonas_info]
-        print(f"    Media:           {np.mean(n_pixels):.0f}")
-        print(f"    Mediana:         {np.median(n_pixels):.0f}")
-        
-        # Top 10 zonas más grandes
-        print(f"\n  Top 10 zonas más grandes:")
-        sorted_zonas = sorted(zonas_info, key=lambda x: x['area_km2'], reverse=True)
-        for i, zona in enumerate(sorted_zonas[:10], 1):
-            flag = " [!MUY GRANDE]" if zona['es_muy_grande'] else ""
-            print(f"    {i}. Zona {zona['zona_id']}: {zona['area_km2']:.2f} km² "
-                  f"({zona['n_pixels']:,} px){flag}")
+        n_pixels = [z['n_pixels'] for z in zonas_cambio_filtradas_info]
+        print(f"Mediana: {np.median(areas):.2f} km² ({np.median(n_pixels):.0f} px) | "
+              f"Mín: {np.min(areas):.2f} km² ({np.min(n_pixels):.0f} px) | "
+              f"Máx: {np.max(areas):.2f} km² ({np.max(n_pixels):.0f} px)")
         
         print("="*70 + "\n")
     else:
         print("\n[WARN] No se identificaron zonas válidas.")
-    
-    return zonas_labels, zonas_info, transform, crs
+
+    # ========================================
+    # PASO 6: Propagar NODATA (CRÍTICO)
+    # ========================================
+
+    mascara_nodata = (mapa_cambios == NODATA)
+    zonas_cambio_filtradas[mascara_nodata] = NODATA
+    zonas_cambio_filtradas = zonas_cambio_filtradas.astype(np.int32)
+
+    return zonas_cambio_filtradas, zonas_cambio_filtradas_info, meta
 
 
-def guardar_zonas(zonas_labels, transform, crs, output_path):
+def exportar_zonas_cambios(zonas_cambio, meta_original, ruta_salida):
     """
     Guarda el mapa de zonas como raster GeoTIFF.
     """
-    meta = {
-        'driver': 'GTiff',
+
+    meta = meta_original.copy()
+    meta.update({
         'dtype': 'int32',
-        'nodata': 0,
-        'width': zonas_labels.shape[1],
-        'height': zonas_labels.shape[0],
-        'count': 1,
-        'crs': crs,
-        'transform': transform,
-        'compress': 'lzw'
-    }
+        'nodata': NODATA,
+        'count': 1
+    })
     
-    with rasterio.open(output_path, 'w', **meta) as dst:
-        dst.write(zonas_labels.astype('int32'), 1)
+    with rasterio.open(ruta_salida, 'w', **meta) as dst:
+        dst.write(zonas_cambio.astype('int32'), 1)
     
-    print(f"[OK] Zonas guardadas: {output_path}")
+    print(f"[OK] Zonas guardadas: {ruta_salida}")
 
 
-def exportar_estadisticas_zonas(zonas_info, output_path):
+def exportar_estadisticas_zonas(zonas_info, ruta_salida):
     """
     Exporta estadísticas de zonas a CSV.
     """
-    import pandas as pd
     
     if not zonas_info:
         print("[WARN] No hay zonas para exportar.")
@@ -226,16 +235,16 @@ def exportar_estadisticas_zonas(zonas_info, output_path):
     df = pd.DataFrame(zonas_info)
     
     # Ordenar por área (descendente)
-    df = df.sort_values('area_km2', ascending=False)
+    df = df.sort_values('n_pixels', ascending=False)
     
     # Guardar
-    df.to_csv(output_path, index=False, float_format='%.6f')
+    df.to_csv(ruta_salida, index=False, float_format='%.6f')
     
-    print(f"[OK] Estadísticas exportadas: {output_path}")
+    print(f"[OK] Estadísticas exportadas: {ruta_salida}")
     print(f"     {len(df)} zonas × {len(df.columns)} columnas")
 
 
-def visualizar_distribucion_areas(zonas_info, output_path=None):
+def visualizar_distribucion_areas(zonas_info, ruta_salida=None):
     """
     Genera histograma de distribución de áreas de zonas.
     """
@@ -259,16 +268,16 @@ def visualizar_distribucion_areas(zonas_info, output_path=None):
     plt.axvline(np.mean(areas), color='g', linestyle='--', label=f'Media: {np.mean(areas):.2f} km²')
     plt.legend()
     
-    if output_path:
-        plt.savefig(output_path, dpi=150, bbox_inches='tight')
-        print(f"[OK] Gráfico guardado: {output_path}")
+    if ruta_salida:
+        plt.savefig(ruta_salida, dpi=150, bbox_inches='tight')
+        print(f"[OK] Gráfico guardado: {ruta_salida}")
     else:
         plt.show()
     
     plt.close()
 
 
-def pipeline_zonificacion(ruta_mapa_cambios, output_dir, pixeles_min=20):
+def pipeline_zonificacion(ruta_mapa_cambios, ruta_salida, pixeles_min=50):
     """
     Pipeline completo de zonificación.
     
@@ -276,7 +285,7 @@ def pipeline_zonificacion(ruta_mapa_cambios, output_dir, pixeles_min=20):
     -----------
     ruta_mapa_cambios : str
         Ruta al mapa de cambios
-    output_dir : str
+    ruta_salida : str
         Directorio de salida
     pixeles_min : float
         Número mínimo de píxeles por zona
@@ -290,48 +299,38 @@ def pipeline_zonificacion(ruta_mapa_cambios, output_dir, pixeles_min=20):
     print(" PIPELINE DE ZONIFICACIÓN")
     print("="*70)
     print(f"  Input:      {os.path.basename(ruta_mapa_cambios)}")
-    print(f"  Output dir: {output_dir}")
+    print(f"  Output dir: {ruta_salida}")
     print(f"  Píxeles min:   {pixeles_min}")
     print("="*70 + "\n")
     
     # Paso 1: Identificar zonas
-    zonas_labels, zonas_info, transform, crs = identificar_zonas_por_conectividad(
+    zonas_cambio, zonas_info, meta = identificar_zonas_por_conectividad(
         ruta_mapa_cambios,
         pixeles_min=pixeles_min
     )
     
     # Paso 2: Guardar mapa de zonas
-    output_zonas = os.path.join(output_dir, "zonas_conectividad8.tif")
-    guardar_zonas(zonas_labels, transform, crs, output_zonas)
+    ruta_salida_zonas = os.path.join(ruta_salida, "zonas_cambios_conectividad_8.tif")
+    exportar_zonas_cambios(zonas_cambio, meta, ruta_salida_zonas)
     
     # Paso 3: Exportar estadísticas
-    output_stats = os.path.join(output_dir, "estadisticas_zonas.csv")
-    exportar_estadisticas_zonas(zonas_info, output_stats)
+    ruta_estadisticas_zonas_cambio = os.path.join(ruta_salida, "estadisticas_zonas_cambios_conectividad_8.csv")
+    exportar_estadisticas_zonas(zonas_info, ruta_estadisticas_zonas_cambio)
     
     # Paso 4: Generar histograma
-    output_hist = os.path.join(output_dir, "distribucion_areas_zonas.png")
-    visualizar_distribucion_areas(zonas_info, output_hist)
+    ruta_histograma = os.path.join(ruta_salida, "distribucion_areas_zonas_cambios_conectividad_8.png")
+    visualizar_distribucion_areas(zonas_info, ruta_histograma)
     
     # Resumen
-    resumen = {
-        'n_zonas': len(zonas_info),
-        'area_total_km2': sum([z['area_km2'] for z in zonas_info]) if zonas_info else 0,
-        'area_media_km2': np.mean([z['area_km2'] for z in zonas_info]) if zonas_info else 0,
-        'output_raster': output_zonas,
-        'output_csv': output_stats,
-        'output_grafico': output_hist
-    }
+    area_total = sum(z['area_km2'] for z in zonas_info) if zonas_info else 0
     
     print("\n" + "="*70)
-    print(" ZONIFICACIÓN COMPLETADA ✓")
+    print(" ZONIFICACIÓN COMPLETADA ")
     print("="*70)
-    print(f"\n  Zonas identificadas:  {resumen['n_zonas']:,}")
-    print(f"  Área total:           {resumen['area_total_km2']:.2f} km²")
-    print(f"  Área media por zona:  {resumen['area_media_km2']:.2f} km²")
+    print(f"\n  Zonas identificadas:  {len(zonas_info):,}")
+    print(f"  Área total:           {area_total:.2f} km²")
     print(f"\n  Outputs:")
-    print(f"    - Mapa de zonas:    {output_zonas}")
-    print(f"    - Estadísticas CSV: {output_stats}")
-    print(f"    - Histograma:       {output_hist}")
+    print(f"    - Mapa de zonas:    {ruta_salida_zonas}")
+    print(f"    - Estadísticas CSV: {ruta_estadisticas_zonas_cambio}")
+    print(f"    - Histograma:       {ruta_histograma}")
     print("\n" + "="*70 + "\n")
-    
-    return resumen

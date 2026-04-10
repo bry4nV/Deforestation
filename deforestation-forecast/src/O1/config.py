@@ -34,7 +34,7 @@ CLASES_VALIDAS = {
 
 CLASE_NOBSERVADO = 27
 
-NODATA_OUT = 255
+NODATA = 255
 
 # =============================
 # R3 - ZONIFICACIÓN

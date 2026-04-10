@@ -2,11 +2,12 @@
 
 ## 📋 Descripción General
 
-Pipeline completo para identificar y zonificar áreas de deforestación en la Amazonía peruana (1985-2024).
+Pipeline completo para identificar y zonificar áreas de deforestación en la Amazonía peruana (1985-2024), y extraer series temporales de pérdida anual por zona.
 
 **Pasos:**
 1. **Detección de cambios**: Identifica píxeles que cambiaron entre bosque y no bosque
 2. **Zonificación**: Agrupa píxeles contiguos en zonas usando componentes conectados
+3. **Series temporales**: Extrae pérdida anual de bosque para cada zona identificada
 
 ---
 
@@ -22,9 +23,13 @@ python -m O1.r3.main
 **Outputs generados:**
 - `data/interim/O1/mapas-cambios/mapa_cambios_1985_2024.tif` - Mapa binario de cambios
 - `data/interim/O1/mapas-cambios/estadisticas_cambios.txt` - Estadísticas de cambios
+- `data/interim/O1/mapas-perdida/mapa_perdida_{1986-2024}.tif` - Mapas de pérdida anual
 - `data/interim/O1/zonas/zonas_conectividad8.tif` - Mapa de zonas identificadas
 - `data/interim/O1/zonas/estadisticas_zonas.csv` - Métricas por zona
 - `data/interim/O1/zonas/distribucion_areas_zonas.png` - Histograma de áreas
+- `data/interim/O1/zonas/panel_series_temporales_zonas.csv` - **Panel zona-año con pérdida anual**
+- `data/interim/O1/zonas/estadisticas_series_temporales_zonas.csv` - **Estadísticas por zona**
+- `data/interim/O1/zonas/series_temporales_top_zonas.png` - **Visualización de series**
 
 ---
 
@@ -75,6 +80,39 @@ resumen = pipeline_zonificacion(
     area_min_km2=50,
     area_max_km2=2000
 )
+```
+
+### 3. Series Temporales (`series_temporales.py`)
+
+Extrae la pérdida anual de bosque para cada zona identificada, generando un panel zona-año.
+
+**Características:**
+- Procesa 39 años de pérdida (1986-2024)
+- Genera panel completo: zona_id × año × pérdida
+- Calcula estadísticas por zona (pérdida total, media, std)
+- Visualiza series temporales de zonas principales
+- Valida integridad del panel
+
+**Uso standalone:**
+```python
+from O1.r3.series_temporales import extraer_series_temporales_por_zona
+
+df_panel = extraer_series_temporales_por_zona(
+    ruta_mapa_zonas="path/to/zonas.tif",
+    rutas_mapas_perdida=["path1.tif", "path2.tif", ...],
+    anios=[1986, 1987, ...],
+    ruta_salida_csv="panel.csv"
+)
+```
+
+### 4. Generación de Mapas de Pérdida (`generar_mapas_perdida.py`)
+
+Genera mapas de pérdida anual comparando mapas consecutivos de bosque/no bosque.
+
+**Uso:**
+```bash
+cd src
+python -m O1.r3.generar_mapas_perdida
 ```
 
 ---
@@ -145,6 +183,34 @@ print(df[['zona_id', 'area_km2', 'n_pixels']].head())
 | bbox_maxr         | Bounding box (fila máxima)               |
 | bbox_maxc         | Bounding box (columna máxima)            |
 | es_muy_grande     | True si excede area_max_km2              |
+
+### Panel Series Temporales (`panel_series_temporales_zonas.csv`)
+
+| Campo             | Descripción                              |
+|-------------------|------------------------------------------|
+| zona_id           | ID único de la zona                      |
+| anio              | Año de observación (1986-2024)           |
+| pixeles_perdida   | Número de píxeles con pérdida            |
+| perdida_km2       | Área de pérdida en km²                   |
+
+**Estructura del panel:**
+- Formato largo (long format)
+- Un registro por zona-año
+- Total registros = n_zonas × n_años
+- Listo para modelado predictivo
+
+### Estadísticas Series Temporales (`estadisticas_series_temporales_zonas.csv`)
+
+| Campo                        | Descripción                              |
+|------------------------------|------------------------------------------|
+| zona_id                      | ID único de la zona                      |
+| perdida_total_km2            | Pérdida acumulada 1986-2024              |
+| perdida_media_anual_km2      | Pérdida promedio por año                 |
+| perdida_std_km2              | Desviación estándar de pérdida anual     |
+| perdida_min_km2              | Pérdida mínima en un año                 |
+| perdida_max_km2              | Pérdida máxima en un año                 |
+| pixeles_perdida_total        | Total píxeles perdidos                   |
+| pixeles_perdida_media_anual  | Promedio píxeles perdidos por año        |
 
 ---
 

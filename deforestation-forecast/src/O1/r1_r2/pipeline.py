@@ -9,7 +9,7 @@ from O1.config import (
     CLASES_VALIDAS,
     CLASES_BOSQUE,
     CLASE_NOBSERVADO,
-    NODATA_OUT
+    NODATA
 )
 
 # =====================================================
@@ -59,11 +59,11 @@ def etapa2_validar_y_depurar_clases(img):
     img_dep = img.copy()
 
     # No observado oficial
-    img_dep[img_dep == CLASE_NOBSERVADO] = NODATA_OUT
+    img_dep[img_dep == CLASE_NOBSERVADO] = NODATA
 
     # Todo lo que NO sea clase válida
-    mascara_invalidos = ~np.isin(img_dep, list(CLASES_VALIDAS) + [NODATA_OUT])
-    img_dep[mascara_invalidos] = NODATA_OUT
+    mascara_invalidos = ~np.isin(img_dep, list(CLASES_VALIDAS) + [NODATA])
+    img_dep[mascara_invalidos] = NODATA
 
     print("[E2] Clases después:", np.unique(img_dep))
 
@@ -85,11 +85,11 @@ def etapa3_reclasificar(img_dep):
     # Máscara de bosque
     mascara_bosque = np.isin(img_dep, list(CLASES_BOSQUE))
 
-    bosque_bin = np.full(img_dep.shape, NODATA_OUT, dtype="uint8")
+    bosque_bin = np.full(img_dep.shape, NODATA, dtype="uint8")
     bosque_bin[mascara_bosque] = 1
 
     # No bosque
-    mascara_no_bosque = (img_dep != NODATA_OUT) & (~mascara_bosque)
+    mascara_no_bosque = (img_dep != NODATA) & (~mascara_bosque)
     bosque_bin[mascara_no_bosque] = 0
 
     valores, cuentas = np.unique(bosque_bin, return_counts=True)
@@ -106,7 +106,7 @@ def etapa4_exportar(bosque_bin, meta, ruta_salida):
     Guarda el raster binario como GeoTIFF con nodata=255
     """
     meta_out = meta.copy()
-    meta_out.update(dtype="uint8", count=1, nodata=NODATA_OUT, compress="lzw")
+    meta_out.update(dtype="uint8", count=1, nodata=NODATA, compress="lzw")
 
     with rasterio.open(ruta_salida, "w", **meta_out) as dst:
         dst.write(bosque_bin, 1)
@@ -117,7 +117,7 @@ def etapa4_exportar(bosque_bin, meta, ruta_salida):
 
     bosque_pix = dist.get(1, 0)
     nobosque_pix = dist.get(0, 0)
-    nodata_pix = dist.get(NODATA_OUT, 0)
+    nodata_pix = dist.get(NODATA, 0)
 
     pixel_area_km2 = 0.0009
 
