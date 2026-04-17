@@ -43,10 +43,17 @@ NODATA = 255
 MAPAS_REPROYECTADOS_DIR = os.path.join(O1_INTERIM_DIR, "mapas-reproyectados")
 MAPAS_CAMBIOS_DIR = os.path.join(O1_INTERIM_DIR, "mapas-cambios")
 ZONAS_DIR = os.path.join(O1_INTERIM_DIR, "zonas")
-for d in [MAPAS_CAMBIOS_DIR, MAPAS_REPROYECTADOS_DIR, ZONAS_DIR]:
+MAPA_CAMBIOS_DISTRITO_DIR = os.path.join(O1_INTERIM_DIR, "mapa-cambios-distrito")
+for d in [MAPAS_CAMBIOS_DIR, MAPAS_REPROYECTADOS_DIR, ZONAS_DIR, MAPA_CAMBIOS_DISTRITO_DIR]:
     os.makedirs(d, exist_ok=True)
 
 CRS_PROYECTADO = "EPSG:32718"  # UTM zona 18 sur
+CRS_GEOG = "EPSG:4326"  # WGS84 para distritos
+
+# =============================
+# RUTAS SHAPEFILES
+# =============================
+DISTRITOS_AMAZONIA_SHP = os.path.join(DATA_DIR, "raw", "distritos-amazonas", "political_level_4_just_amazon.shp")
 
 '''MAPAS_REPROYECTADOS_DIR = os.path.join(O1_INTERIM_DIR, "mapas-reproyectados")
 MAPAS_PERDIDA_DIR = os.path.join(O1_INTERIM_DIR, "mapas-perdida")
