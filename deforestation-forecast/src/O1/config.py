@@ -41,10 +41,23 @@ NODATA = 255
 # =============================
 
 MAPAS_REPROYECTADOS_DIR = os.path.join(O1_INTERIM_DIR, "mapas-reproyectados")
+
 MAPAS_CAMBIOS_DIR = os.path.join(O1_INTERIM_DIR, "mapas-cambios")
+
+CAMBIOS_DIR = os.path.join(MAPAS_CAMBIOS_DIR, "cambios")
+DEFORESTACION_DIR = os.path.join(MAPAS_CAMBIOS_DIR, "deforestacion")
+REFORESTACION_DIR = os.path.join(MAPAS_CAMBIOS_DIR, "reforestacion")
+
+CAMBIOS_DISTRITO_DIR = os.path.join(MAPAS_CAMBIOS_DIR, "cambios-distrito")
+DEFORESTACION_DISTRITO_DIR = os.path.join(MAPAS_CAMBIOS_DIR, "deforestacion-distrito")
+REFORESTACION_DISTRITO_DIR = os.path.join(MAPAS_CAMBIOS_DIR, "reforestacion-distrito")
+
 ZONAS_DIR = os.path.join(O1_INTERIM_DIR, "zonas")
-MAPA_CAMBIOS_DISTRITO_DIR = os.path.join(O1_INTERIM_DIR, "mapa-cambios-distrito")
-for d in [MAPAS_CAMBIOS_DIR, MAPAS_REPROYECTADOS_DIR, ZONAS_DIR, MAPA_CAMBIOS_DISTRITO_DIR]:
+
+for d in [MAPAS_CAMBIOS_DIR, MAPAS_REPROYECTADOS_DIR, ZONAS_DIR, 
+          MAPAS_CAMBIOS_DIR, CAMBIOS_DIR, DEFORESTACION_DIR, 
+          REFORESTACION_DIR, CAMBIOS_DISTRITO_DIR, DEFORESTACION_DISTRITO_DIR, 
+          REFORESTACION_DISTRITO_DIR]:
     os.makedirs(d, exist_ok=True)
 
 CRS_PROYECTADO = "EPSG:32718"  # UTM zona 18 sur
@@ -53,35 +66,11 @@ CRS_GEOG = "EPSG:4326"  # WGS84 para distritos
 # =============================
 # RUTAS SHAPEFILES
 # =============================
-DISTRITOS_AMAZONIA_SHP = os.path.join(DATA_DIR, "raw", "distritos-amazonas", "political_level_4_just_amazon.shp")
+DISTRITOS_AMAZONIA_DIR = os.path.join(RAW_DIR, "distritos-amazonas")
 
-'''MAPAS_REPROYECTADOS_DIR = os.path.join(O1_INTERIM_DIR, "mapas-reproyectados")
-MAPAS_PERDIDA_DIR = os.path.join(O1_INTERIM_DIR, "mapas-perdida")
-FEATURES_DIR = os.path.join(O1_INTERIM_DIR, "features")
-NUCLEOS_DIR = os.path.join(O1_INTERIM_DIR, "nucleos")
-PANEL_DIR = os.path.join(OUTPUTS_DIR, "panel")
-
-for d in [MAPAS_PERDIDA_DIR, FEATURES_DIR, MAPAS_REPROYECTADOS_DIR, 
-          NUCLEOS_DIR, ZONAS_DIR, PANEL_DIR]:
-    os.makedirs(d, exist_ok=True)
-
+'''
 # Parámetros de zonificación
 PARAMS_ZONIFICACION = {
-    # Features
-    'radio_densidad': 2,  # ventana 5×5 para densidad local
-    
-    # Score (pesos)
-    'w_frecuencia': 0.10,
-    'w_recencia': 0.30,
-    'w_persistencia': 0.15,
-    'w_exposicion': 0.20,
-    'w_densidad': 0.25,
-    
-    # Núcleos
-    'sigma_suavizado': 2.0,  # desviación estándar para Gaussian filter
-    'percentil_umbral': 75,   # percentil para umbralizar score
-    'area_min_nucleo_km2': 10,  # núcleos menores se descartan
-    
     # Expansión
     'distancia_max_expansion_km': 5.0,
     'area_objetivo_zona_km2': 500,  # tamaño objetivo de zona

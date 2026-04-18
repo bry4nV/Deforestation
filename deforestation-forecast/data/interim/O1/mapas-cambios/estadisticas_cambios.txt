@@ -1,2 +1,0 @@
-total_pixeles,pixeles_validos,pixeles_con_cambio,pixeles_sin_cambio,porcentaje_cambio,porcentaje_sin_cambio
-2159597352,885554242,97015735,788538507,10.9554,89.0446

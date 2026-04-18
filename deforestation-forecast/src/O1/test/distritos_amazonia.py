@@ -16,9 +16,8 @@ def identificar_distritos_amazonia():
     # Filtrar Amazonía
     amazonia = biomas_peru[biomas_peru["NAME"] == "[Amazonía]"].copy()
 
-    # Reproyectar a CRS proyectado para calcular áreas
-    # Opción práctica métrica para Sudamérica
-    crs_area = "ESRI:102033"
+    # Reproyectar a CRS proyectado para calcular áreas en Perú: UTM zona 18S (EPSG:32718)
+    crs_area = "EPSG:32718"
 
     amazonia = amazonia.to_crs(crs_area)
     distritos_peru = distritos_peru.to_crs(crs_area)
@@ -42,7 +41,7 @@ def identificar_distritos_amazonia():
 
     # Filtrar
     distritos_amazonia = distritos_intersect[
-        distritos_intersect["pct_amazon"] >= 0.99
+        distritos_intersect["pct_amazon"] >= 0.95
     ].copy()
 
     print(f"Total distritos amazónicos: {len(distritos_amazonia)}")
@@ -53,7 +52,7 @@ def identificar_distritos_amazonia():
     carpeta_salida = r'D:\VisualCode\gvSigTesis\POLITICAL_LEVEL_4_AMAZON'
     os.makedirs(carpeta_salida, exist_ok=True)
 
-    ruta_salida = os.path.join(carpeta_salida, 'political_level_4_just_amazon_3.shp')
+    ruta_salida = os.path.join(carpeta_salida, 'political_level_4_amazon_95.shp')
     distritos_amazonia.to_file(ruta_salida, encoding='utf-8')
 
     print(f"Shapefile guardado en: {ruta_salida}")

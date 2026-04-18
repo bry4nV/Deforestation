@@ -8,7 +8,7 @@ import rasterio
 from rasterio.windows import Window
 from O1.config import NODATA
 
-def detectar_cambios_por_tiles(rutas_mapas_reclasificados, tamanio_tile=5000):
+def detectar_cambios_por_tiles(rutas_mapas_reclasificados, tamanio_tile=5000, tipo_cambio="cambios"):
     """
     Detecta píxeles que cambiaron (bosque <=> no bosque) en algún momento de la serie del tile.
     
@@ -78,7 +78,7 @@ def detectar_cambios_por_tiles(rutas_mapas_reclasificados, tamanio_tile=5000):
                 with rasterio.open(path) as src:
                     conjunto_tiles[t] = src.read(1, window=window)
             
-            tile_cambios, estadisticas_tile = detectar_cambios_tile(conjunto_tiles)
+            tile_cambios, estadisticas_tile = detectar_cambios_tile(conjunto_tiles, tipo_cambio=tipo_cambio)
             total_pixeles_validos += estadisticas_tile['pixeles_validos']
             total_pixeles_con_cambio += estadisticas_tile['pixeles_con_cambio']
             
@@ -102,7 +102,7 @@ def detectar_cambios_por_tiles(rutas_mapas_reclasificados, tamanio_tile=5000):
     return mapa_cambios, meta
 
 
-def detectar_cambios_tile(conjunto_tiles):
+def detectar_cambios_tile(conjunto_tiles, tipo_cambio="cambios"):
     """
     Detecta cambios en un tile espacial a lo largo de la serie temporal.
     
@@ -121,25 +121,31 @@ def detectar_cambios_tile(conjunto_tiles):
     _, height, width = conjunto_tiles.shape
     
     # Inicializar tile de cambios
-    tile_cambios = np.zeros((height, width), dtype=np.uint8)
+    tile_cambios = np.full((height, width), NODATA, dtype=np.uint8)
     
     # Máscara de píxeles válidos (excluir nodata)
     mascara_nodata = np.any(conjunto_tiles == NODATA, axis=0)
     mascara_valido = ~mascara_nodata
     
-    # Para píxeles válidos, detectar si hubo algún cambio
-    for y in range(height):
-        for x in range(width):
-            if mascara_valido[y, x]:
-                # Extraer serie temporal del píxel
-                serie = conjunto_tiles[:, y, x]
-                
-                if hubo_cambio(serie):
-                    tile_cambios[y, x] = 1  # Cambió
-                else:
-                    tile_cambios[y, x] = 0  # No cambió
-            else:
-                tile_cambios[y, x] = NODATA  # Nodata
+    if tipo_cambio == "cambios":
+        resultado = np.any(conjunto_tiles[:-1] != conjunto_tiles[1:], axis=0)
+
+    elif tipo_cambio == "deforestacion":
+        resultado = np.any(
+            (conjunto_tiles[:-1] == 1) & (conjunto_tiles[1:] == 0),
+            axis=0
+        )
+
+    elif tipo_cambio == "reforestacion":
+        resultado = np.any(
+            (conjunto_tiles[:-1] == 0) & (conjunto_tiles[1:] == 1),
+            axis=0
+        )
+
+    else:
+        raise ValueError(f"tipo_cambio inválido: {tipo_cambio}")
+
+    tile_cambios[mascara_valido] = resultado[mascara_valido].astype(np.uint8)
     
     estadisticas_tile = {
         'pixeles_validos': int(np.count_nonzero(mascara_valido)),
@@ -147,30 +153,6 @@ def detectar_cambios_tile(conjunto_tiles):
     }
     
     return tile_cambios, estadisticas_tile
-
-
-def hubo_cambio(serie):
-    """
-    Detecta si hubo algún cambio en la serie temporal de un píxel.
-    
-    Un cambio se define como una transición entre estados distintos:
-    - 0 → 1 (no bosque → bosque) o 1 → 0 (bosque → no bosque)
-    
-    Parameters:
-    -----------
-    serie : np.ndarray
-        Serie temporal de valores (0 o 1)
-    
-    Returns:
-    --------
-    bool : True si hubo al menos un cambio, False si no
-    """
-    # Detectar transiciones comparando año t con año t+1
-    for t in range(len(serie) - 1):
-        if serie[t] != serie[t+1]:
-            return True
-    
-    return False
 
 
 def guardar_mapa_cambios(mapa_cambios, meta, ruta_mapa_cambios):
