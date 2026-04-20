@@ -48,16 +48,18 @@ CAMBIOS_DIR = os.path.join(MAPAS_CAMBIOS_DIR, "cambios")
 DEFORESTACION_DIR = os.path.join(MAPAS_CAMBIOS_DIR, "deforestacion")
 REFORESTACION_DIR = os.path.join(MAPAS_CAMBIOS_DIR, "reforestacion")
 
-CAMBIOS_DISTRITO_DIR = os.path.join(MAPAS_CAMBIOS_DIR, "cambios-distrito")
-DEFORESTACION_DISTRITO_DIR = os.path.join(MAPAS_CAMBIOS_DIR, "deforestacion-distrito")
-REFORESTACION_DISTRITO_DIR = os.path.join(MAPAS_CAMBIOS_DIR, "reforestacion-distrito")
+METRICAS_DISTRITOS_DIR = os.path.join(O1_INTERIM_DIR, "metricas-distritos")
+
+METRICAS_CAMBIOS_DIR = os.path.join(METRICAS_DISTRITOS_DIR, "cambios")
+METRICAS_DEFORESTACION_DIR = os.path.join(METRICAS_DISTRITOS_DIR, "deforestacion")
+METRICAS_REFORESTACION_DIR = os.path.join(METRICAS_DISTRITOS_DIR, "reforestacion")
 
 ZONAS_DIR = os.path.join(O1_INTERIM_DIR, "zonas")
 
 for d in [MAPAS_CAMBIOS_DIR, MAPAS_REPROYECTADOS_DIR, ZONAS_DIR, 
           MAPAS_CAMBIOS_DIR, CAMBIOS_DIR, DEFORESTACION_DIR, 
-          REFORESTACION_DIR, CAMBIOS_DISTRITO_DIR, DEFORESTACION_DISTRITO_DIR, 
-          REFORESTACION_DISTRITO_DIR]:
+          REFORESTACION_DIR, METRICAS_CAMBIOS_DIR, METRICAS_DEFORESTACION_DIR, 
+          METRICAS_REFORESTACION_DIR]:
     os.makedirs(d, exist_ok=True)
 
 CRS_PROYECTADO = "EPSG:32718"  # UTM zona 18 sur
@@ -66,7 +68,18 @@ CRS_GEOG = "EPSG:4326"  # WGS84 para distritos
 # =============================
 # RUTAS SHAPEFILES
 # =============================
-DISTRITOS_AMAZONIA_DIR = os.path.join(RAW_DIR, "distritos-amazonas")
+DISTRITOS_PERU_DIR = os.path.join(RAW_DIR, "distritos-peru")
+BIOMAS_PERU_DIR = os.path.join(RAW_DIR, "biomas-peru")
+DISTRITOS_AMAZONIA_DIR = os.path.join(O1_INTERIM_DIR, "distritos-amazonas")
+
+INICIALES_DIR = os.path.join(DISTRITOS_AMAZONIA_DIR, "iniciales")
+COBERTURA_MIN95_DIR = os.path.join(DISTRITOS_AMAZONIA_DIR, "cobertura_min95")
+AREA_MINIMA_DIR = os.path.join(DISTRITOS_AMAZONIA_DIR, "area_minima")
+BOSQUE_MINIMO_DIR = os.path.join(DISTRITOS_AMAZONIA_DIR, "bosque_minimo")
+
+for d in [INICIALES_DIR, COBERTURA_MIN95_DIR, 
+          AREA_MINIMA_DIR, BOSQUE_MINIMO_DIR]:
+    os.makedirs(d, exist_ok=True)
 
 '''
 # Parámetros de zonificación

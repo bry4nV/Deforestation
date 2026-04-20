@@ -1,16 +1,24 @@
 import os
 from O1.config import (
     ANIOS, MAPAS_RECLAS_DIR, 
+    BIOMAS_PERU_DIR, DISTRITOS_PERU_DIR, BOSQUE_MINIMO_DIR,
     CAMBIOS_DIR, DEFORESTACION_DIR, REFORESTACION_DIR,
-    CAMBIOS_DISTRITO_DIR, DEFORESTACION_DISTRITO_DIR, REFORESTACION_DISTRITO_DIR,
+    METRICAS_CAMBIOS_DIR, METRICAS_DEFORESTACION_DIR, METRICAS_REFORESTACION_DIR,
     DISTRITOS_AMAZONIA_DIR, ZONAS_DIR
 )
+
+from O1.r3.delimitacion_distritos_amazonas import pipeline_delimitacion_distritos_amazonia;
+
 from O1.r3.deteccion_cambios import (
     detectar_cambios_por_tiles, 
     guardar_mapa_cambios, 
     exportar_estadisticas_cambios
 )
+
 from O1.r3.zonificacion_distrito import pipeline_zonificacion_distrito
+
+from O1.r3.seleccion_distritos import seleccionar_distritos_entrenamiento;
+
 # from O1.r3.zonificacion import pipeline_zonificacion
 # from O1.r3.series_temporales import (
 #     extraer_series_temporales_por_zona,
@@ -34,28 +42,19 @@ def main():
     print("\n" + "="*70)
     print(" PIPELINE DE DETECCIÓN DE CAMBIOS + ZONIFICACIÓN ")
     print("="*70)
-    
+
     # ========================================================================
-    # PASO 1: DETECCIÓN DE CAMBIOS
+    # PASO 1: GENERACIÓN DE DISTRITOS VÁLIDOS
     # ========================================================================
 
     print("\n" + "="*70)
-    print(" INICIANDO DETECCIÓN DE CAMBIOS...")
+    print(" INICIANDO GENERACIÓN DE DISTRITOS VÁLIDOS...")
     print("="*70)
-    
+
     rutas_mapas_reclasificados = [
         os.path.join(MAPAS_RECLAS_DIR, f"bosque_nobosque_amazonia_{anio}.tif")
         for anio in ANIOS
     ]
-    
-    ruta_mapa_cambios = os.path.join(CAMBIOS_DIR, "mapa_cambios_1985_2024.tif")
-    ruta_estadisticas_cambios = os.path.join(CAMBIOS_DIR, "estadisticas_cambios.csv")
-
-    ruta_mapa_cambios_deforestacion = os.path.join(DEFORESTACION_DIR, "mapa_deforestacion_1985_2024.tif")
-    ruta_estadisticas_cambios_deforestacion = os.path.join(DEFORESTACION_DIR, "estadisticas_deforestacion.csv")
-
-    ruta_mapa_cambios_reforestacion = os.path.join(REFORESTACION_DIR, "mapa_reforestacion_1985_2024.tif")
-    ruta_estadisticas_cambios_reforestacion = os.path.join(REFORESTACION_DIR, "estadisticas_reforestacion.csv")
 
     # Verificar que existen los archivos
     print("[INFO] Verificando archivos de entrada...")
@@ -68,12 +67,43 @@ def main():
         
         print("\nEjecuta primero el pipeline R1/R2.")
         raise FileNotFoundError("Archivos de entrada faltantes")
-
+    
     print(f"[OK] {len(rutas_mapas_reclasificados)} archivos encontrados\n")
+
+    anio_inicial = min(ANIOS)
+
+    ruta_mapa_inicial = os.path.join(MAPAS_RECLAS_DIR, f"bosque_nobosque_amazonia_{anio_inicial}.tif")
+
+    ruta_biomas_peru = os.path.join(BIOMAS_PERU_DIR, "BIOMES_v1.shp")
+    ruta_distritos_peru = os.path.join(DISTRITOS_PERU_DIR, "POLITICAL_LEVEL_4_v1.shp")
+
+    ruta_distritos_amazonia_delimitados = os.path.join(BOSQUE_MINIMO_DIR, "distritos_bosque_minimo.gpkg")
+
+    if os.path.exists(ruta_distritos_amazonia_delimitados):
+        print(f"[INFO] El mapa de distritos ya existe: {ruta_distritos_amazonia_delimitados}.")
+    else:
+        pipeline_delimitacion_distritos_amazonia(ruta_biomas_peru, ruta_distritos_peru, ruta_mapa_inicial, ruta_distritos_amazonia_delimitados)
+
+    # ========================================================================
+    # PASO 2: DETECCIÓN DE CAMBIOS
+    # ========================================================================
+
+    print("\n" + "="*70)
+    print(" INICIANDO DETECCIÓN DE CAMBIOS...")
+    print("="*70)
+    
+    ruta_mapa_cambios = os.path.join(CAMBIOS_DIR, "mapa_cambios_1985_2024.tif")
+    ruta_estadisticas_cambios = os.path.join(CAMBIOS_DIR, "estadisticas_cambios.csv")
+
+    ruta_mapa_cambios_deforestacion = os.path.join(DEFORESTACION_DIR, "mapa_deforestacion_1985_2024.tif")
+    ruta_estadisticas_cambios_deforestacion = os.path.join(DEFORESTACION_DIR, "estadisticas_deforestacion.csv")
+
+    ruta_mapa_cambios_reforestacion = os.path.join(REFORESTACION_DIR, "mapa_reforestacion_1985_2024.tif")
+    ruta_estadisticas_cambios_reforestacion = os.path.join(REFORESTACION_DIR, "estadisticas_reforestacion.csv")
 
     # Verificar si no existe el mapa de cambios
     if os.path.exists(ruta_mapa_cambios):
-        print(f"[INFO] El mapa de cambios ya existe: {ruta_mapa_cambios}, no se volverá a generar.")
+        print(f"[INFO] El mapa de cambios ya existe: {ruta_mapa_cambios}.")
     else:
         mapa_cambios, meta = detectar_cambios_por_tiles(
             rutas_mapas_reclasificados,
@@ -85,7 +115,7 @@ def main():
 
     # Verificar si no existe el mapa de cambios de deforestación
     if os.path.exists(ruta_mapa_cambios_deforestacion):
-        print(f"[INFO] El mapa de cambios de deforestación ya existe: {ruta_mapa_cambios_deforestacion}, no se volverá a generar.")
+        print(f"[INFO] El mapa de cambios de deforestación ya existe: {ruta_mapa_cambios_deforestacion}.")
     else:
         mapa_cambios, meta = detectar_cambios_por_tiles(
             rutas_mapas_reclasificados,
@@ -98,7 +128,7 @@ def main():
     
     # Verificar si no existe el mapa de cambios de reforestación
     if os.path.exists(ruta_mapa_cambios_reforestacion):
-        print(f"[INFO] El mapa de cambios de reforestación ya existe: {ruta_mapa_cambios_reforestacion}, no se volverá a generar.")
+        print(f"[INFO] El mapa de cambios de reforestación ya existe: {ruta_mapa_cambios_reforestacion}.")
     else:
         mapa_cambios, meta = detectar_cambios_por_tiles(
             rutas_mapas_reclasificados,
@@ -109,58 +139,66 @@ def main():
         exportar_estadisticas_cambios(ruta_mapa_cambios_reforestacion, ruta_estadisticas_cambios_reforestacion)
 
     # ========================================================================
-    # PASO 2: ZONIFICACIÓN POR DISTRITO AMAZÓNICO
+    # PASO 3: ZONIFICACIÓN POR DISTRITO AMAZÓNICO
     # ========================================================================
     
     print("\n" + "="*70)
     print(" INICIANDO ZONIFICACIÓN POR DISTRITO...")
     print("="*70 + "\n")
 
-    ruta_distritos_amazonia = os.path.join(DISTRITOS_AMAZONIA_DIR, "political_level_4_amazon_95.shp")
+    ruta_mapa_cambios_distrito = os.path.join(METRICAS_CAMBIOS_DIR, "mapa_cambios_distrito_1985_2024.gpkg")
+    ruta_estadisticas_cambios_distrito = os.path.join(METRICAS_CAMBIOS_DIR, "estadisticas_cambios_distrito.csv")
 
-    ruta_mapa_cambios_distrito = os.path.join(CAMBIOS_DISTRITO_DIR, "mapa_cambios_distrito_1985_2024.shp")
-    ruta_estadisticas_cambios_distrito = os.path.join(CAMBIOS_DISTRITO_DIR, "estadisticas_cambios_distrito.csv")
+    ruta_mapa_cambios_deforestacion_distrito = os.path.join(METRICAS_DEFORESTACION_DIR, "mapa_cambios_deforestacion_distrito_1985_2024.gpkg")
+    ruta_estadisticas_cambios_deforestacion_distrito = os.path.join(METRICAS_DEFORESTACION_DIR, "estadisticas_cambios_deforestacion_distrito.csv")
 
-    ruta_mapa_cambios_deforestacion_distrito = os.path.join(DEFORESTACION_DISTRITO_DIR, "mapa_cambios_deforestacion_distrito_1985_2024.shp")
-    ruta_estadisticas_cambios_deforestacion_distrito = os.path.join(DEFORESTACION_DISTRITO_DIR, "estadisticas_cambios_deforestacion_distrito.csv")
-
-    ruta_mapa_cambios_reforestacion_distrito = os.path.join(REFORESTACION_DISTRITO_DIR, "mapa_cambios_reforestacion_distrito_1985_2024.shp")
-    ruta_estadisticas_cambios_reforestacion_distrito = os.path.join(REFORESTACION_DISTRITO_DIR, "estadisticas_cambios_reforestacion_distrito.csv")
-
-    if not os.path.exists(ruta_distritos_amazonia):
-        print(f"\n[ERROR] Falta archivo de distritos de amazonia: {ruta_distritos_amazonia}")
-        raise FileNotFoundError("Archivos de entrada faltantes")
+    ruta_mapa_cambios_reforestacion_distrito = os.path.join(METRICAS_REFORESTACION_DIR, "mapa_cambios_reforestacion_distrito_1985_2024.gpkg")
+    ruta_estadisticas_cambios_reforestacion_distrito = os.path.join(METRICAS_REFORESTACION_DIR, "estadisticas_cambios_reforestacion_distrito.csv")
 
     if os.path.exists(ruta_mapa_cambios_distrito):
-        print(f"[INFO] El mapa de cambios por densidad en distritos ya existe: {ruta_mapa_cambios_distrito}, no se volverá a generar.")
+        print(f"[INFO] El mapa de cambios por densidad en distritos ya existe: {ruta_mapa_cambios_distrito}.")
     else:
         pipeline_zonificacion_distrito(
             ruta_mapa_cambios,
-            ruta_distritos_amazonia,
+            ruta_distritos_amazonia_delimitados,
             ruta_mapa_cambios_distrito,
             ruta_estadisticas_cambios_distrito
         )
     
     if os.path.exists(ruta_mapa_cambios_deforestacion_distrito):
-        print(f"[INFO] El mapa de cambios por densidad en distritos ya existe: {ruta_mapa_cambios_deforestacion_distrito}, no se volverá a generar.")
+        print(f"[INFO] El mapa de cambios por densidad en distritos ya existe: {ruta_mapa_cambios_deforestacion_distrito}.")
     else:
         pipeline_zonificacion_distrito(
             ruta_mapa_cambios_deforestacion,
-            ruta_distritos_amazonia,
+            ruta_distritos_amazonia_delimitados,
             ruta_mapa_cambios_deforestacion_distrito,
             ruta_estadisticas_cambios_deforestacion_distrito
         )
     
     if os.path.exists(ruta_mapa_cambios_reforestacion_distrito):
-        print(f"[INFO] El mapa de cambios por densidad en distritos ya existe: {ruta_mapa_cambios_reforestacion_distrito}, no se volverá a generar.")
+        print(f"[INFO] El mapa de cambios por densidad en distritos ya existe: {ruta_mapa_cambios_reforestacion_distrito}.")
     else:
         pipeline_zonificacion_distrito(
             ruta_mapa_cambios_reforestacion,
-            ruta_distritos_amazonia,
+            ruta_distritos_amazonia_delimitados,
             ruta_mapa_cambios_reforestacion_distrito,
             ruta_estadisticas_cambios_reforestacion_distrito
         )
     
+    # ========================================================================
+    # PASO 4: SELECCIONAR DISTRITOS
+    # ========================================================================
+
+    print("\n" + "="*70)
+    print(" SELECCIÓN DE DISTRITOS PARA ENTRENAMIENTO...")
+    print("="*70 + "\n")
+
+    gdf_total, gdf_entrenamiento = seleccionar_distritos_entrenamiento(
+        ruta_mapa_cambios_distrito,
+        ruta_mapa_cambios_deforestacion_distrito,
+        ruta_mapa_cambios_reforestacion_distrito
+    )
+
     # ========================================================================
     # PASOS ANTERIORES (COMENTADOS - ENFOQUE ANTIGUO)
     # ========================================================================
