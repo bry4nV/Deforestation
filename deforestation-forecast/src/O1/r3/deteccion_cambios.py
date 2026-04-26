@@ -8,7 +8,7 @@ import rasterio
 from rasterio.windows import Window
 from O1.config import NODATA
 
-def detectar_cambios_por_tiles(rutas_mapas_reclasificados, tamanio_tile=5000, tipo_cambio="cambios"):
+def detectar_cambios_por_tiles(rutas_mapas_reclasificados, tamanio_tile=5000):
     """
     Detecta píxeles que cambiaron (bosque <=> no bosque) en algún momento de la serie del tile.
     
@@ -78,7 +78,7 @@ def detectar_cambios_por_tiles(rutas_mapas_reclasificados, tamanio_tile=5000, ti
                 with rasterio.open(path) as src:
                     conjunto_tiles[t] = src.read(1, window=window)
             
-            tile_cambios, estadisticas_tile = detectar_cambios_tile(conjunto_tiles, tipo_cambio=tipo_cambio)
+            tile_cambios, estadisticas_tile = detectar_cambios_tile(conjunto_tiles)
             total_pixeles_validos += estadisticas_tile['pixeles_validos']
             total_pixeles_con_cambio += estadisticas_tile['pixeles_con_cambio']
             
@@ -102,7 +102,7 @@ def detectar_cambios_por_tiles(rutas_mapas_reclasificados, tamanio_tile=5000, ti
     return mapa_cambios, meta
 
 
-def detectar_cambios_tile(conjunto_tiles, tipo_cambio="cambios"):
+def detectar_cambios_tile(conjunto_tiles):
     """
     Detecta cambios en un tile espacial a lo largo de la serie temporal.
     
@@ -127,23 +127,7 @@ def detectar_cambios_tile(conjunto_tiles, tipo_cambio="cambios"):
     mascara_nodata = np.any(conjunto_tiles == NODATA, axis=0)
     mascara_valido = ~mascara_nodata
     
-    if tipo_cambio == "cambios":
-        resultado = np.any(conjunto_tiles[:-1] != conjunto_tiles[1:], axis=0)
-
-    elif tipo_cambio == "deforestacion":
-        resultado = np.any(
-            (conjunto_tiles[:-1] == 1) & (conjunto_tiles[1:] == 0),
-            axis=0
-        )
-
-    elif tipo_cambio == "reforestacion":
-        resultado = np.any(
-            (conjunto_tiles[:-1] == 0) & (conjunto_tiles[1:] == 1),
-            axis=0
-        )
-
-    else:
-        raise ValueError(f"tipo_cambio inválido: {tipo_cambio}")
+    resultado = np.any(conjunto_tiles[:-1] != conjunto_tiles[1:], axis=0)
 
     tile_cambios[mascara_valido] = resultado[mascara_valido].astype(np.uint8)
     
