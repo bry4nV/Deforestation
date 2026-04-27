@@ -1,28 +1,11 @@
 import pandas as pd
 import geopandas as gpd
 from rasterstats import zonal_stats
-from O1.config import NODATA, ANIOS
+from O1.config import NODATA, ANIOS, SEMILLA_SPLIT, TAMANIO_ENTRENAMIENTO
+import numpy as np
 
 
-def pipeline_extraer_series_temporales(
-    rutas_mapas_reclasificados,
-    ruta_distritos_clasificados,
-    ruta_series_temporales,
-    ruta_estadisticas_series_temporales
-):
-
-    print("\n" + "="*70)
-    print(" SERIES TEMPORALES (ESTADO BOSQUE / NO BOSQUE)")
-    print("="*70 + "\n")
-
-    rutas_mapas_reclasificados = sorted(rutas_mapas_reclasificados)
-
-    if len(rutas_mapas_reclasificados) != len(ANIOS):
-        raise ValueError("Número de rutas y años no coincide")
-
-    gdf = gpd.read_file(ruta_distritos_clasificados)
-    print(f"[INFO] Distritos: {len(gdf)}")
-
+def extraer_series(gdf, rutas_mapas_reclasificados):
     registros = []
 
     for ruta, anio in zip(rutas_mapas_reclasificados, ANIOS):
@@ -49,18 +32,6 @@ def pipeline_extraer_series_temporales(
                 "geocode": fila["GEOCODE"],
                 "departamento": fila["LEVEL_2"],
                 "distrito": fila["LEVEL_4"],
-                "score": fila.get("score"),
-                "dataset": fila.get("dataset"),
-
-                "pix_cambio": fila.get("pixeles_cambiados_cambio"),
-                "pix_no_cambio": fila.get("pixeles_no_cambiados_cambio"),
-
-                "pix_ref": fila.get("pixeles_cambiados_ref"),
-                "pix_no_ref": fila.get("pixeles_no_cambiados_ref"),
-
-                "pix_def": fila.get("pixeles_cambiados_def"),
-                "pix_no_def": fila.get("pixeles_no_cambiados_def"),
-
                 "anio": anio,
                 "pix_total": pix_total,
                 "pix_bosque": pix_bosque,
@@ -70,14 +41,21 @@ def pipeline_extraer_series_temporales(
             })
 
     df = pd.DataFrame(registros)
-    df = df.sort_values(["geocode", "anio"]).reset_index(drop=True)
+    df = df.sort_values(["geocode", "departamento", "distrito", "anio"]).reset_index(drop=True)
 
-    print(f"[OK] Registros: {len(df)}")
+    return df
 
-    df.to_csv(ruta_series_temporales, index=False)
-    print(f"[OK] Guardado: {ruta_series_temporales}")
 
-    if ruta_estadisticas_series_temporales:
+def guardar_series(df, gdf, ruta_csv, ruta_stats):
+    
+    df.to_csv(ruta_csv, index=False)
+    print(f"[OK] CSV guardado: {ruta_csv}")
+
+    ruta_gpkg = ruta_csv.replace(".csv", ".gpkg")
+    gdf.to_file(ruta_gpkg, driver="GPKG")
+    print(f"[OK] GPKG guardado: {ruta_gpkg}")
+
+    if ruta_stats:
         stats = (
             df.groupby("geocode")[["pct_bosque", "pct_no_bosque"]]
             .agg(["mean", "min", "max"])
@@ -94,7 +72,65 @@ def pipeline_extraer_series_temporales(
             "pct_no_bosque_max"
         ]
 
-        stats.to_csv(ruta_estadisticas_series_temporales, index=False)
-        print(f"[OK] Stats: {ruta_estadisticas_series_temporales}")
+        stats.to_csv(ruta_stats, index=False)
+        print(f"[OK] Stats guardado: {ruta_stats}")
 
-    return df
+
+def split_aleatorio(gdf):
+    
+    np.random.seed(SEMILLA_SPLIT)
+
+    indices = np.random.permutation(len(gdf))
+    cantidad_train = int(len(gdf) * TAMANIO_ENTRENAMIENTO)
+
+    idx_train = indices[:cantidad_train]
+    idx_test = indices[cantidad_train:]
+
+    gdf_train = gdf.iloc[idx_train].copy()
+    gdf_test = gdf.iloc[idx_test].copy()
+
+    return gdf_train, gdf_test
+
+
+def pipeline_extraer_series_temporales(
+    rutas_mapas_reclasificados,
+    ruta_distritos_alto_cambio,
+    ruta_series_entrenamiento,
+    ruta_estadisticas_series_entrenamiento,
+    ruta_series_generalizacion,
+    ruta_estadisticas_series_generalizacion
+):
+
+    print("\n" + "="*70)
+    print(" SERIES TEMPORALES (BOSQUE / NO BOSQUE)")
+    print("="*70 + "\n")
+
+    rutas_mapas_reclasificados = sorted(rutas_mapas_reclasificados)
+
+    if len(rutas_mapas_reclasificados) != len(ANIOS):
+        raise ValueError("Número de rutas y años no coincide")
+
+    gdf = gpd.read_file(ruta_distritos_alto_cambio)
+
+    gdf_train, gdf_generalizacion = split_aleatorio(gdf)
+
+    print(f"[INFO] Entrenamiento: {len(gdf_train)} distritos")
+    print(f"[INFO] Generalización: {len(gdf_generalizacion)} distritos")
+
+    df_train = extraer_series(gdf_train, rutas_mapas_reclasificados)
+
+    guardar_series(
+        df_train,
+        gdf_train,
+        ruta_series_entrenamiento,
+        ruta_estadisticas_series_entrenamiento
+    )
+
+    df_gen = extraer_series(gdf_generalizacion, rutas_mapas_reclasificados)
+
+    guardar_series(
+        df_gen,
+        gdf_generalizacion,
+        ruta_series_generalizacion,
+        ruta_estadisticas_series_generalizacion
+    )

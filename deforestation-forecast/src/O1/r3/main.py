@@ -1,9 +1,9 @@
 import os
 from O1.config import (
-    ANIOS, DISTRITOS_AMAZONIA_DIR, DISTRITOS_SELECCIONADOS_DIR, MAPAS_RECLAS_DIR, 
-    BIOMAS_PERU_DIR, DISTRITOS_PERU_DIR,
-    DISTRITOS_AMAZONIA_DIR, MAPAS_CAMBIOS_DIR, METRICAS_DISTRITOS_DIR,
-    DISTRITOS_SELECCIONADOS_DIR, SERIES_TEMPORALES_DIR
+    ANIOS, BIOMAS_PERU_DIR, DISTRITOS_PERU_DIR, 
+    MAPAS_RECLAS_DIR, DISTRITOS_AMAZONIA_DIR, MAPAS_CAMBIOS_DIR,
+    METRICAS_DISTRITOS_DIR, DISTRITOS_ALTO_CAMBIO_DIR, 
+    SERIES_ENTRENAMIENTO_DIR, SERIES_GENERALIZACION_ESPACIAL_DIR
 )
 
 from O1.r3.delimitacion_distritos_amazonas import pipeline_delimitacion_distritos_amazonia;
@@ -14,7 +14,7 @@ from O1.r3.deteccion_cambios import (
     exportar_estadisticas_cambios
 )
 from O1.r3.zonificacion_distrito import pipeline_zonificacion_distrito
-from O1.r3.seleccion_distritos import seleccionar_distritos
+from O1.r3.distritos_alto_cambio import pipeline_seleccion_distritos_alto_cambio
 from O1.r3.series_temporales import pipeline_extraer_series_temporales
 
 def main():
@@ -100,7 +100,7 @@ def main():
     print("="*70 + "\n")
 
     ruta_mapa_cambios_distrito = os.path.join(METRICAS_DISTRITOS_DIR, "mapa_cambios_distrito_1985_2024.gpkg")
-    ruta_estadisticas_cambios_distrito = os.path.join(METRICAS_DISTRITOS_DIR, "estadisticas_cambios_distrito.csv")
+    ruta_estadisticas_cambios_distrito = os.path.join(METRICAS_DISTRITOS_DIR, "estadisticas_cambios_distritos.csv")
 
     if os.path.exists(ruta_mapa_cambios_distrito):
         print(f"[INFO] El mapa de cambios por densidad en distritos ya existe: {ruta_mapa_cambios_distrito}.")
@@ -120,15 +120,15 @@ def main():
     print(" SELECCIÓN DE DISTRITOS PARA ENTRENAMIENTO...")
     print("="*70 + "\n")
 
-    ruta_distritos_seleccionados = os.path.join(DISTRITOS_SELECCIONADOS_DIR, "distritos_seleccionados.gpkg")
+    ruta_distritos_alto_cambio = os.path.join(DISTRITOS_ALTO_CAMBIO_DIR, "distritos_alto_cambio.gpkg")
 
-    seleccionar_distritos(
+    pipeline_seleccion_distritos_alto_cambio(
         ruta_mapa_cambios_distrito,
-        ruta_distritos_seleccionados
+        ruta_distritos_alto_cambio
     )
 
     # ========================================================================
-    # PASO 5: OBTENCIÓN DE SERIES TEMPORALES POR ZONAS
+    # PASO 5: OBTENCIÓN DE SERIES TEMPORALES POR DISTRITOS
     # ========================================================================
     
     print("\n" + "="*70)
@@ -137,18 +137,23 @@ def main():
     
     print(f"[INFO] Rango de años: {min(ANIOS)} - {max(ANIOS)}\n")
     
-    ruta_series_temporales = os.path.join(SERIES_TEMPORALES_DIR, "series_temporales_zonas.csv")
-    ruta_estadisticas_series_temporales = os.path.join(SERIES_TEMPORALES_DIR, "estadisticas_series_temporales_zonas.csv")
+    ruta_series_entrenamiento = os.path.join(SERIES_ENTRENAMIENTO_DIR, "distritos_entrenamiento.csv")
+    ruta_estadisticas_series_entrenamiento = os.path.join(SERIES_ENTRENAMIENTO_DIR, "estadisticas_distritos_entrenamiento.csv")
+
+    ruta_series_generalizacion = os.path.join(SERIES_GENERALIZACION_ESPACIAL_DIR, "distritos_generalizacion_espacial.csv")
+    ruta_estadisticas_series_generalizacion = os.path.join(SERIES_GENERALIZACION_ESPACIAL_DIR, "estadisticas_distritos_generalizacion_espacial.csv")
     
     # Verificar si ya existe el panel
-    if os.path.exists(ruta_series_temporales):
-        print(f"[INFO] El panel de series temporales ya existe: {ruta_series_temporales}")
+    if os.path.exists(ruta_series_entrenamiento) and os.path.exists(ruta_series_generalizacion):
+        print(f"[INFO] El panel de series temporales ya existe: {ruta_series_entrenamiento}, {ruta_series_generalizacion}")
     else:    
         pipeline_extraer_series_temporales(
             rutas_mapas_reclasificados,
-            ruta_distritos_seleccionados,
-            ruta_series_temporales,
-            ruta_estadisticas_series_temporales
+            ruta_distritos_alto_cambio,
+            ruta_series_entrenamiento,
+            ruta_estadisticas_series_entrenamiento,
+            ruta_series_generalizacion,
+            ruta_estadisticas_series_generalizacion
         )
 
     return

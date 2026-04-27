@@ -41,15 +41,20 @@ NODATA = 255
 # =============================
 
 MAPAS_CAMBIOS_DIR = os.path.join(O1_INTERIM_DIR, "mapas-cambios")
-
 METRICAS_DISTRITOS_DIR = os.path.join(O1_INTERIM_DIR, "metricas-distritos")
-SERIES_TEMPORALES_DIR = os.path.join(O1_INTERIM_DIR, "series-temporales")
 
-for d in [MAPAS_CAMBIOS_DIR, SERIES_TEMPORALES_DIR]:
+SERIES_TEMPORALES_DIR = os.path.join(O1_INTERIM_DIR, "series-temporales")
+SERIES_ENTRENAMIENTO_DIR = os.path.join(SERIES_TEMPORALES_DIR, "entrenamiento")
+SERIES_GENERALIZACION_ESPACIAL_DIR = os.path.join(SERIES_TEMPORALES_DIR, "generalizacion-espacial")
+
+for d in [MAPAS_CAMBIOS_DIR, METRICAS_DISTRITOS_DIR, 
+          SERIES_TEMPORALES_DIR, SERIES_ENTRENAMIENTO_DIR, SERIES_GENERALIZACION_ESPACIAL_DIR]:
     os.makedirs(d, exist_ok=True)
 
 CRS_PROYECTADO = "EPSG:32718"  # UTM zona 18 sur
 CRS_GEOG = "EPSG:4326"  # WGS84 para distritos
+TAMANIO_ENTRENAMIENTO = 0.9
+SEMILLA_SPLIT = 42
 
 # =============================
 # RUTAS SHAPEFILES
@@ -58,7 +63,7 @@ DISTRITOS_PERU_DIR = os.path.join(RAW_DIR, "distritos-peru")
 BIOMAS_PERU_DIR = os.path.join(RAW_DIR, "biomas-peru")
 DISTRITOS_AMAZONIA_DIR = os.path.join(O1_INTERIM_DIR, "distritos-amazonas")
 
-DISTRITOS_SELECCIONADOS_DIR = os.path.join(O1_INTERIM_DIR, "distritos-seleccionados")
+DISTRITOS_ALTO_CAMBIO_DIR = os.path.join(O1_INTERIM_DIR, "distritos-alto-cambio")
 
-for d in [DISTRITOS_AMAZONIA_DIR, DISTRITOS_SELECCIONADOS_DIR]:
+for d in [DISTRITOS_AMAZONIA_DIR, DISTRITOS_ALTO_CAMBIO_DIR]:
     os.makedirs(d, exist_ok=True)

@@ -79,10 +79,9 @@ def exportar_csv_distritos(gdf, ruta_csv_base):
         "porcentaje_cambio": "% Cambio"
     })
 
-    ruta_distritos = ruta_csv_base.replace(".csv", "_distritos.csv")
-    df.to_csv(ruta_distritos, index=False, encoding="utf-8-sig")
+    df.to_csv(ruta_csv_base, index=False, encoding="utf-8-sig")
 
-    print(f"[OK] CSV distritos: {ruta_distritos}")
+    print(f"[OK] CSV distritos: {ruta_csv_base}")
 
 def exportar_csv_resumen(gdf, ruta_csv_base):
     total_valido = gdf["pixeles_validos"].sum()

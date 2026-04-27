@@ -1,157 +1,75 @@
 import os
 from O1.config import (
-    ANIOS, DISTRITOS_AMAZONIA_DIR, DISTRITOS_SELECCIONADOS_DIR, MAPAS_RECLAS_DIR, 
-    BIOMAS_PERU_DIR, DISTRITOS_PERU_DIR,
-    DISTRITOS_AMAZONIA_DIR, MAPAS_CAMBIOS_DIR, METRICAS_DISTRITOS_DIR,
-    DISTRITOS_SELECCIONADOS_DIR, SERIES_TEMPORALES_DIR
+    SERIES_ENTRENAMIENTO_DIR
 )
 
-from O1.r3.delimitacion_distritos_amazonas import pipeline_delimitacion_distritos_amazonia;
-
-from O1.r3.deteccion_cambios import (
-    detectar_cambios_por_tiles, 
-    guardar_mapa_cambios, 
-    exportar_estadisticas_cambios
+from O2.config import (
+    PERSISTENCIA_DIR, ARIMA_DIR
 )
-from O1.r3.zonificacion_distrito import pipeline_zonificacion_distrito
-from O1.r3.seleccion_distritos import seleccionar_distritos
-from O1.r3.series_temporales import pipeline_extraer_series_temporales
+
+from O2.r4_r5.construir_dataset import construir_dataset
+from O2.r4_r5.pipeline_lstm import pipeline_lstm
+from O2.r4_r5.pipeline_cnn import pipeline_cnn
+from O2.r4_r5.pipeline_arima import pipeline_arima
+from O2.r4_r5.pipeline_persistencia import pipeline_persistencia
 
 def main():
-    """
-    Pipeline completo: detección de cambios + zonificación por distrito.
-    
-    Pasos:
-    1. Identificar píxeles que cambiaron (bosque <=> no bosque) en algún momento
-    2. Guardar mapa de cambios y estadísticas
-    3. Intersectar cambios con distritos amazónicos
-    4. Generar shapefile con densidad de cambios y Excel con estadísticas
-    """
-    
+
     print("\n" + "="*70)
-    print(" PIPELINE DE DETECCIÓN DE CAMBIOS + ZONIFICACIÓN ")
+    print(" PIPELINE DE MODELOS DE PRONÓSTICO ")
     print("="*70)
 
-    # ========================================================================
-    # PASO 1: GENERACIÓN DE DISTRITOS VÁLIDOS
-    # ========================================================================
+    # =====================================================================
+    # PASO 1: CONSTRUCCIÓN DEL DATASET
+    # =====================================================================
 
-    print("\n" + "="*70)
-    print(" INICIANDO GENERACIÓN DE DISTRITOS VÁLIDOS...")
-    print("="*70)
+    print("\n[INFO] Construyendo dataset...")
 
-    rutas_mapas_reclasificados = [
-        os.path.join(MAPAS_RECLAS_DIR, f"bosque_nobosque_amazonia_{anio}.tif")
-        for anio in ANIOS
-    ]
+    ruta_series_entrenamiento = os.path.join(SERIES_ENTRENAMIENTO_DIR, "distritos_entrenamiento.csv")
 
-    # Verificar que existen los archivos
-    print("[INFO] Verificando archivos de entrada...")
-    archivos_faltantes = [p for p in rutas_mapas_reclasificados if not os.path.exists(p)]
-    
-    if archivos_faltantes:
-        print("\n[ERROR] Faltan archivos:")
-        for f in archivos_faltantes:
-            print(f" - {f}")
-        
-        print("\nEjecuta primero el pipeline R1/R2.")
-        raise FileNotFoundError("Archivos de entrada faltantes")
-    
-    print(f"[OK] {len(rutas_mapas_reclasificados)} archivos encontrados\n")
-
-    ruta_biomas_peru = os.path.join(BIOMAS_PERU_DIR, "BIOMES_v1.shp")
-    ruta_distritos_peru = os.path.join(DISTRITOS_PERU_DIR, "POLITICAL_LEVEL_4_v1.shp")
-
-    ruta_distritos_amazonia_delimitados = os.path.join(DISTRITOS_AMAZONIA_DIR, "distritos_bosque_minimo.gpkg")
-
-    if os.path.exists(ruta_distritos_amazonia_delimitados):
-        print(f"[INFO] El mapa de distritos ya existe: {ruta_distritos_amazonia_delimitados}.")
-    else:
-        pipeline_delimitacion_distritos_amazonia(ruta_biomas_peru, ruta_distritos_peru, ruta_distritos_amazonia_delimitados)
-
-    # ========================================================================
-    # PASO 2: DETECCIÓN DE CAMBIOS
-    # ========================================================================
-
-    print("\n" + "="*70)
-    print(" INICIANDO DETECCIÓN DE CAMBIOS...")
-    print("="*70)
-    
-    ruta_mapa_cambios = os.path.join(MAPAS_CAMBIOS_DIR, "mapa_cambios_1985_2024.tif")
-    ruta_estadisticas_cambios = os.path.join(MAPAS_CAMBIOS_DIR, "estadisticas_cambios.csv")
-
-    # Verificar si no existe el mapa de cambios
-    if os.path.exists(ruta_mapa_cambios):
-        print(f"[INFO] El mapa de cambios ya existe: {ruta_mapa_cambios}.")
-    else:
-        mapa_cambios, meta = detectar_cambios_por_tiles(
-            rutas_mapas_reclasificados,
-            tamanio_tile=5000
-        )
-        guardar_mapa_cambios(mapa_cambios, meta, ruta_mapa_cambios)
-        exportar_estadisticas_cambios(ruta_mapa_cambios, ruta_estadisticas_cambios)
-
-    # ========================================================================
-    # PASO 3: ZONIFICACIÓN POR DISTRITO AMAZÓNICO
-    # ========================================================================
-    
-    print("\n" + "="*70)
-    print(" INICIANDO ZONIFICACIÓN POR DISTRITO...")
-    print("="*70 + "\n")
-
-    ruta_mapa_cambios_distrito = os.path.join(METRICAS_DISTRITOS_DIR, "mapa_cambios_distrito_1985_2024.gpkg")
-    ruta_estadisticas_cambios_distrito = os.path.join(METRICAS_DISTRITOS_DIR, "estadisticas_cambios_distrito.csv")
-
-    if os.path.exists(ruta_mapa_cambios_distrito):
-        print(f"[INFO] El mapa de cambios por densidad en distritos ya existe: {ruta_mapa_cambios_distrito}.")
-    else:
-        pipeline_zonificacion_distrito(
-            ruta_mapa_cambios,
-            ruta_distritos_amazonia_delimitados,
-            ruta_mapa_cambios_distrito,
-            ruta_estadisticas_cambios_distrito
-        )
-    
-    # ========================================================================
-    # PASO 4: SELECCIONAR DISTRITOS
-    # ========================================================================
-
-    print("\n" + "="*70)
-    print(" SELECCIÓN DE DISTRITOS PARA ENTRENAMIENTO...")
-    print("="*70 + "\n")
-
-    ruta_distritos_seleccionados = os.path.join(DISTRITOS_SELECCIONADOS_DIR, "distritos_seleccionados.gpkg")
-
-    seleccionar_distritos(
-        ruta_mapa_cambios_distrito,
-        ruta_distritos_seleccionados
+    X_train, y_train, df_distritos_info = construir_dataset(
+        ruta_series_entrenamiento
     )
 
-    # ========================================================================
-    # PASO 5: OBTENCIÓN DE SERIES TEMPORALES POR ZONAS
-    # ========================================================================
-    
-    print("\n" + "="*70)
-    print(" INICIANDO OBTENCIÓN DE SERIES TEMPORALES POR ZONAS...")
-    print("="*70 + "\n")
-    
-    print(f"[INFO] Rango de años: {min(ANIOS)} - {max(ANIOS)}\n")
-    
-    ruta_series_temporales = os.path.join(SERIES_TEMPORALES_DIR, "series_temporales_zonas.csv")
-    ruta_estadisticas_series_temporales = os.path.join(SERIES_TEMPORALES_DIR, "estadisticas_series_temporales_zonas.csv")
-    
-    # Verificar si ya existe el panel
-    if os.path.exists(ruta_series_temporales):
-        print(f"[INFO] El panel de series temporales ya existe: {ruta_series_temporales}")
-    else:    
-        pipeline_extraer_series_temporales(
-            rutas_mapas_reclasificados,
-            ruta_distritos_seleccionados,
-            ruta_series_temporales,
-            ruta_estadisticas_series_temporales
-        )
+    # =====================================================================
+    # PASO 2: MODELOS
+    # =====================================================================
+
+    resultados = []
+
+    print("\n[INFO] Ejecutando modelo de persistencia...")
+    ruta_modelo_persistencia = os.path.join(PERSISTENCIA_DIR, "persistencia_resultados.csv")
+    res_persistencia = pipeline_persistencia(X_train, y_train, df_distritos_info, ruta_modelo_persistencia)
+    resultados.append(res_persistencia)
+
+    print("\n[INFO] Ejecutando modelo ARIMA...")
+    ruta_modelo_arima = os.path.join(ARIMA_DIR, "arima_resultados.csv")
+    res_arima = pipeline_arima(X_train, y_train, df_distritos_info, ruta_modelo_arima)
+    resultados.append(res_arima)
+
+    #print("\n[INFO] Ejecutando modelo LSTM...")
+    #res_lstm = pipeline_lstm(X_train, y_train)
+    #resultados.append(res_lstm)
+#
+    #print("\n[INFO] Ejecutando modelo CNN...")
+    #res_cnn = pipeline_cnn(X_train, y_train)
+    #resultados.append(res_cnn)
+#
+    ## =====================================================================
+    ## PASO 3: COMPARACIÓN
+    ## =====================================================================
+#
+    #print("\n[INFO] Comparando modelos...")
+#
+    ## ordenar por RMSE (ejemplo)
+    #resultados = sorted(resultados, key=lambda x: x["rmse"])
+#
+    #mejor = resultados[0]
+#
+    #print(f"\n[OK] Mejor modelo: {mejor['modelo']}")
+    #print(f"RMSE: {mejor['rmse']}")
 
     return
-    
+
 if __name__ == "__main__":
     main()
