@@ -4,7 +4,7 @@ import rasterio
 
 from O1.config import (
     MAPAS_RECLAS_DIR,
-    MAPAS_RAW_DIR,
+    MAPAS_AMAZONIA_DIR,
 
     CLASES_VALIDAS,
     CLASES_BOSQUE,
@@ -146,8 +146,8 @@ def etapa4_exportar(bosque_bin, meta, ruta_salida):
 
 def ejecutar_pipeline_anio(anio):
 
-    nombre = f"mapbiomas-peru-collection-30-amazoniaperu-{anio}.tif"
-    ruta = os.path.join(MAPAS_RAW_DIR, nombre)
+    nombre = f"peru_amazonia_{anio}.tif"
+    ruta = os.path.join(MAPAS_AMAZONIA_DIR, nombre)
 
     if not os.path.exists(ruta):
         print(f"[WARN] Archivo no encontrado: {ruta}")

@@ -12,10 +12,10 @@ INTERIM_DIR = os.path.join(DATA_DIR, "interim")
 OUTPUTS_DIR = os.path.join(BASE_DIR, "outputs")
 O1_INTERIM_DIR = os.path.join(INTERIM_DIR, "O1")
 
+MAPAS_AMAZONIA_DIR = os.path.join(O1_INTERIM_DIR, "mapas-amazonia")
 MAPAS_RECLAS_DIR = os.path.join(O1_INTERIM_DIR, "mapas-reclasificados")
-METADATOS_DIR = os.path.join(O1_INTERIM_DIR, "metadatos")
 
-for d in [O1_INTERIM_DIR, MAPAS_RECLAS_DIR, METADATOS_DIR, OUTPUTS_DIR]:
+for d in [O1_INTERIM_DIR, MAPAS_AMAZONIA_DIR, MAPAS_RECLAS_DIR, OUTPUTS_DIR]:
     os.makedirs(d, exist_ok=True)
 
 ANIOS = list(range(1985, 2025))
@@ -61,7 +61,7 @@ SEMILLA_SPLIT = 42
 # =============================
 DISTRITOS_PERU_DIR = os.path.join(RAW_DIR, "distritos-peru")
 BIOMAS_PERU_DIR = os.path.join(RAW_DIR, "biomas-peru")
-DISTRITOS_AMAZONIA_DIR = os.path.join(O1_INTERIM_DIR, "distritos-amazonas")
+DISTRITOS_AMAZONIA_DIR = os.path.join(O1_INTERIM_DIR, "distritos-amazonia")
 
 DISTRITOS_ALTO_CAMBIO_DIR = os.path.join(O1_INTERIM_DIR, "distritos-alto-cambio")
 

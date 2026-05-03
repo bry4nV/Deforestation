@@ -32,14 +32,6 @@ def main():
     print(" PIPELINE DE DETECCIÓN DE CAMBIOS + ZONIFICACIÓN ")
     print("="*70)
 
-    # ========================================================================
-    # PASO 1: GENERACIÓN DE DISTRITOS VÁLIDOS
-    # ========================================================================
-
-    print("\n" + "="*70)
-    print(" INICIANDO GENERACIÓN DE DISTRITOS VÁLIDOS...")
-    print("="*70)
-
     rutas_mapas_reclasificados = [
         os.path.join(MAPAS_RECLAS_DIR, f"bosque_nobosque_amazonia_{anio}.tif")
         for anio in ANIOS
@@ -59,18 +51,14 @@ def main():
     
     print(f"[OK] {len(rutas_mapas_reclasificados)} archivos encontrados\n")
 
-    ruta_biomas_peru = os.path.join(BIOMAS_PERU_DIR, "BIOMES_v1.shp")
-    ruta_distritos_peru = os.path.join(DISTRITOS_PERU_DIR, "POLITICAL_LEVEL_4_v1.shp")
+    ruta_distritos_amazonia_delimitados = os.path.join(DISTRITOS_AMAZONIA_DIR, "distritos_amazonia.gpkg")
 
-    ruta_distritos_amazonia_delimitados = os.path.join(DISTRITOS_AMAZONIA_DIR, "distritos_bosque_minimo.gpkg")
-
-    if os.path.exists(ruta_distritos_amazonia_delimitados):
-        print(f"[INFO] El mapa de distritos ya existe: {ruta_distritos_amazonia_delimitados}.")
-    else:
-        pipeline_delimitacion_distritos_amazonia(ruta_biomas_peru, ruta_distritos_peru, ruta_distritos_amazonia_delimitados)
+    if not os.path.exists(ruta_distritos_amazonia_delimitados):
+        print("\n[ERROR] Falta el archivo:", ruta_distritos_amazonia_delimitados)
+        raise FileNotFoundError("Archivos de entrada faltantes")
 
     # ========================================================================
-    # PASO 2: DETECCIÓN DE CAMBIOS
+    # PASO 1: DETECCIÓN DE CAMBIOS
     # ========================================================================
 
     print("\n" + "="*70)
@@ -92,7 +80,7 @@ def main():
         exportar_estadisticas_cambios(ruta_mapa_cambios, ruta_estadisticas_cambios)
 
     # ========================================================================
-    # PASO 3: ZONIFICACIÓN POR DISTRITO AMAZÓNICO
+    # PASO 2: ZONIFICACIÓN POR DISTRITO AMAZÓNICO
     # ========================================================================
     
     print("\n" + "="*70)
@@ -113,7 +101,7 @@ def main():
         )
     
     # ========================================================================
-    # PASO 4: SELECCIONAR DISTRITOS
+    # PASO 3: SELECCIONAR DISTRITOS
     # ========================================================================
 
     print("\n" + "="*70)
@@ -128,7 +116,7 @@ def main():
     )
 
     # ========================================================================
-    # PASO 5: OBTENCIÓN DE SERIES TEMPORALES POR DISTRITOS
+    # PASO 4: OBTENCIÓN DE SERIES TEMPORALES POR DISTRITOS
     # ========================================================================
     
     print("\n" + "="*70)
