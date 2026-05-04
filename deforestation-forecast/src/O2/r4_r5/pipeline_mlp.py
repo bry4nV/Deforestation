@@ -1,25 +1,34 @@
+import random
+from itertools import product
+
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
-import numpy as np
-import pandas as pd
-from sklearn.metrics import mean_squared_error, mean_absolute_error
+
+from O2.config import SEMILLA
+
+
+def fijar_semilla():
+    random.seed(SEMILLA)
+    np.random.seed(SEMILLA)
+    torch.manual_seed(SEMILLA)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
 
 
 class MLP(nn.Module):
-    """Multilayer Perceptron para pronóstico univariado"""
-
-    def __init__(self, input_size, hidden_sizes=[64, 32]):
-        super(MLP, self).__init__()
-
+    def __init__(self, input_size, hidden_sizes, dropout):
+        super().__init__()
         layers = []
         prev_size = input_size
-
         for h in hidden_sizes:
             layers.append(nn.Linear(prev_size, h))
             layers.append(nn.ReLU())
+            layers.append(nn.Dropout(dropout))
             prev_size = h
-
         layers.append(nn.Linear(prev_size, 1))
         self.model = nn.Sequential(*layers)
 
@@ -27,166 +36,243 @@ class MLP(nn.Module):
         return self.model(x)
 
 
-def entrenar_mlp(model, dataloader, epochs, lr):
-    """Entrena el modelo MLP"""
+def entrenar(X_train_t, y_train_t, X_test_t, y_test_t,
+             hidden_sizes, dropout, epochs, batch_size, lr, patience=10):
+    
+    X           = X_train_t.view(X_train_t.shape[0], -1)
+    X_test_flat = X_test_t.view(X_test_t.shape[0], -1)
 
+    dataloader = DataLoader(TensorDataset(X, y_train_t), batch_size=batch_size, shuffle=True)
+
+    model     = MLP(X.shape[1], hidden_sizes, dropout)
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
+    best_test_loss = float("inf")
+    no_improve     = 0
+    best_state     = None
+    train_losses   = []
+    test_losses    = []
+
     for epoch in range(epochs):
-
+        model.train()
         epoch_loss = 0.0
-        num_batches = 0
-
         for X_batch, y_batch in dataloader:
-
             optimizer.zero_grad()
-            outputs = model(X_batch)
-            loss = criterion(outputs, y_batch)
+            loss = criterion(model(X_batch), y_batch)
             loss.backward()
             optimizer.step()
-
             epoch_loss += loss.item()
-            num_batches += 1
 
-        epoch_loss /= num_batches
+        model.eval()
+        with torch.no_grad():
+            test_loss = criterion(model(X_test_flat), y_test_t).item()
 
-        if (epoch + 1) % max(1, epochs // 10) == 0 or epoch == 0:
-            print(f"  [Epoch {epoch+1}/{epochs}] Loss: {epoch_loss:.4f}")
+        train_losses.append(epoch_loss / len(dataloader))
+        test_losses.append(test_loss)
 
-    return model
+        if test_loss < best_test_loss - 1e-6:
+            best_test_loss = test_loss
+            no_improve     = 0
+            best_state     = {k: v.clone() for k, v in model.state_dict().items()}
+        else:
+            no_improve += 1
+            if no_improve >= patience:
+                break
+
+        if (epoch + 1) % 10 == 0:
+            print(f"    Epoch {epoch+1} | Train={train_losses[-1]:.4f} | Test={test_loss:.4f}")
+
+    if best_state is not None:
+        model.load_state_dict(best_state)
+
+    return model, train_losses, test_losses
 
 
-def evaluar_mlp(model, X_tensor, y_tensor, set_name="Test"):
-    """Evalúa el modelo MLP y retorna métricas"""
-
+def evaluar(model, X_tensor, y_tensor):
     model.eval()
     X = X_tensor.view(X_tensor.shape[0], -1)
-
     with torch.no_grad():
         preds = model(X).numpy()
-
     y_true = y_tensor.numpy()
+    rmse = float(np.sqrt(np.mean((y_true - preds) ** 2)))
+    mae  = float(np.mean(np.abs(y_true - preds)))
+    return rmse, mae
 
-    rmse = np.sqrt(mean_squared_error(y_true, preds))
-    mae = mean_absolute_error(y_true, preds)
 
-    print(f"[RESULT] {set_name} RMSE: {rmse:.4f}")
-    print(f"[RESULT] {set_name} MAE: {mae:.4f}")
+def evaluar_geografico(model, series, df_distritos_info, window_size, tamanio_entrenamiento):
+    registros = []
+    model.eval()
 
-    return rmse, mae, preds
+    for i in range(series.shape[0]):
+        serie = series[i]
+        X_w, y_w = [], []
+        for t in range(len(serie) - window_size):
+            if t + window_size >= tamanio_entrenamiento:
+                X_w.append(serie[t:t + window_size])
+                y_w.append(serie[t + window_size])
+
+        if not X_w:
+            continue
+
+        X_t = torch.tensor(np.array(X_w, dtype=np.float32))
+        with torch.no_grad():
+            preds = model(X_t).numpy().flatten()
+        y_true = np.array(y_w)
+
+        info = df_distritos_info.iloc[i]
+        registros.append({
+            "geocode":      info["geocode"],
+            "departamento": info["departamento"],
+            "distrito":     info["distrito"],
+            "rmse":         round(float(np.sqrt(np.mean((y_true - preds) ** 2))), 6),
+            "mae":          round(float(np.mean(np.abs(y_true - preds))), 6),
+        })
+
+    df_distrito = (
+        pd.DataFrame(registros)
+        .sort_values(["mae", "rmse"], ascending=False)
+        .reset_index(drop=True)
+    )
+    df_departamento = (
+        df_distrito
+        .groupby("departamento")[["rmse", "mae"]]
+        .mean()
+        .reset_index()
+        .sort_values(["mae", "rmse"], ascending=False)
+        .reset_index(drop=True)
+    )
+    return df_distrito, df_departamento
+
+
+def graficar_curva(train_losses, test_losses, nombre, ruta_png):
+    fig, ax = plt.subplots(figsize=(7, 4))
+    epochs = range(1, len(train_losses) + 1)
+    ax.plot(epochs, train_losses, label="Train MSE", linewidth=1.5)
+    ax.plot(epochs, test_losses,  label="Test MSE",  linewidth=1.5)
+    ax.set_xlabel("Época")
+    ax.set_ylabel("MSE")
+    ax.set_title(f"Curva de aprendizaje - {nombre}")
+    ax.legend()
+    ax.grid(True, alpha=0.3)
+    fig.tight_layout()
+    fig.savefig(ruta_png, dpi=120)
+    plt.close(fig)
 
 
 def pipeline_mlp(
-    datasets_dl,
+    dataset_dl,
+    ruta_base,
+    epochs_values,
+    lr_values,
+    batch_size_values,
+    hidden_sizes_values,
+    dropout_values,
+    series,
     df_distritos_info,
-    window_size,
-    epochs=50,
-    lr=0.01,
-    batch_size=32,
-    hidden_sizes=[64, 32],
-    ruta_modelo_mlp=None,
-    exportar=True
+    tamanio_entrenamiento,
 ):
-    """
-    Pipeline completo de MLP: entrenamiento + evaluación.
+    print("\n[INFO] Pipeline MLP — búsqueda de hiperparámetros")
+    print("=" * 60)
 
-    Args:
-        datasets_dl: dict {window_size: {"train": (X_train, y_train), "test": (X_test, y_test)}}
-        df_distritos_info: DataFrame con info de distritos (geocode, departamento, distrito)
-        window_size: tamaño de ventana a usar
-        epochs: número de épocas de entrenamiento
-        lr: learning rate
-        batch_size: tamaño de batch
-        hidden_sizes: lista de tamaños de capas ocultas
-        ruta_modelo_mlp: ruta donde guardar resultados CSV
-        exportar: si guardar resultados a CSV
+    if not dataset_dl:
+        raise RuntimeError("Pipeline MLP: dataset_dl vacío, no hay ventanas válidas.")
 
-    Returns:
-        dict con métricas del modelo
-    """
+    fijar_semilla()
 
-    print(f"\n[INFO] Ejecutando pipeline MLP (window={window_size})...")
+    grid = list(product(
+        dataset_dl.items(),
+        hidden_sizes_values,
+        dropout_values,
+        epochs_values,
+        lr_values,
+        batch_size_values,
+    ))
+    print(f"[INFO] Combinaciones totales: {len(grid)}")
 
-    # =====================================================================
-    # Cargar datasets
-    # =====================================================================
-    X_train_tensor, y_train_tensor = datasets_dl[window_size]["train"]
-    X_test_tensor, y_test_tensor = datasets_dl[window_size]["test"]
+    resultados   = []
+    mejor_rmse   = float("inf")
+    mejor_modelo = None
+    mejor_fila   = None
+    mejor_losses = None
 
-    print(f"[INFO] Dataset shapes:")
-    print(f"  X_train: {X_train_tensor.shape}, y_train: {y_train_tensor.shape}")
-    print(f"  X_test: {X_test_tensor.shape}, y_test: {y_test_tensor.shape}")
+    for (w, data), hidden_sizes, dropout, epochs, lr, batch_size in grid:
+        X_train, y_train = data["train"]
+        X_test,  y_test  = data["test"]
 
-    # =====================================================================
-    # Preparar DataLoader para entrenamiento
-    # =====================================================================
-    X_train_flat = X_train_tensor.view(X_train_tensor.shape[0], -1)
-    dataset = TensorDataset(X_train_flat, y_train_tensor)
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=True)
+        model, train_losses, test_losses = entrenar(
+            X_train, y_train, X_test, y_test,
+            hidden_sizes, dropout, epochs, batch_size, lr,
+        )
 
-    input_size = X_train_flat.shape[1]
+        rmse_train, mae_train = evaluar(model, X_train, y_train)
+        rmse_test,  mae_test  = evaluar(model, X_test,  y_test)
 
-    # =====================================================================
-    # Crear modelo
-    # =====================================================================
-    print(f"\n[INFO] Creando MLP: input={input_size}, hidden={hidden_sizes}, output=1")
-    model = MLP(input_size, hidden_sizes=hidden_sizes)
+        h_str  = "x".join(map(str, hidden_sizes))
+        nombre = f"MLP_w{w}_h{h_str}_d{dropout}_e{epochs}_lr{lr}_b{batch_size}"
+        print(f"  {nombre}  RMSE_test={rmse_test:.4f}  MAE_test={mae_test:.4f}")
 
-    # =====================================================================
-    # Entrenar
-    # =====================================================================
-    print(f"\n[INFO] Entrenando por {epochs} épocas (lr={lr}, batch={batch_size})...")
-    model = entrenar_mlp(model, dataloader, epochs, lr)
+        fila = {
+            "modelo":       nombre,
+            "window_size":  w,
+            "hidden_sizes": str(hidden_sizes),
+            "dropout":      dropout,
+            "epochs":       epochs,
+            "lr":           lr,
+            "batch_size":   batch_size,
+            "rmse_train":   round(rmse_train, 6),
+            "mae_train":    round(mae_train,  6),
+            "rmse_test":    round(rmse_test,  6),
+            "mae_test":     round(mae_test,   6),
+        }
+        resultados.append(fila)
 
-    # =====================================================================
-    # Evaluar en TRAIN
-    # =====================================================================
-    print(f"\n[INFO] Evaluando en TRAIN...")
-    rmse_train, mae_train, preds_train = evaluar_mlp(model, X_train_tensor, y_train_tensor, "Train")
+        if rmse_test < mejor_rmse:
+            mejor_rmse   = rmse_test
+            mejor_modelo = model
+            mejor_fila   = fila
+            mejor_losses = (train_losses, test_losses)
 
-    # =====================================================================
-    # Evaluar en TEST
-    # =====================================================================
-    print(f"\n[INFO] Evaluando en TEST...")
-    rmse_test, mae_test, preds_test = evaluar_mlp(model, X_test_tensor, y_test_tensor, "Test")
+    df = pd.DataFrame(resultados).sort_values("rmse_test").reset_index(drop=True)
+    ruta_csv = ruta_base.replace(".csv", "_resultados.csv")
+    df.to_csv(ruta_csv, index=False)
+    print(f"\n[OK] Resultados MLP guardados: {ruta_csv}")
 
-    # =====================================================================
-    # Exportar resultados (similar a ARIMA y Persistencia)
-    # =====================================================================
-    if exportar and ruta_modelo_mlp:
+    ruta_pth = ruta_base.replace(".csv", "_mejor.pth")
+    torch.save({"model_state_dict": mejor_modelo.state_dict(), "config": mejor_fila}, ruta_pth)
+    print(f"[OK] Mejor modelo guardado:   {ruta_pth}")
 
-        # Por ahora exportamos resumen global
-        df_global = pd.DataFrame([{
-            "modelo": f"MLP_w{window_size}",
-            "epochs": epochs,
-            "lr": lr,
-            "batch_size": batch_size,
-            "rmse_train": rmse_train,
-            "mae_train": mae_train,
-            "rmse_test": rmse_test,
-            "mae_test": mae_test
-        }])
+    ruta_png = ruta_base.replace(".csv", "_mejor_curva.png")
+    graficar_curva(*mejor_losses, mejor_fila["modelo"], ruta_png)
+    print(f"[OK] Curva de aprendizaje:    {ruta_png}")
 
-        df_global.to_csv(ruta_modelo_mlp, index=False)
-        print(f"\n[OK] Resultados guardados: {ruta_modelo_mlp}")
+    df_mejores_por_ventana = (
+        pd.DataFrame(resultados)
+        .sort_values("rmse_test")
+        .groupby("window_size", sort=True)
+        .first()
+        .reset_index()
+    )
+    ruta_mejores = ruta_base.replace(".csv", "_mejores_por_ventana.csv")
+    df_mejores_por_ventana.to_csv(ruta_mejores, index=False)
+    print(f"[OK] Mejores por ventana:     {ruta_mejores}")
 
-    # =====================================================================
-    # Retornar en formato estándar
-    # =====================================================================
-    resultado = {
-        "modelo": f"MLP_w{window_size}",
-        "window_size": window_size,
-        "epochs": epochs,
-        "lr": lr,
-        "batch_size": batch_size,
-        "rmse_train": rmse_train,
-        "mae_train": mae_train,
-        "rmse_test": rmse_test,
-        "mae_test": mae_test,
-        "preds_train": preds_train,
-        "preds_test": preds_test,
-        "model": model
+    df_distrito, df_departamento = evaluar_geografico(
+        mejor_modelo, series, df_distritos_info,
+        int(mejor_fila["window_size"]), tamanio_entrenamiento,
+    )
+    ruta_dist = ruta_base.replace(".csv", "_mejor_distrito.csv")
+    df_distrito.to_csv(ruta_dist, index=False)
+    print(f"[OK] Por distrito:            {ruta_dist}")
+
+    ruta_dep = ruta_base.replace(".csv", "_mejor_departamento.csv")
+    df_departamento.to_csv(ruta_dep, index=False)
+    print(f"[OK] Por departamento:        {ruta_dep}")
+
+    print(f"[OK] Mejor config: {mejor_fila['modelo']}  RMSE_test={mejor_fila['rmse_test']:.4f}")
+
+    return {
+        "modelo": mejor_fila["modelo"],
+        "rmse":   mejor_fila["rmse_test"],
+        "mae":    mejor_fila["mae_test"],
     }
-
-    return resultado

@@ -9,30 +9,57 @@ from O1.config import (
 
 O2_INTERIM_DIR = os.path.join(INTERIM_DIR, "O2")
 MODELOS_DIR = os.path.join(O2_INTERIM_DIR, "modelos")
-PERSISTENCIA_DIR = os.path.join(MODELOS_DIR, "persistencia")
-ARIMA_DIR = os.path.join(MODELOS_DIR, "arima")
+PERSISTENCIA_DIR    = os.path.join(MODELOS_DIR, "persistencia")
+ARIMA_DIR           = os.path.join(MODELOS_DIR, "arima")
+ANALISIS_ARIMA_DIR  = os.path.join(ARIMA_DIR,   "analisis_arima")
+MLP_DIR             = os.path.join(MODELOS_DIR, "mlp")
+LSTM_DIR            = os.path.join(MODELOS_DIR, "lstm")
 
-for d in [O2_INTERIM_DIR, MODELOS_DIR, 
-          PERSISTENCIA_DIR, ARIMA_DIR]:
+for d in [O2_INTERIM_DIR, MODELOS_DIR,
+          PERSISTENCIA_DIR, ARIMA_DIR, ANALISIS_ARIMA_DIR, MLP_DIR, LSTM_DIR]:
     os.makedirs(d, exist_ok=True)
 
 TAMANIO_ENTRENAMIENTO = 35
 HORIZONTE = 5
 
 # =============================
-# HIPERPARÁMETROS - MLP
+# Hiperparámetros ARIMA
 # =============================
-# Rangos para grid search y pruebas
-MLP_EPOCHS = [20, 50, 100]
-MLP_LEARNING_RATES = [0.001, 0.01, 0.05]
-MLP_BATCH_SIZES = [16, 32, 64]
 
-# Valores por defecto para pruebas rápidas
-MLP_DEFAULT_EPOCHS = 50
-MLP_DEFAULT_LR = 0.01
-MLP_DEFAULT_BATCH_SIZE = 32
-MLP_HIDDEN_SIZES = [64, 32]  # Arquitectura de capas ocultas
+ARIMA_P_VALUES = [0, 1, 2]
+ARIMA_D_VALUES = [1]
+ARIMA_Q_VALUES = [0, 1, 2]
+ARIMA_WINDOW_VALUES = [3, 4, 5, 10, 15, 20, 25, 30, 35]
 
-# Directorio para modelos MLP
-MLP_DIR = os.path.join(MODELOS_DIR, "mlp")
-os.makedirs(MLP_DIR, exist_ok=True)
+# =============================
+# Reproducibilidad
+# =============================
+
+SEMILLA = 42
+
+# =============================
+# Hiperparámetros MLP
+# =============================
+
+MLP_HIDDEN_SIZES_VALUES = [[32, 16], [64, 32], [128, 64, 32]]
+MLP_DROPOUT_VALUES      = [0.0, 0.1]
+MLP_EPOCHS_VALUES       = [50, 100]
+MLP_LR_VALUES           = [0.001, 0.0005]
+MLP_BATCH_SIZE_VALUES   = [8, 16]
+
+# =============================
+# Hiperparámetros LSTM
+# =============================
+
+LSTM_HIDDEN_SIZE_VALUES = [32, 64, 128]
+LSTM_NUM_LAYERS_VALUES  = [1, 2]
+LSTM_DROPOUT_VALUES     = [0.0, 0.1]
+LSTM_EPOCHS_VALUES      = [50, 100]
+LSTM_LR_VALUES          = [0.001, 0.0005]
+LSTM_BATCH_SIZE_VALUES  = [8, 16]
+
+# =============================
+# Ventanas Deep Learning
+# =============================
+
+DL_WINDOW_VALUES = [3, 4, 5, 6, 10]

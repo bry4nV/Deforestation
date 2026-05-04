@@ -102,6 +102,8 @@ def construir_dataset_dl(series, window_sizes, tamanio_entrenamiento):
 
     datasets = {}
 
+    omitidas = []
+
     for w in window_sizes:
 
         print(f"\n[INFO] Ventana = {w}")
@@ -112,21 +114,28 @@ def construir_dataset_dl(series, window_sizes, tamanio_entrenamiento):
             tamanio_entrenamiento
         )
 
+        if X_train.shape[0] == 0:
+            print(f"  [WARN] Ventana {w} omitida: ninguna muestra de entrenamiento "
+                  f"(window_size >= tamanio_entrenamiento).")
+            omitidas.append(w)
+            continue
+
         print(f"X_train: {X_train.shape}")
         print(f"y_train: {y_train.shape}")
         print(f"X_test: {X_test.shape}")
         print(f"y_test: {y_test.shape}")
 
-        # convertir a tensores
         X_train = torch.tensor(X_train, dtype=torch.float32)
         y_train = torch.tensor(y_train, dtype=torch.float32)
-
-        X_test = torch.tensor(X_test, dtype=torch.float32)
-        y_test = torch.tensor(y_test, dtype=torch.float32)
+        X_test  = torch.tensor(X_test,  dtype=torch.float32)
+        y_test  = torch.tensor(y_test,  dtype=torch.float32)
 
         datasets[w] = {
             "train": (X_train, y_train),
-            "test": (X_test, y_test)
+            "test":  (X_test,  y_test),
         }
+
+    if omitidas:
+        print(f"\n[WARN] Ventanas omitidas por falta de muestras train: {omitidas}")
 
     return datasets
