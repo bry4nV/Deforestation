@@ -52,7 +52,7 @@ MLP_BATCH_SIZE_VALUES   = [8, 16]
 # =============================
 
 LSTM_HIDDEN_SIZE_VALUES = [32, 64, 128]
-LSTM_NUM_LAYERS_VALUES  = [1, 2]
+LSTM_NUM_LAYERS_VALUES  = [1]
 LSTM_DROPOUT_VALUES     = [0.0, 0.1]
 LSTM_EPOCHS_VALUES      = [50, 100]
 LSTM_LR_VALUES          = [0.001, 0.0005]
@@ -62,4 +62,4 @@ LSTM_BATCH_SIZE_VALUES  = [8, 16]
 # Ventanas Deep Learning
 # =============================
 
-DL_WINDOW_VALUES = [3, 4, 5, 6, 10]
+DL_WINDOW_VALUES = [3, 4, 5, 10]

@@ -36,23 +36,20 @@ class MLP(nn.Module):
         return self.model(x)
 
 
-def entrenar(X_train_t, y_train_t, X_test_t, y_test_t,
+def entrenar(X_train_t, y_train_t,
              hidden_sizes, dropout, epochs, batch_size, lr, patience=10):
-    
-    X           = X_train_t.view(X_train_t.shape[0], -1)
-    X_test_flat = X_test_t.view(X_test_t.shape[0], -1)
 
+    X          = X_train_t.view(X_train_t.shape[0], -1)
     dataloader = DataLoader(TensorDataset(X, y_train_t), batch_size=batch_size, shuffle=True)
 
     model     = MLP(X.shape[1], hidden_sizes, dropout)
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
-    best_test_loss = float("inf")
-    no_improve     = 0
-    best_state     = None
-    train_losses   = []
-    test_losses    = []
+    best_train_loss = float("inf")
+    no_improve      = 0
+    best_state      = None
+    train_losses    = []
 
     for epoch in range(epochs):
         model.train()
@@ -64,29 +61,25 @@ def entrenar(X_train_t, y_train_t, X_test_t, y_test_t,
             optimizer.step()
             epoch_loss += loss.item()
 
-        model.eval()
-        with torch.no_grad():
-            test_loss = criterion(model(X_test_flat), y_test_t).item()
+        train_loss = epoch_loss / len(dataloader)
+        train_losses.append(train_loss)
 
-        train_losses.append(epoch_loss / len(dataloader))
-        test_losses.append(test_loss)
-
-        if test_loss < best_test_loss - 1e-6:
-            best_test_loss = test_loss
-            no_improve     = 0
-            best_state     = {k: v.clone() for k, v in model.state_dict().items()}
+        if train_loss < best_train_loss - 1e-6:
+            best_train_loss = train_loss
+            no_improve      = 0
+            best_state      = {k: v.clone() for k, v in model.state_dict().items()}
         else:
             no_improve += 1
             if no_improve >= patience:
                 break
 
         if (epoch + 1) % 10 == 0:
-            print(f"    Epoch {epoch+1} | Train={train_losses[-1]:.4f} | Test={test_loss:.4f}")
+            print(f"    Epoch {epoch+1} | Train={train_loss:.4f}")
 
     if best_state is not None:
         model.load_state_dict(best_state)
 
-    return model, train_losses, test_losses
+    return model, train_losses
 
 
 def evaluar(model, X_tensor, y_tensor):
@@ -101,33 +94,42 @@ def evaluar(model, X_tensor, y_tensor):
 
 
 def evaluar_geografico(model, series, df_distritos_info, window_size, tamanio_entrenamiento):
-    registros = []
+    """Walk-forward evaluation: history starts with training data, real values used to advance."""
     model.eval()
+    horizonte    = series.shape[1] - tamanio_entrenamiento
+    y_pred_total = []
+    registros    = []
 
     for i in range(series.shape[0]):
-        serie = series[i]
-        X_w, y_w = [], []
-        for t in range(len(serie) - window_size):
-            if t + window_size >= tamanio_entrenamiento:
-                X_w.append(serie[t:t + window_size])
-                y_w.append(serie[t + window_size])
+        history  = series[i, :tamanio_entrenamiento].tolist()
+        y_true_i = series[i, tamanio_entrenamiento:]
+        preds    = []
 
-        if not X_w:
-            continue
+        for t in range(horizonte):
+            x = torch.tensor(
+                np.array(history[-window_size:], dtype=np.float32)
+            ).unsqueeze(0)
+            with torch.no_grad():
+                yhat = model(x).item()
+            preds.append(yhat)
+            history.append(float(y_true_i[t]))
 
-        X_t = torch.tensor(np.array(X_w, dtype=np.float32))
-        with torch.no_grad():
-            preds = model(X_t).numpy().flatten()
-        y_true = np.array(y_w)
+        y_pred_total.append(preds)
 
+        preds_arr = np.array(preds)
         info = df_distritos_info.iloc[i]
         registros.append({
             "geocode":      info["geocode"],
             "departamento": info["departamento"],
             "distrito":     info["distrito"],
-            "rmse":         round(float(np.sqrt(np.mean((y_true - preds) ** 2))), 6),
-            "mae":          round(float(np.mean(np.abs(y_true - preds))), 6),
+            "rmse":         round(float(np.sqrt(np.mean((y_true_i - preds_arr) ** 2))), 6),
+            "mae":          round(float(np.mean(np.abs(y_true_i - preds_arr))), 6),
         })
+
+    y_pred_total = np.array(y_pred_total)
+    y_true_total = series[:, tamanio_entrenamiento:]
+    rmse_global  = float(np.sqrt(np.mean((y_true_total - y_pred_total) ** 2)))
+    mae_global   = float(np.mean(np.abs(y_true_total - y_pred_total)))
 
     df_distrito = (
         pd.DataFrame(registros)
@@ -142,14 +144,12 @@ def evaluar_geografico(model, series, df_distritos_info, window_size, tamanio_en
         .sort_values(["mae", "rmse"], ascending=False)
         .reset_index(drop=True)
     )
-    return df_distrito, df_departamento
+    return df_distrito, df_departamento, rmse_global, mae_global, y_pred_total
 
 
-def graficar_curva(train_losses, test_losses, nombre, ruta_png):
+def graficar_curva(train_losses, nombre, ruta_png):
     fig, ax = plt.subplots(figsize=(7, 4))
-    epochs = range(1, len(train_losses) + 1)
-    ax.plot(epochs, train_losses, label="Train MSE", linewidth=1.5)
-    ax.plot(epochs, test_losses,  label="Test MSE",  linewidth=1.5)
+    ax.plot(range(1, len(train_losses) + 1), train_losses, label="Train MSE", linewidth=1.5)
     ax.set_xlabel("Época")
     ax.set_ylabel("MSE")
     ax.set_title(f"Curva de aprendizaje - {nombre}")
@@ -200,8 +200,8 @@ def pipeline_mlp(
         X_train, y_train = data["train"]
         X_test,  y_test  = data["test"]
 
-        model, train_losses, test_losses = entrenar(
-            X_train, y_train, X_test, y_test,
+        model, train_losses = entrenar(
+            X_train, y_train,
             hidden_sizes, dropout, epochs, batch_size, lr,
         )
 
@@ -231,7 +231,7 @@ def pipeline_mlp(
             mejor_rmse   = rmse_test
             mejor_modelo = model
             mejor_fila   = fila
-            mejor_losses = (train_losses, test_losses)
+            mejor_losses = train_losses
 
     df = pd.DataFrame(resultados).sort_values("rmse_test").reset_index(drop=True)
     ruta_csv = ruta_base.replace(".csv", "_resultados.csv")
@@ -243,7 +243,7 @@ def pipeline_mlp(
     print(f"[OK] Mejor modelo guardado:   {ruta_pth}")
 
     ruta_png = ruta_base.replace(".csv", "_mejor_curva.png")
-    graficar_curva(*mejor_losses, mejor_fila["modelo"], ruta_png)
+    graficar_curva(mejor_losses, mejor_fila["modelo"], ruta_png)
     print(f"[OK] Curva de aprendizaje:    {ruta_png}")
 
     df_mejores_por_ventana = (
@@ -257,7 +257,7 @@ def pipeline_mlp(
     df_mejores_por_ventana.to_csv(ruta_mejores, index=False)
     print(f"[OK] Mejores por ventana:     {ruta_mejores}")
 
-    df_distrito, df_departamento = evaluar_geografico(
+    df_distrito, df_departamento, rmse_wf, mae_wf, y_pred_wf = evaluar_geografico(
         mejor_modelo, series, df_distritos_info,
         int(mejor_fila["window_size"]), tamanio_entrenamiento,
     )
@@ -269,10 +269,19 @@ def pipeline_mlp(
     df_departamento.to_csv(ruta_dep, index=False)
     print(f"[OK] Por departamento:        {ruta_dep}")
 
-    print(f"[OK] Mejor config: {mejor_fila['modelo']}  RMSE_test={mejor_fila['rmse_test']:.4f}")
+    ruta_global = ruta_base.replace(".csv", "_global.csv")
+    pd.DataFrame([{
+        "modelo": mejor_fila["modelo"],
+        "rmse":   round(rmse_wf, 6),
+        "mae":    round(mae_wf,  6),
+    }]).to_csv(ruta_global, index=False)
+    print(f"[OK] Métricas globales:       {ruta_global}")
+
+    print(f"[OK] Mejor config: {mejor_fila['modelo']}  RMSE_wf={rmse_wf:.4f}  MAE_wf={mae_wf:.4f}")
 
     return {
         "modelo": mejor_fila["modelo"],
-        "rmse":   mejor_fila["rmse_test"],
-        "mae":    mejor_fila["mae_test"],
+        "rmse":   rmse_wf,
+        "mae":    mae_wf,
+        "y_pred": y_pred_wf,
     }
