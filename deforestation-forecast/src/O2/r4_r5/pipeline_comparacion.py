@@ -22,30 +22,30 @@ def exportar_comparacion(resultados, ruta_csv):
 
 def graficar_predicciones(
     resultados, series, df_distritos_info, tamanio_entrenamiento,
-    comparacion_dir, n=5, contexto_anios=5, anio_inicio=1985,
+    comparacion_dir, n=5, anio_inicio=1985,
 ):
     """
     Genera n gráficos de mejores + n de peores predicciones por distrito.
 
-    Ranking: MAE promedio entre todos los modelos con y_pred disponible.
-    Cada gráfico muestra `contexto_anios` años de entrenamiento + el período de test,
-    con las predicciones de cada modelo superpuestas.
+    Incluye todos los modelos con y_pred disponible (Persistencia, ARIMA, MLP, LSTM).
+    Ranking: MAE promedio entre todos los modelos.
+    Cada gráfico muestra la serie real completa (entrenamiento + test) con las
+    predicciones de todos los modelos superpuestas en el período de test.
     """
     modelos_con_pred = [r for r in resultados if r.get("y_pred") is not None]
     if not modelos_con_pred:
         print("[WARN] Ningún modelo tiene y_pred disponible. No se generan gráficos.")
         return
 
-    y_true_test  = series[:, tamanio_entrenamiento:]   # (n_dist, horizonte)
-    horizonte    = y_true_test.shape[1]
-    n_distritos  = series.shape[0]
+    y_true_test = series[:, tamanio_entrenamiento:]   # (n_dist, horizonte)
+    horizonte   = y_true_test.shape[1]
 
     # MAE por distrito para cada modelo → media entre modelos
     mae_matrix = np.stack([
         np.mean(np.abs(y_true_test - np.asarray(r["y_pred"])), axis=1)
         for r in modelos_con_pred
-    ], axis=0)                                          # (n_modelos, n_dist)
-    mean_mae = mae_matrix.mean(axis=0)                  # (n_dist,)
+    ], axis=0)                                         # (n_modelos, n_dist)
+    mean_mae = mae_matrix.mean(axis=0)                 # (n_dist,)
 
     idx_sorted = np.argsort(mean_mae)
     idx_best   = idx_sorted[:n]
@@ -53,11 +53,8 @@ def graficar_predicciones(
 
     colores = ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00"]
 
-    x_context = list(range(
-        anio_inicio + tamanio_entrenamiento - contexto_anios,
-        anio_inicio + tamanio_entrenamiento,
-    ))
-    x_test = list(range(
+    x_train = list(range(anio_inicio, anio_inicio + tamanio_entrenamiento))
+    x_test  = list(range(
         anio_inicio + tamanio_entrenamiento,
         anio_inicio + tamanio_entrenamiento + horizonte,
     ))
@@ -69,21 +66,21 @@ def graficar_predicciones(
             dist = info["distrito"]
             geo  = info["geocode"]
 
-            y_ctx  = series[i, tamanio_entrenamiento - contexto_anios:tamanio_entrenamiento]
-            y_test = series[i, tamanio_entrenamiento:]
+            y_train_i = series[i, :tamanio_entrenamiento]
+            y_test_i  = series[i, tamanio_entrenamiento:]
 
-            fig, ax = plt.subplots(figsize=(8, 4))
+            fig, ax = plt.subplots(figsize=(12, 4))
 
-            ax.plot(x_context, y_ctx,  color="black", linewidth=2,
-                    label="Real (contexto)")
-            ax.plot(x_test,    y_test, color="black", linewidth=2,
+            ax.plot(x_train, y_train_i, color="black", linewidth=1.5,
+                    label="Real (entrenamiento)")
+            ax.plot(x_test,  y_test_i,  color="black", linewidth=2,
                     linestyle="--", label="Real (test)")
             ax.axvline(x=anio_inicio + tamanio_entrenamiento - 0.5,
                        color="gray", linestyle=":", linewidth=1, alpha=0.7)
 
             for j, r in enumerate(modelos_con_pred):
                 y_pred_i     = np.asarray(r["y_pred"])[i]
-                mae_modelo_i = float(np.mean(np.abs(y_test - y_pred_i)))
+                mae_modelo_i = float(np.mean(np.abs(y_test_i - y_pred_i)))
                 nombre_corto = r["modelo"].split("_")[0]
                 ax.plot(x_test, y_pred_i,
                         color=colores[j % len(colores)],
@@ -122,6 +119,7 @@ def pipeline_comparacion(
         resultados, series, df_distritos_info, tamanio_entrenamiento,
         comparacion_dir, n=5, anio_inicio=anio_inicio,
     )
+
 
     mejor = df_comp.iloc[0]
     print(f"\n[GANADOR] {mejor['modelo']}  RMSE={mejor['rmse']:.4f}  MAE={mejor['mae']:.4f}")
