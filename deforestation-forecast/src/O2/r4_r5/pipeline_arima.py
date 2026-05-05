@@ -239,5 +239,9 @@ def pipeline_arima(X_train, y_train, df_distritos_info, ruta_base, p_values, d_v
         exportar=True, ruta=ruta_best,
     )
 
+    ruta_ypred = ruta_base.replace(".csv", "_best_ypred.npy")
+    np.save(ruta_ypred, resultado["y_pred"])
+    print(f"[OK] y_pred ARIMA: {ruta_ypred}")
+
     print(f"[RESULT] RMSE={resultado['rmse']:.4f}  MAE={resultado['mae']:.4f}")
     return resultado

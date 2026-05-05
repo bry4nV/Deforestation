@@ -1,5 +1,7 @@
 import glob
 import os
+
+import numpy as np
 import pandas as pd
 
 from O1.config import (
@@ -8,6 +10,7 @@ from O1.config import (
 
 from O2.config import (
     PERSISTENCIA_DIR, ARIMA_DIR, ANALISIS_ARIMA_DIR, MLP_DIR, LSTM_DIR,
+    COMPARACION_DIR, ANIO_INICIO,
     ARIMA_P_VALUES, ARIMA_D_VALUES, ARIMA_Q_VALUES, ARIMA_WINDOW_VALUES,
     MLP_HIDDEN_SIZES_VALUES, MLP_DROPOUT_VALUES,
     MLP_EPOCHS_VALUES, MLP_LR_VALUES, MLP_BATCH_SIZE_VALUES,
@@ -23,6 +26,14 @@ from O2.r4_r5.pipeline_persistencia import pipeline_persistencia
 from O2.r4_r5.pipeline_arima import pipeline_arima
 from O2.r4_r5.pipeline_mlp import pipeline_mlp
 from O2.r4_r5.pipeline_lstm import pipeline_lstm
+from O2.r4_r5.pipeline_comparacion import pipeline_comparacion
+
+
+def _cargar_ypred(ruta_npy):
+    if os.path.exists(ruta_npy):
+        return np.load(ruta_npy)
+    print(f"[WARN] y_pred no encontrado: {ruta_npy}. No estará disponible para gráficas.")
+    return None
 
 
 def main():
@@ -53,10 +64,14 @@ def main():
     # — Persistencia
     ruta_persistencia = os.path.join(PERSISTENCIA_DIR, "persistencia_resultados.csv")
     ruta_pers_global  = ruta_persistencia.replace(".csv", "_global.csv")
+    ruta_pers_ypred   = ruta_persistencia.replace(".csv", "_ypred.npy")
     if os.path.exists(ruta_pers_global):
         print("\n[SKIP] Persistencia — cargando resultados existentes.")
         row = pd.read_csv(ruta_pers_global).iloc[0]
-        res_persistencia = {"modelo": row["modelo"], "rmse": row["rmse"], "mae": row["mae"]}
+        res_persistencia = {
+            "modelo": row["modelo"], "rmse": row["rmse"], "mae": row["mae"],
+            "y_pred": _cargar_ypred(ruta_pers_ypred),
+        }
     else:
         print("\n[INFO] Ejecutando Persistencia...")
         res_persistencia = pipeline_persistencia(
@@ -74,6 +89,7 @@ def main():
     # — ARIMA
     ruta_base_arima    = os.path.join(ARIMA_DIR, "arima.csv")
     ruta_arima_mejores = ruta_base_arima.replace(".csv", "_mejores_por_ventana.csv")
+    ruta_arima_ypred   = ruta_base_arima.replace(".csv", "_best_ypred.npy")
     if os.path.exists(ruta_arima_mejores):
         print("[SKIP] ARIMA — cargando resultados existentes.")
         best = pd.read_csv(ruta_arima_mejores).sort_values("rmse").iloc[0]
@@ -81,6 +97,7 @@ def main():
             "modelo": f"ARIMA_WF_w{int(best['window'])}",
             "rmse":   best["rmse"],
             "mae":    best["mae"],
+            "y_pred": _cargar_ypred(ruta_arima_ypred),
         }
     else:
         res_arima = pipeline_arima(
@@ -95,12 +112,16 @@ def main():
     # =====================================================================
 
     # — MLP
-    ruta_mlp     = os.path.join(MLP_DIR, "mlp.csv")
-    ruta_mlp_res = ruta_mlp.replace(".csv", "_resultados.csv")
+    ruta_mlp       = os.path.join(MLP_DIR, "mlp.csv")
+    ruta_mlp_res   = ruta_mlp.replace(".csv", "_resultados.csv")
+    ruta_mlp_ypred = ruta_mlp.replace(".csv", "_mejor_ypred.npy")
     if os.path.exists(ruta_mlp_res):
         print("\n[SKIP] MLP — cargando resultados existentes.")
         row = pd.read_csv(ruta_mlp_res).iloc[0]
-        res_mlp = {"modelo": row["modelo"], "rmse": row["rmse_test"], "mae": row["mae_test"]}
+        res_mlp = {
+            "modelo": row["modelo"], "rmse": row["rmse_test"], "mae": row["mae_test"],
+            "y_pred": _cargar_ypred(ruta_mlp_ypred),
+        }
     else:
         print("\n[INFO] Ejecutando MLP...")
         res_mlp = pipeline_mlp(
@@ -112,12 +133,16 @@ def main():
     resultados.append(res_mlp)
 
     # — LSTM
-    ruta_lstm     = os.path.join(LSTM_DIR, "lstm.csv")
-    ruta_lstm_res = ruta_lstm.replace(".csv", "_resultados.csv")
+    ruta_lstm       = os.path.join(LSTM_DIR, "lstm.csv")
+    ruta_lstm_res   = ruta_lstm.replace(".csv", "_resultados.csv")
+    ruta_lstm_ypred = ruta_lstm.replace(".csv", "_mejor_ypred.npy")
     if os.path.exists(ruta_lstm_res):
         print("\n[SKIP] LSTM — cargando resultados existentes.")
         row = pd.read_csv(ruta_lstm_res).iloc[0]
-        res_lstm = {"modelo": row["modelo"], "rmse": row["rmse_test"], "mae": row["mae_test"]}
+        res_lstm = {
+            "modelo": row["modelo"], "rmse": row["rmse_test"], "mae": row["mae_test"],
+            "y_pred": _cargar_ypred(ruta_lstm_ypred),
+        }
     else:
         print("\n[INFO] Ejecutando LSTM...")
         res_lstm = pipeline_lstm(
@@ -132,29 +157,10 @@ def main():
     # PASO 4: COMPARACIÓN FINAL
     # =====================================================================
 
-    print("\n" + "=" * 70)
-    print(" COMPARACIÓN DE MODELOS ")
-    print("=" * 70)
-
-    df_comp = (
-        pd.DataFrame([
-            {"modelo": r["modelo"], "rmse": r["rmse"], "mae": r["mae"]}
-            for r in resultados
-        ])
-        .sort_values("rmse")
-        .reset_index(drop=True)
+    pipeline_comparacion(
+        resultados, series, df_distritos_info, TAMANIO_ENTRENAMIENTO,
+        COMPARACION_DIR, anio_inicio=ANIO_INICIO,
     )
-
-    print(df_comp.to_string(index=False))
-
-    ruta_comp = os.path.join(
-        os.path.dirname(PERSISTENCIA_DIR), "comparacion_modelos.csv"
-    )
-    df_comp.to_csv(ruta_comp, index=False)
-    print(f"\n[OK] Comparación guardada: {ruta_comp}")
-
-    mejor = df_comp.iloc[0]
-    print(f"\n[GANADOR] {mejor['modelo']}  RMSE={mejor['rmse']:.4f}  MAE={mejor['mae']:.4f}")
 
 
 if __name__ == "__main__":

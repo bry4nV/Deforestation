@@ -14,10 +14,14 @@ ARIMA_DIR           = os.path.join(MODELOS_DIR, "arima")
 ANALISIS_ARIMA_DIR  = os.path.join(ARIMA_DIR,   "analisis_arima")
 MLP_DIR             = os.path.join(MODELOS_DIR, "mlp")
 LSTM_DIR            = os.path.join(MODELOS_DIR, "lstm")
+COMPARACION_DIR     = os.path.join(MODELOS_DIR, "comparacion")
 
 for d in [O2_INTERIM_DIR, MODELOS_DIR,
-          PERSISTENCIA_DIR, ARIMA_DIR, ANALISIS_ARIMA_DIR, MLP_DIR, LSTM_DIR]:
+          PERSISTENCIA_DIR, ARIMA_DIR, ANALISIS_ARIMA_DIR, MLP_DIR, LSTM_DIR,
+          COMPARACION_DIR]:
     os.makedirs(d, exist_ok=True)
+
+ANIO_INICIO = 1985
 
 TAMANIO_ENTRENAMIENTO = 35
 HORIZONTE = 5

@@ -136,11 +136,18 @@ def evaluar_geografico(model, series, df_distritos_info, window_size, tamanio_en
         .sort_values(["mae", "rmse"], ascending=False)
         .reset_index(drop=True)
     )
+
+    departamentos = df_distritos_info["departamento"].values
+    registros_dep = []
+    for dep in np.unique(departamentos):
+        mask    = departamentos == dep
+        y_t     = y_true_total[mask]
+        y_p     = y_pred_total[mask]
+        rmse_dep = round(float(np.sqrt(np.mean((y_t - y_p) ** 2))), 6)
+        mae_dep  = round(float(np.mean(np.abs(y_t - y_p))), 6)
+        registros_dep.append({"departamento": dep, "rmse": rmse_dep, "mae": mae_dep})
     df_departamento = (
-        df_distrito
-        .groupby("departamento")[["rmse", "mae"]]
-        .mean()
-        .reset_index()
+        pd.DataFrame(registros_dep)
         .sort_values(["mae", "rmse"], ascending=False)
         .reset_index(drop=True)
     )
@@ -276,6 +283,10 @@ def pipeline_mlp(
         "mae":    round(mae_wf,  6),
     }]).to_csv(ruta_global, index=False)
     print(f"[OK] Métricas globales:       {ruta_global}")
+
+    ruta_ypred = ruta_base.replace(".csv", "_mejor_ypred.npy")
+    np.save(ruta_ypred, y_pred_wf)
+    print(f"[OK] y_pred walk-forward:     {ruta_ypred}")
 
     print(f"[OK] Mejor config: {mejor_fila['modelo']}  RMSE_wf={rmse_wf:.4f}  MAE_wf={mae_wf:.4f}")
 

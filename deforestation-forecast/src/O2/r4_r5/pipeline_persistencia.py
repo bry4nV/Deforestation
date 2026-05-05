@@ -53,16 +53,22 @@ def pipeline_persistencia(X_train, y_train, df_distritos_info, ruta_modelo_persi
     # Crear DataFrames
     # -----------------------------
     df_metricas = pd.DataFrame(registros)
-
-    df_dep = (
-        df_metricas
-        .groupby("departamento")[["rmse", "mae"]]
-        .mean()
-        .reset_index()
-    )
-
     df_metricas = df_metricas.sort_values(by=["mae", "rmse"], ascending=False)
-    df_dep = df_dep.sort_values(by=["mae", "rmse"], ascending=False)
+
+    departamentos = df_distritos_info["departamento"].values
+    registros_dep = []
+    for dep in np.unique(departamentos):
+        mask    = departamentos == dep
+        y_t     = y_train[mask]
+        y_p     = y_pred_total[mask]
+        rmse_dep = round(float(np.sqrt(np.mean((y_t - y_p) ** 2))), 6)
+        mae_dep  = round(float(np.mean(np.abs(y_t - y_p))), 6)
+        registros_dep.append({"departamento": dep, "rmse": rmse_dep, "mae": mae_dep})
+    df_dep = (
+        pd.DataFrame(registros_dep)
+        .sort_values(["mae", "rmse"], ascending=False)
+        .reset_index(drop=True)
+    )
 
     df_metricas.to_csv(ruta_modelo_persistencia, index=False)
     print(f"[OK] Métricas por distrito: {ruta_modelo_persistencia}")
@@ -72,15 +78,17 @@ def pipeline_persistencia(X_train, y_train, df_distritos_info, ruta_modelo_persi
     print(f"[OK] Métricas por departamento: {ruta_dep}")
 
     ruta_global = ruta_modelo_persistencia.replace(".csv", "_global.csv")
-
     df_global = pd.DataFrame([{
         "modelo": "Persistencia_WF",
         "rmse": rmse_global,
         "mae": mae_global
     }])
-
     df_global.to_csv(ruta_global, index=False)
     print(f"[OK] Métricas globales: {ruta_global}")
+
+    ruta_ypred = ruta_modelo_persistencia.replace(".csv", "_ypred.npy")
+    np.save(ruta_ypred, y_pred_total)
+    print(f"[OK] y_pred: {ruta_ypred}")
 
     return {
         "modelo": "Persistencia_WF",
