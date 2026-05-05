@@ -23,7 +23,7 @@ from O2.config import (
 from O2.r4_r5.analisis_arima import generar_analisis_arima
 from O2.r4_r5.construir_dataset import cargar_series, construir_dataset_estadistico, construir_dataset_dl
 from O2.r4_r5.pipeline_persistencia import pipeline_persistencia
-from O2.r4_r5.pipeline_arima import pipeline_arima
+from O2.r4_r5.pipeline_arima import pipeline_arima, evaluar_arima
 from O2.r4_r5.pipeline_mlp import pipeline_mlp
 from O2.r4_r5.pipeline_lstm import pipeline_lstm
 from O2.r4_r5.pipeline_comparacion import pipeline_comparacion
@@ -72,6 +72,11 @@ def main():
             "modelo": row["modelo"], "rmse": row["rmse"], "mae": row["mae"],
             "y_pred": _cargar_ypred(ruta_pers_ypred),
         }
+        if res_persistencia["y_pred"] is None:
+            print("[INFO] Recomputando predicciones de Persistencia para gráficas...")
+            res_persistencia = pipeline_persistencia(
+                X_train_stat, y_train_stat, df_distritos_info, ruta_persistencia
+            )
     else:
         print("\n[INFO] Ejecutando Persistencia...")
         res_persistencia = pipeline_persistencia(
@@ -99,6 +104,20 @@ def main():
             "mae":    best["mae"],
             "y_pred": _cargar_ypred(ruta_arima_ypred),
         }
+        if res_arima["y_pred"] is None:
+            print("[INFO] Recomputando predicciones de ARIMA (mejor config) para gráficas...")
+            best_w = int(best["window"])
+            best_p, best_d, best_q = int(best["p"]), int(best["d"]), int(best["q"])
+            ruta_best = ruta_base_arima.replace(
+                ".csv", f"_best_w{best_w}_p{best_p}_d{best_d}_q{best_q}.csv"
+            )
+            resultado_tmp = evaluar_arima(
+                X_train_stat, y_train_stat, df_distritos_info,
+                best_w, (best_p, best_d, best_q),
+                exportar=True, ruta=ruta_best,
+            )
+            np.save(ruta_arima_ypred, resultado_tmp["y_pred"])
+            res_arima["y_pred"] = resultado_tmp["y_pred"]
     else:
         res_arima = pipeline_arima(
             X_train_stat, y_train_stat, df_distritos_info,
