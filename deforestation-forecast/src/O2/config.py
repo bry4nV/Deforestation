@@ -60,7 +60,7 @@ LSTM_HIDDEN_SIZE_VALUES = [16, 32, 64]
 LSTM_NUM_LAYERS_VALUES  = [1, 2]
 LSTM_DROPOUT_VALUES     = [0.0]
 LSTM_EPOCHS_VALUES      = [50, 100]
-LSTM_LR_VALUES          = [0.001]
+LSTM_LR_VALUES          = [0.001, 0.0005]
 LSTM_BATCH_SIZE_VALUES  = [8, 16]
 
 # =============================
