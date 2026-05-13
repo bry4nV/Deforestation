@@ -1,0 +1,10 @@
+modelo,window,p,d,q,rmse,mae
+ARIMA_WF_wfull_p1_d1_q0,full,1,1,0,0.011586,0.008289
+ARIMA_WF_wfull_p1_d1_q1,full,1,1,1,0.011746,0.008391
+ARIMA_WF_wfull_p2_d1_q0,full,2,1,0,0.011766,0.008363
+ARIMA_WF_wfull_p2_d1_q1,full,2,1,1,0.011768,0.008452
+ARIMA_WF_wfull_p1_d1_q2,full,1,1,2,0.011975,0.008544
+ARIMA_WF_wfull_p2_d1_q2,full,2,1,2,0.012028,0.008545
+ARIMA_WF_wfull_p0_d1_q2,full,0,1,2,0.012109,0.008743
+ARIMA_WF_wfull_p0_d1_q1,full,0,1,1,0.012111,0.008848
+ARIMA_WF_wfull_p0_d1_q0,full,0,1,0,0.013409,0.009766
