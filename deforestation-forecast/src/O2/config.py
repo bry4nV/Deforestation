@@ -33,7 +33,7 @@ HORIZONTE = 5
 ARIMA_P_VALUES = [0, 1, 2]
 ARIMA_D_VALUES = [1]
 ARIMA_Q_VALUES = [0, 1, 2]
-ARIMA_WINDOW_VALUES = [3, 4, 5, 10, 15, 20, 25, 30, 35]
+ARIMA_WINDOW_VALUES = [3, 4, 5, 6, 7, 10, 15, 20, 25, 30, 35, None]
 
 # =============================
 # Reproducibilidad
@@ -45,9 +45,10 @@ SEMILLA = 42
 # Hiperparámetros MLP
 # =============================
 
+MLP_ACTIVATION_VALUES   = ["relu", "leaky_relu"]
 MLP_HIDDEN_SIZES_VALUES = [[32, 16], [64, 32], [128, 64, 32]]
 MLP_DROPOUT_VALUES      = [0.0, 0.1]
-MLP_EPOCHS_VALUES       = [50]
+MLP_EPOCHS_VALUES       = [50, 100]
 MLP_LR_VALUES           = [0.001, 0.0005]
 MLP_BATCH_SIZE_VALUES   = [8, 16]
 
@@ -66,4 +67,4 @@ LSTM_BATCH_SIZE_VALUES  = [8, 16]
 # Ventanas Deep Learning
 # =============================
 
-DL_WINDOW_VALUES = [3, 4, 5, 10]
+DL_WINDOW_VALUES = [3, 4, 5, 6, 7]

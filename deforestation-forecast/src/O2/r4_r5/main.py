@@ -9,32 +9,23 @@ from O1.config import (
 )
 
 from O2.config import (
-    PERSISTENCIA_DIR, ARIMA_DIR, ANALISIS_ARIMA_DIR, MLP_DIR, LSTM_DIR,
-    COMPARACION_DIR, ANIO_INICIO,
+    PERSISTENCIA_DIR, ARIMA_DIR, ANALISIS_ARIMA_DIR, MLP_DIR, LSTM_DIR, COMPARACION_DIR, 
+    ANIO_INICIO, TAMANIO_ENTRENAMIENTO, HORIZONTE,
     ARIMA_P_VALUES, ARIMA_D_VALUES, ARIMA_Q_VALUES, ARIMA_WINDOW_VALUES,
     MLP_HIDDEN_SIZES_VALUES, MLP_DROPOUT_VALUES,
     MLP_EPOCHS_VALUES, MLP_LR_VALUES, MLP_BATCH_SIZE_VALUES,
     LSTM_HIDDEN_SIZE_VALUES, LSTM_NUM_LAYERS_VALUES, LSTM_DROPOUT_VALUES,
     LSTM_EPOCHS_VALUES, LSTM_LR_VALUES, LSTM_BATCH_SIZE_VALUES,
-    DL_WINDOW_VALUES,
-    TAMANIO_ENTRENAMIENTO, HORIZONTE
+    DL_WINDOW_VALUES
 )
 
 from O2.r4_r5.analisis_arima import generar_analisis_arima
 from O2.r4_r5.construir_dataset import cargar_series, construir_dataset_estadistico, construir_dataset_dl
 from O2.r4_r5.pipeline_persistencia import pipeline_persistencia
-from O2.r4_r5.pipeline_arima import pipeline_arima, evaluar_arima
+from O2.r4_r5.pipeline_arima import pipeline_arima
 from O2.r4_r5.pipeline_mlp import pipeline_mlp
 from O2.r4_r5.pipeline_lstm import pipeline_lstm
 from O2.r4_r5.pipeline_comparacion import pipeline_comparacion
-
-
-def _cargar_ypred(ruta_npy):
-    if os.path.exists(ruta_npy):
-        return np.load(ruta_npy)
-    print(f"[WARN] y_pred no encontrado: {ruta_npy}. No estará disponible para gráficas.")
-    return None
-
 
 def main():
 
@@ -65,65 +56,61 @@ def main():
     ruta_persistencia = os.path.join(PERSISTENCIA_DIR, "persistencia_resultados.csv")
     ruta_pers_global  = ruta_persistencia.replace(".csv", "_global.csv")
     ruta_pers_ypred   = ruta_persistencia.replace(".csv", "_ypred.npy")
-    if os.path.exists(ruta_pers_global):
+    
+    if os.path.exists(ruta_pers_ypred):
         print("\n[SKIP] Persistencia — cargando resultados existentes.")
         row = pd.read_csv(ruta_pers_global).iloc[0]
+
         res_persistencia = {
-            "modelo": row["modelo"], "rmse": row["rmse"], "mae": row["mae"],
-            "y_pred": _cargar_ypred(ruta_pers_ypred),
+            "modelo": row["modelo"],
+            "rmse": row["rmse"],
+            "mae": row["mae"],
+            "y_pred": np.load(ruta_pers_ypred),
         }
-        if res_persistencia["y_pred"] is None:
-            print("[INFO] Recomputando predicciones de Persistencia para gráficas...")
-            res_persistencia = pipeline_persistencia(
-                X_train_stat, y_train_stat, df_distritos_info, ruta_persistencia
-            )
     else:
         print("\n[INFO] Ejecutando Persistencia...")
         res_persistencia = pipeline_persistencia(
-            X_train_stat, y_train_stat, df_distritos_info, ruta_persistencia
+            X_train_stat,
+            y_train_stat,
+            df_distritos_info,
+            ruta_persistencia
         )
+
     resultados.append(res_persistencia)
 
     # — Diagnóstico ARIMA (ACF/PACF)
     ruta_estadisticas = os.path.join(SERIES_ENTRENAMIENTO_DIR, "estadisticas_distritos_entrenamiento.csv")
-    if glob.glob(os.path.join(ANALISIS_ARIMA_DIR, "*.png")):
-        print("[SKIP] Análisis ARIMA — gráficos ya generados.")
-    else:
-        generar_analisis_arima(ruta_estadisticas, ruta_series, ANALISIS_ARIMA_DIR)
+    generar_analisis_arima(ruta_estadisticas, ruta_series, ANALISIS_ARIMA_DIR)
 
     # — ARIMA
-    ruta_base_arima    = os.path.join(ARIMA_DIR, "arima.csv")
-    ruta_arima_mejores = ruta_base_arima.replace(".csv", "_mejores_por_ventana.csv")
-    ruta_arima_ypred   = ruta_base_arima.replace(".csv", "_best_ypred.npy")
-    if os.path.exists(ruta_arima_mejores):
-        print("[SKIP] ARIMA — cargando resultados existentes.")
-        best = pd.read_csv(ruta_arima_mejores).sort_values("rmse").iloc[0]
+    ruta_base_arima = os.path.join(ARIMA_DIR, "arima.csv")
+    ruta_arima_global = ruta_base_arima.replace(".csv", "_global.csv")
+    ruta_arima_ypred = ruta_base_arima.replace(".csv", "_mejor_ypred.npy")
+
+    if os.path.exists(ruta_arima_ypred):
+        print("\n[SKIP] ARIMA — cargando resultados existentes.")
+
+        row = pd.read_csv(ruta_arima_global).iloc[0]
+
         res_arima = {
-            "modelo": f"ARIMA_WF_w{int(best['window'])}",
-            "rmse":   best["rmse"],
-            "mae":    best["mae"],
-            "y_pred": _cargar_ypred(ruta_arima_ypred),
+            "modelo": row["modelo"],
+            "rmse": row["rmse"],
+            "mae": row["mae"],
+            "y_pred": np.load(ruta_arima_ypred),
         }
-        if res_arima["y_pred"] is None:
-            print("[INFO] Recomputando predicciones de ARIMA (mejor config) para gráficas...")
-            best_w = int(best["window"])
-            best_p, best_d, best_q = int(best["p"]), int(best["d"]), int(best["q"])
-            ruta_best = ruta_base_arima.replace(
-                ".csv", f"_best_w{best_w}_p{best_p}_d{best_d}_q{best_q}.csv"
-            )
-            resultado_tmp = evaluar_arima(
-                X_train_stat, y_train_stat, df_distritos_info,
-                best_w, (best_p, best_d, best_q),
-                exportar=True, ruta=ruta_best,
-            )
-            np.save(ruta_arima_ypred, resultado_tmp["y_pred"])
-            res_arima["y_pred"] = resultado_tmp["y_pred"]
     else:
+        print("\n[INFO] Ejecutando ARIMA...")
         res_arima = pipeline_arima(
-            X_train_stat, y_train_stat, df_distritos_info,
+            X_train_stat,
+            y_train_stat,
+            df_distritos_info,
             ruta_base_arima,
-            ARIMA_P_VALUES, ARIMA_D_VALUES, ARIMA_Q_VALUES, ARIMA_WINDOW_VALUES,
+            ARIMA_P_VALUES,
+            ARIMA_D_VALUES,
+            ARIMA_Q_VALUES,
+            ARIMA_WINDOW_VALUES,
         )
+
     resultados.append(res_arima)
 
     # =====================================================================
@@ -134,42 +121,68 @@ def main():
     ruta_mlp       = os.path.join(MLP_DIR, "mlp.csv")
     ruta_mlp_res   = ruta_mlp.replace(".csv", "_resultados.csv")
     ruta_mlp_ypred = ruta_mlp.replace(".csv", "_mejor_ypred.npy")
-    if os.path.exists(ruta_mlp_res):
+
+    if os.path.exists(ruta_mlp_ypred):
         print("\n[SKIP] MLP — cargando resultados existentes.")
         row = pd.read_csv(ruta_mlp_res).iloc[0]
+
         res_mlp = {
-            "modelo": row["modelo"], "rmse": row["rmse_test"], "mae": row["mae_test"],
-            "y_pred": _cargar_ypred(ruta_mlp_ypred),
+            "modelo": row["modelo"],
+            "rmse": row["rmse_test"],
+            "mae": row["mae_test"],
+            "y_pred": np.load(ruta_mlp_ypred),
         }
     else:
         print("\n[INFO] Ejecutando MLP...")
+
         res_mlp = pipeline_mlp(
-            dataset_dl, ruta_mlp,
-            MLP_EPOCHS_VALUES, MLP_LR_VALUES, MLP_BATCH_SIZE_VALUES,
-            MLP_HIDDEN_SIZES_VALUES, MLP_DROPOUT_VALUES,
-            series, df_distritos_info, TAMANIO_ENTRENAMIENTO,
+            dataset_dl,
+            ruta_mlp,
+            MLP_EPOCHS_VALUES,
+            MLP_LR_VALUES,
+            MLP_BATCH_SIZE_VALUES,
+            MLP_HIDDEN_SIZES_VALUES,
+            MLP_DROPOUT_VALUES,
+            series,
+            df_distritos_info,
+            TAMANIO_ENTRENAMIENTO,
         )
+
     resultados.append(res_mlp)
 
     # — LSTM
-    ruta_lstm       = os.path.join(LSTM_DIR, "lstm.csv")
-    ruta_lstm_res   = ruta_lstm.replace(".csv", "_resultados.csv")
+    ruta_lstm = os.path.join(LSTM_DIR, "lstm.csv")
+    ruta_lstm_res = ruta_lstm.replace(".csv", "_resultados.csv")
     ruta_lstm_ypred = ruta_lstm.replace(".csv", "_mejor_ypred.npy")
-    if os.path.exists(ruta_lstm_res):
+
+    if os.path.exists(ruta_lstm_ypred):
         print("\n[SKIP] LSTM — cargando resultados existentes.")
+
         row = pd.read_csv(ruta_lstm_res).iloc[0]
+
         res_lstm = {
-            "modelo": row["modelo"], "rmse": row["rmse_test"], "mae": row["mae_test"],
-            "y_pred": _cargar_ypred(ruta_lstm_ypred),
+            "modelo": row["modelo"],
+            "rmse": row["rmse_test"],
+            "mae": row["mae_test"],
+            "y_pred": np.load(ruta_lstm_ypred),
         }
     else:
         print("\n[INFO] Ejecutando LSTM...")
+
         res_lstm = pipeline_lstm(
-            dataset_dl, ruta_lstm,
-            LSTM_EPOCHS_VALUES, LSTM_LR_VALUES, LSTM_BATCH_SIZE_VALUES,
-            LSTM_HIDDEN_SIZE_VALUES, LSTM_NUM_LAYERS_VALUES, LSTM_DROPOUT_VALUES,
-            series, df_distritos_info, TAMANIO_ENTRENAMIENTO,
+            dataset_dl,
+            ruta_lstm,
+            LSTM_EPOCHS_VALUES,
+            LSTM_LR_VALUES,
+            LSTM_BATCH_SIZE_VALUES,
+            LSTM_HIDDEN_SIZE_VALUES,
+            LSTM_NUM_LAYERS_VALUES,
+            LSTM_DROPOUT_VALUES,
+            series,
+            df_distritos_info,
+            TAMANIO_ENTRENAMIENTO,
         )
+
     resultados.append(res_lstm)
 
     # =====================================================================

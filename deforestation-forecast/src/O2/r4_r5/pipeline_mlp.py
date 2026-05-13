@@ -7,6 +7,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 from O2.config import SEMILLA
 
@@ -19,14 +20,56 @@ def fijar_semilla():
     torch.backends.cudnn.benchmark = False
 
 
+def calcular_metricas(y_true, y_pred):
+    y_true = np.asarray(y_true).reshape(-1)
+    y_pred = np.asarray(y_pred).reshape(-1)
+
+    rmse = float(np.sqrt(mean_squared_error(y_true, y_pred)))
+    mae = float(mean_absolute_error(y_true, y_pred))
+
+    return rmse, mae
+
+
+def diagnosticar_ajuste(rmse_train, mae_train, rmse_test, mae_test):
+    gap_rmse = rmse_test - rmse_train
+    gap_mae = mae_test - mae_train
+
+    ratio_rmse = rmse_test / rmse_train if rmse_train > 0 else np.nan
+    ratio_mae = mae_test / mae_train if mae_train > 0 else np.nan
+
+    return {
+        "gap_rmse": round(float(gap_rmse), 6),
+        "gap_mae": round(float(gap_mae), 6),
+        "ratio_rmse": round(float(ratio_rmse), 6),
+        "ratio_mae": round(float(ratio_mae), 6),
+    }
+
+
+def obtener_activacion(nombre):
+    nombre = nombre.lower()
+
+    if nombre == "relu":
+        return nn.ReLU()
+    elif nombre == "tanh":
+        return nn.Tanh()
+    elif nombre == "sigmoid":
+        return nn.Sigmoid()
+    elif nombre == "leaky_relu":
+        return nn.LeakyReLU(negative_slope=0.01)
+    elif nombre == "elu":
+        return nn.ELU()
+    else:
+        raise ValueError(f"Función de activación no soportada: {nombre}")
+
+
 class MLP(nn.Module):
-    def __init__(self, input_size, hidden_sizes, dropout):
+    def __init__(self, input_size, hidden_sizes, dropout, activation):
         super().__init__()
         layers = []
         prev_size = input_size
         for h in hidden_sizes:
             layers.append(nn.Linear(prev_size, h))
-            layers.append(nn.ReLU())
+            layers.append(obtener_activacion(activation))
             layers.append(nn.Dropout(dropout))
             prev_size = h
         layers.append(nn.Linear(prev_size, 1))
@@ -37,18 +80,15 @@ class MLP(nn.Module):
 
 
 def entrenar(X_train_t, y_train_t,
-             hidden_sizes, dropout, epochs, batch_size, lr, patience=10):
+             hidden_sizes, dropout, activation, epochs, batch_size, lr):
 
     X          = X_train_t.view(X_train_t.shape[0], -1)
     dataloader = DataLoader(TensorDataset(X, y_train_t), batch_size=batch_size, shuffle=True)
 
-    model     = MLP(X.shape[1], hidden_sizes, dropout)
+    model = MLP(X.shape[1], hidden_sizes, dropout, activation)
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
-    best_train_loss = float("inf")
-    no_improve      = 0
-    best_state      = None
     train_losses    = []
 
     for epoch in range(epochs):
@@ -59,25 +99,13 @@ def entrenar(X_train_t, y_train_t,
             loss = criterion(model(X_batch), y_batch)
             loss.backward()
             optimizer.step()
-            epoch_loss += loss.item()
+            epoch_loss += loss.item() * X_batch.size(0)
 
-        train_loss = epoch_loss / len(dataloader)
+        train_loss = epoch_loss / len(dataloader.dataset)
         train_losses.append(train_loss)
-
-        if train_loss < best_train_loss - 1e-6:
-            best_train_loss = train_loss
-            no_improve      = 0
-            best_state      = {k: v.clone() for k, v in model.state_dict().items()}
-        else:
-            no_improve += 1
-            if no_improve >= patience:
-                break
 
         if (epoch + 1) % 10 == 0:
             print(f"    Epoch {epoch+1} | Train={train_loss:.4f}")
-
-    if best_state is not None:
-        model.load_state_dict(best_state)
 
     return model, train_losses
 
@@ -86,10 +114,11 @@ def evaluar(model, X_tensor, y_tensor):
     model.eval()
     X = X_tensor.view(X_tensor.shape[0], -1)
     with torch.no_grad():
-        preds = model(X).numpy()
-    y_true = y_tensor.numpy()
-    rmse = float(np.sqrt(np.mean((y_true - preds) ** 2)))
-    mae  = float(np.mean(np.abs(y_true - preds)))
+        preds = model(X).cpu().numpy()
+
+    y_true = y_tensor.cpu().numpy()
+
+    rmse, mae = calcular_metricas(y_true, preds)
     return rmse, mae
 
 
@@ -175,6 +204,7 @@ def pipeline_mlp(
     batch_size_values,
     hidden_sizes_values,
     dropout_values,
+    activation_values,
     series,
     df_distritos_info,
     tamanio_entrenamiento,
@@ -191,6 +221,7 @@ def pipeline_mlp(
         dataset_dl.items(),
         hidden_sizes_values,
         dropout_values,
+        activation_values,
         epochs_values,
         lr_values,
         batch_size_values,
@@ -203,26 +234,29 @@ def pipeline_mlp(
     mejor_fila   = None
     mejor_losses = None
 
-    for (w, data), hidden_sizes, dropout, epochs, lr, batch_size in grid:
+    for (w, data), hidden_sizes, dropout, activation, epochs, lr, batch_size in grid:
         X_train, y_train = data["train"]
         X_test,  y_test  = data["test"]
 
         model, train_losses = entrenar(
             X_train, y_train,
-            hidden_sizes, dropout, epochs, batch_size, lr,
+            hidden_sizes, dropout, activation, epochs, batch_size, lr,
         )
 
         rmse_train, mae_train = evaluar(model, X_train, y_train)
         rmse_test,  mae_test  = evaluar(model, X_test,  y_test)
 
+        diag = diagnosticar_ajuste(rmse_train, mae_train, rmse_test, mae_test)
+
         h_str  = "x".join(map(str, hidden_sizes))
-        nombre = f"MLP_w{w}_h{h_str}_d{dropout}_e{epochs}_lr{lr}_b{batch_size}"
+        nombre = f"MLP_w{w}_h{h_str}_act{activation}_d{dropout}_e{epochs}_lr{lr}_b{batch_size}"
         print(f"  {nombre}  RMSE_test={rmse_test:.4f}  MAE_test={mae_test:.4f}")
 
         fila = {
             "modelo":       nombre,
             "window_size":  w,
             "hidden_sizes": str(hidden_sizes),
+            "activation":   activation,
             "dropout":      dropout,
             "epochs":       epochs,
             "lr":           lr,
@@ -231,7 +265,12 @@ def pipeline_mlp(
             "mae_train":    round(mae_train,  6),
             "rmse_test":    round(rmse_test,  6),
             "mae_test":     round(mae_test,   6),
+            "gap_rmse":     diag["gap_rmse"],
+            "gap_mae":      diag["gap_mae"],
+            "ratio_rmse":   diag["ratio_rmse"],
+            "ratio_mae":    diag["ratio_mae"],
         }
+
         resultados.append(fila)
 
         if rmse_test < mejor_rmse:

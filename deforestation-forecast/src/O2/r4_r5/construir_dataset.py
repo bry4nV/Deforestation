@@ -62,7 +62,7 @@ def construir_dataset_estadistico(series, train_size=35, horizon=5):
     return X_train, y_train
 
 
-def crear_ventanas_split(series, window_size, tamanieo_entrenamiento):
+def crear_ventanas_split(series, window_size, tamanio_entrenamiento):
 
     X_train, y_train = [], []
     X_test, y_test = [], []
@@ -78,7 +78,7 @@ def crear_ventanas_split(series, window_size, tamanieo_entrenamiento):
             y_target = serie[t + window_size]
 
             # TRAIN
-            if t + window_size < tamanieo_entrenamiento:
+            if t + window_size < tamanio_entrenamiento:
                 X_train.append(X_window)
                 y_train.append(y_target)
 

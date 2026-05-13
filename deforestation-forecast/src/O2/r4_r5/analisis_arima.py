@@ -3,10 +3,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
-
-# -----------------------------
-# Selección de distritos
-# -----------------------------
 def seleccionar_distritos_representativos(ruta_estadisticas):
     df = pd.read_csv(ruta_estadisticas)
     df["rango"] = df["pct_bosque_max"] - df["pct_bosque_min"]
@@ -14,15 +10,9 @@ def seleccionar_distritos_representativos(ruta_estadisticas):
     distrito_mayor = df.loc[df["rango"].idxmax(), "geocode"]
     distrito_menor = df.loc[df["rango"].idxmin(), "geocode"]
 
-    print(f"[INFO] Distrito mayor cambio: {distrito_mayor}")
-    print(f"[INFO] Distrito menor cambio: {distrito_menor}")
-
     return distrito_mayor, distrito_menor
 
 
-# -----------------------------
-# Construcción de series
-# -----------------------------
 def construir_series(ruta_series, distrito_mayor, distrito_menor):
     df = pd.read_csv(ruta_series)
 
@@ -37,9 +27,6 @@ def construir_series(ruta_series, distrito_mayor, distrito_menor):
     )
 
 
-# -----------------------------
-# Diferenciación
-# -----------------------------
 def diferenciar_serie(serie, d=1):
     serie_diff = pd.Series(serie)
     for _ in range(d):
@@ -47,9 +34,6 @@ def diferenciar_serie(serie, d=1):
     return serie_diff.dropna().values
 
 
-# -----------------------------
-# Guardar series
-# -----------------------------
 def guardar_serie(anios, serie, titulo, ruta):
     plt.figure()
     plt.plot(anios, serie)
@@ -61,9 +45,6 @@ def guardar_serie(anios, serie, titulo, ruta):
     plt.close()
 
 
-# -----------------------------
-# Guardar ACF/PACF
-# -----------------------------
 def guardar_acf_pacf(serie, nombre, carpeta):
     plt.figure()
     plot_acf(serie, lags=10)
@@ -78,9 +59,6 @@ def guardar_acf_pacf(serie, nombre, carpeta):
     plt.close()
 
 
-# -----------------------------
-# Función principal
-# -----------------------------
 def generar_analisis_arima(ruta_estadisticas, ruta_series, ruta_analisis_arima):
     print("\n" + "=" * 60)
     print(" ANÁLISIS EXPLORATORIO ARIMA ")
@@ -94,23 +72,16 @@ def generar_analisis_arima(ruta_estadisticas, ruta_series, ruta_analisis_arima):
     (anios_menor,   serie_menor), \
     (anios_mediana, serie_mediana) = construir_series(ruta_series, d_mayor, d_menor)
 
-    # -----------------------------
-    # Guardar series originales
-    # -----------------------------
     guardar_serie(anios_mayor,   serie_mayor,   "Serie - Mayor cambio", os.path.join(ruta_analisis_arima, "serie_mayor.png"))
     guardar_serie(anios_menor,   serie_menor,   "Serie - Menor cambio", os.path.join(ruta_analisis_arima, "serie_menor.png"))
     guardar_serie(anios_mediana, serie_mediana, "Serie - Mediana",      os.path.join(ruta_analisis_arima, "serie_mediana.png"))
 
-    # -----------------------------
-    # Diferenciar (solo mayor y mediana)
-    # -----------------------------
     serie_mayor_diff = diferenciar_serie(serie_mayor, d=1)
     serie_mediana_diff = diferenciar_serie(serie_mediana, d=1)
 
     anios_mayor_diff = anios_mayor[1:]
     anios_mediana_diff = anios_mediana[1:]
 
-    # Guardar series diferenciadas
     guardar_serie(anios_mayor_diff, serie_mayor_diff,
                   "Serie Diferenciada - Mayor",
                   os.path.join(ruta_analisis_arima, "serie_mayor_diff.png"))
@@ -118,10 +89,6 @@ def generar_analisis_arima(ruta_estadisticas, ruta_series, ruta_analisis_arima):
     guardar_serie(anios_mediana_diff, serie_mediana_diff,
                   "Serie Diferenciada - Mediana",
                   os.path.join(ruta_analisis_arima, "serie_mediana_diff.png"))
-
-    # -----------------------------
-    # ACF/PACF
-    # -----------------------------
 
     # Originales (diagnóstico)
     guardar_acf_pacf(serie_mayor,   "mayor_raw",   ruta_analisis_arima)
