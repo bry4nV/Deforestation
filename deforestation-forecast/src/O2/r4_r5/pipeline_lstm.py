@@ -7,6 +7,7 @@ import pandas as pd
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader, TensorDataset
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 
 from O2.config import SEMILLA
 
@@ -19,10 +20,37 @@ def fijar_semilla():
     torch.backends.cudnn.benchmark = False
 
 
+def calcular_metricas(y_true, y_pred):
+    y_true = np.asarray(y_true).reshape(-1)
+    y_pred = np.asarray(y_pred).reshape(-1)
+
+    rmse = float(np.sqrt(mean_squared_error(y_true, y_pred)))
+    mae = float(mean_absolute_error(y_true, y_pred))
+
+    return rmse, mae
+
+
+def diagnosticar_ajuste(rmse_train, mae_train, rmse_test, mae_test):
+    gap_rmse = rmse_test - rmse_train
+    gap_mae = mae_test - mae_train
+
+    ratio_rmse = rmse_test / rmse_train if rmse_train > 0 else np.nan
+    ratio_mae = mae_test / mae_train if mae_train > 0 else np.nan
+
+    return {
+        "gap_rmse": round(float(gap_rmse), 6),
+        "gap_mae": round(float(gap_mae), 6),
+        "ratio_rmse": round(float(ratio_rmse), 6),
+        "ratio_mae": round(float(ratio_mae), 6),
+    }
+
+
 class LSTM(nn.Module):
     def __init__(self, input_size, hidden_size, num_layers, dropout):
         super().__init__()
-        self.lstm    = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+        lstm_dropout = dropout if num_layers > 1 else 0.0
+        self.lstm    = nn.LSTM(input_size, hidden_size, num_layers,
+                               batch_first=True, dropout=lstm_dropout)
         self.dropout = nn.Dropout(dropout)
         self.fc      = nn.Linear(hidden_size, 1)
 
@@ -34,57 +62,59 @@ class LSTM(nn.Module):
 
 
 def entrenar(X_train_t, y_train_t,
-             hidden_size, num_layers, dropout, epochs, batch_size, lr, patience=10):
+             hidden_size, num_layers, dropout, epochs, batch_size, lr):
 
-    dataloader = DataLoader(TensorDataset(X_train_t, y_train_t), batch_size=batch_size, shuffle=True)
+    dataloader = DataLoader(
+        TensorDataset(X_train_t, y_train_t),
+        batch_size=batch_size,
+        shuffle=True
+    )
 
-    model     = LSTM(X_train_t.shape[2], hidden_size, num_layers, dropout)
+    model = LSTM(
+        input_size=X_train_t.shape[2],
+        hidden_size=hidden_size,
+        num_layers=num_layers,
+        dropout=dropout
+    )
+
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
 
-    best_train_loss = float("inf")
-    no_improve      = 0
-    best_state      = None
     train_losses    = []
 
     for epoch in range(epochs):
         model.train()
         epoch_loss = 0.0
+
         for X_batch, y_batch in dataloader:
             optimizer.zero_grad()
-            loss = criterion(model(X_batch), y_batch)
+
+            preds = model(X_batch)
+            loss = criterion(preds, y_batch)
+
             loss.backward()
             optimizer.step()
-            epoch_loss += loss.item()
 
-        train_loss = epoch_loss / len(dataloader)
+            epoch_loss += loss.item() * X_batch.size(0)
+
+        train_loss = epoch_loss / len(dataloader.dataset)
         train_losses.append(train_loss)
-
-        if train_loss < best_train_loss - 1e-6:
-            best_train_loss = train_loss
-            no_improve      = 0
-            best_state      = {k: v.clone() for k, v in model.state_dict().items()}
-        else:
-            no_improve += 1
-            if no_improve >= patience:
-                break
 
         if (epoch + 1) % 10 == 0:
             print(f"    Epoch {epoch+1} | Train={train_loss:.4f}")
-
-    if best_state is not None:
-        model.load_state_dict(best_state)
 
     return model, train_losses
 
 
 def evaluar(model, X_tensor, y_tensor):
     model.eval()
+
     with torch.no_grad():
-        preds = model(X_tensor).numpy()
-    y_true = y_tensor.numpy()
-    rmse = float(np.sqrt(np.mean((y_true - preds) ** 2)))
-    mae  = float(np.mean(np.abs(y_true - preds)))
+        preds = model(X_tensor).cpu().numpy()
+
+    y_true = y_tensor.cpu().numpy()
+    rmse, mae = calcular_metricas(y_true, preds)
+
     return rmse, mae
 
 
@@ -112,19 +142,20 @@ def evaluar_geografico(model, series, df_distritos_info, window_size, tamanio_en
         y_pred_total.append(preds)
 
         preds_arr = np.array(preds)
+        rmse_i, mae_i = calcular_metricas(y_true_i, preds_arr)
+
         info = df_distritos_info.iloc[i]
         registros.append({
             "geocode":      info["geocode"],
             "departamento": info["departamento"],
             "distrito":     info["distrito"],
-            "rmse":         round(float(np.sqrt(np.mean((y_true_i - preds_arr) ** 2))), 6),
-            "mae":          round(float(np.mean(np.abs(y_true_i - preds_arr))), 6),
+            "rmse":         round(rmse_i, 6),
+            "mae":          round(mae_i, 6),
         })
 
     y_pred_total = np.array(y_pred_total)
     y_true_total = series[:, tamanio_entrenamiento:]
-    rmse_global  = float(np.sqrt(np.mean((y_true_total - y_pred_total) ** 2)))
-    mae_global   = float(np.mean(np.abs(y_true_total - y_pred_total)))
+    rmse_global, mae_global = calcular_metricas(y_true_total, y_pred_total)
 
     df_distrito = (
         pd.DataFrame(registros)
@@ -138,8 +169,7 @@ def evaluar_geografico(model, series, df_distritos_info, window_size, tamanio_en
         mask    = departamentos == dep
         y_t     = y_true_total[mask]
         y_p     = y_pred_total[mask]
-        rmse_dep = round(float(np.sqrt(np.mean((y_t - y_p) ** 2))), 6)
-        mae_dep  = round(float(np.mean(np.abs(y_t - y_p))), 6)
+        rmse_dep, mae_dep = calcular_metricas(y_t, y_p)
         registros_dep.append({"departamento": dep, "rmse": rmse_dep, "mae": mae_dep})
     df_departamento = (
         pd.DataFrame(registros_dep)
@@ -212,6 +242,8 @@ def pipeline_lstm(
         rmse_train, mae_train = evaluar(model, X_train, y_train)
         rmse_test,  mae_test  = evaluar(model, X_test,  y_test)
 
+        diag = diagnosticar_ajuste(rmse_train, mae_train, rmse_test, mae_test)
+
         nombre = f"LSTM_w{w}_h{hidden_size}_l{num_layers}_d{dropout}_e{epochs}_lr{lr}_b{batch_size}"
         print(f"  {nombre}  RMSE_test={rmse_test:.4f}  MAE_test={mae_test:.4f}")
 
@@ -228,7 +260,12 @@ def pipeline_lstm(
             "mae_train":   round(mae_train,  6),
             "rmse_test":   round(rmse_test,  6),
             "mae_test":    round(mae_test,   6),
+            "gap_rmse":    diag["gap_rmse"],
+            "gap_mae":     diag["gap_mae"],
+            "ratio_rmse":  diag["ratio_rmse"],
+            "ratio_mae":   diag["ratio_mae"],
         }
+        
         resultados.append(fila)
 
         if rmse_test < mejor_rmse:
