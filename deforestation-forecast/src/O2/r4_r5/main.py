@@ -9,13 +9,16 @@ from O1.config import (
 )
 
 from O2.config import (
-    PERSISTENCIA_DIR, ARIMA_DIR, ANALISIS_ARIMA_DIR, MLP_DIR, LSTM_DIR, COMPARACION_DIR, 
+    PERSISTENCIA_DIR, ARIMA_DIR, ANALISIS_ARIMA_DIR, MLP_DIR, LSTM_DIR, CNN_DIR, COMPARACION_DIR,
     ANIO_INICIO, TAMANIO_ENTRENAMIENTO, HORIZONTE,
     ARIMA_P_VALUES, ARIMA_D_VALUES, ARIMA_Q_VALUES, ARIMA_WINDOW_VALUES,
     MLP_HIDDEN_SIZES_VALUES, MLP_DROPOUT_VALUES, MLP_ACTIVATION_VALUES,
     MLP_EPOCHS_VALUES, MLP_LR_VALUES, MLP_BATCH_SIZE_VALUES,
     LSTM_HIDDEN_SIZE_VALUES, LSTM_NUM_LAYERS_VALUES, LSTM_DROPOUT_VALUES,
     LSTM_EPOCHS_VALUES, LSTM_LR_VALUES, LSTM_BATCH_SIZE_VALUES,
+    CNN_CONV_CHANNELS_VALUES, CNN_KERNEL_SIZE_VALUES, CNN_DROPOUT_VALUES,
+    CNN_ACTIVATION_VALUES, CNN_DENSE_SIZE_VALUES,
+    CNN_EPOCHS_VALUES, CNN_LR_VALUES, CNN_BATCH_SIZE_VALUES,
     DL_WINDOW_VALUES
 )
 
@@ -25,6 +28,7 @@ from O2.r4_r5.pipeline_persistencia import pipeline_persistencia
 from O2.r4_r5.pipeline_arima import pipeline_arima
 from O2.r4_r5.pipeline_mlp import pipeline_mlp
 from O2.r4_r5.pipeline_lstm import pipeline_lstm
+from O2.r4_r5.pipeline_cnn import pipeline_cnn
 from O2.r4_r5.pipeline_comparacion import pipeline_comparacion
 
 def main():
@@ -185,6 +189,42 @@ def main():
         )
 
     resultados.append(res_lstm)
+
+    # — CNN
+    ruta_cnn       = os.path.join(CNN_DIR, "cnn.csv")
+    ruta_cnn_res   = ruta_cnn.replace(".csv", "_resultados.csv")
+    ruta_cnn_ypred = ruta_cnn.replace(".csv", "_mejor_ypred.npy")
+
+    if os.path.exists(ruta_cnn_ypred):
+        print("\n[SKIP] CNN — cargando resultados existentes.")
+        row = pd.read_csv(ruta_cnn_res).iloc[0]
+
+        res_cnn = {
+            "modelo": row["modelo"],
+            "rmse":   row["rmse_test"],
+            "mae":    row["mae_test"],
+            "y_pred": np.load(ruta_cnn_ypred),
+        }
+    else:
+        print("\n[INFO] Ejecutando CNN...")
+
+        res_cnn = pipeline_cnn(
+            dataset_dl,
+            ruta_cnn,
+            CNN_EPOCHS_VALUES,
+            CNN_LR_VALUES,
+            CNN_BATCH_SIZE_VALUES,
+            CNN_CONV_CHANNELS_VALUES,
+            CNN_KERNEL_SIZE_VALUES,
+            CNN_DROPOUT_VALUES,
+            CNN_ACTIVATION_VALUES,
+            CNN_DENSE_SIZE_VALUES,
+            series,
+            df_distritos_info,
+            TAMANIO_ENTRENAMIENTO,
+        )
+
+    resultados.append(res_cnn)
 
     # =====================================================================
     # PASO 4: COMPARACIÓN FINAL
