@@ -1,3 +1,5 @@
+import ast
+import json
 import random
 from itertools import product
 
@@ -12,10 +14,18 @@ from sklearn.metrics import mean_absolute_error, mean_squared_error
 from O2.config import SEMILLA
 
 
-def fijar_semilla():
-    random.seed(SEMILLA)
-    np.random.seed(SEMILLA)
-    torch.manual_seed(SEMILLA)
+DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+
+def fijar_semilla(seed=SEMILLA):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
 
@@ -56,8 +66,23 @@ def obtener_activacion(nombre):
         return nn.Tanh()
     elif nombre == "elu":
         return nn.ELU()
+    elif nombre == "sigmoid":
+        return nn.Sigmoid()
     else:
         raise ValueError(f"Función de activación no soportada: {nombre}")
+    
+
+def parse_conv_channels(conv_channels):
+    if isinstance(conv_channels, str):
+        return ast.literal_eval(conv_channels)
+    return conv_channels
+
+
+def preparar_X_cnn(X_tensor):
+    if X_tensor.ndim == 2:
+        X_tensor = X_tensor.unsqueeze(-1)
+
+    return X_tensor.permute(0, 2, 1).float()
 
 
 class CNN1D(nn.Module):
@@ -87,7 +112,7 @@ class CNN1D(nn.Module):
                     in_channels=prev_channels,
                     out_channels=out_channels,
                     kernel_size=kernel_size,
-                    padding="same"
+                    padding="same",
                 )
             )
             layers.append(obtener_activacion(activation))
@@ -96,7 +121,6 @@ class CNN1D(nn.Module):
 
         self.conv = nn.Sequential(*layers)
 
-        # Con padding="same", la longitud temporal de salida se mantiene igual a window_size.
         conv_output_size = conv_channels[-1] * window_size
 
         self.fc = nn.Sequential(
@@ -104,7 +128,7 @@ class CNN1D(nn.Module):
             nn.Linear(conv_output_size, dense_size),
             obtener_activacion(activation),
             nn.Dropout(dropout),
-            nn.Linear(dense_size, 1)
+            nn.Linear(dense_size, 1),
         )
 
     def forward(self, x):
@@ -124,33 +148,33 @@ def entrenar(
     epochs,
     batch_size,
     lr,
+    seed=SEMILLA,
 ):
-    """
-    X_train_t esperado:
-        shape = (n_muestras, window_size, 1)
-        igual que LSTM.
+    fijar_semilla(seed)
 
-    Para CNN se transforma internamente a:
-        shape = (n_muestras, 1, window_size)
-    """
+    X = preparar_X_cnn(X_train_t)
+    y = y_train_t.float()
 
-    X_train_cnn = X_train_t.permute(0, 2, 1)
+    generator = torch.Generator()
+    generator.manual_seed(seed)
 
     dataloader = DataLoader(
-        TensorDataset(X_train_cnn, y_train_t),
+        TensorDataset(X, y),
         batch_size=batch_size,
-        shuffle=True
+        shuffle=True,
+        generator=generator,
+        num_workers=0,
     )
 
     model = CNN1D(
-        input_channels=X_train_cnn.shape[1],
-        window_size=X_train_cnn.shape[2],
+        input_channels=X.shape[1],
+        window_size=X.shape[2],
         conv_channels=conv_channels,
         kernel_size=kernel_size,
         dropout=dropout,
         activation=activation,
         dense_size=dense_size,
-    )
+    ).to(DEVICE)
 
     criterion = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=lr)
@@ -162,6 +186,9 @@ def entrenar(
         epoch_loss = 0.0
 
         for X_batch, y_batch in dataloader:
+            X_batch = X_batch.to(DEVICE)
+            y_batch = y_batch.to(DEVICE)
+
             optimizer.zero_grad()
 
             preds = model(X_batch)
@@ -176,42 +203,32 @@ def entrenar(
         train_losses.append(train_loss)
 
         if (epoch + 1) % 10 == 0:
-            print(f"    Epoch {epoch+1} | Train={train_loss:.4f}")
+            print(f"    Epoch {epoch + 1} | Train={train_loss:.6f}")
 
     return model, train_losses
 
 
 def evaluar(model, X_tensor, y_tensor):
-    """
-    X_tensor esperado:
-        shape = (n_muestras, window_size, 1)
-
-    Para CNN:
-        shape = (n_muestras, 1, window_size)
-    """
-
     model.eval()
 
-    X_cnn = X_tensor.permute(0, 2, 1)
+    X = preparar_X_cnn(X_tensor).to(DEVICE)
+    y_true = y_tensor.detach().cpu().numpy()
 
     with torch.no_grad():
-        preds = model(X_cnn).cpu().numpy()
-
-    y_true = y_tensor.cpu().numpy()
+        preds = model(X).detach().cpu().numpy()
 
     rmse, mae = calcular_metricas(y_true, preds)
 
     return rmse, mae
 
 
-def evaluar_geografico(model, series, df_distritos_info, window_size, tamanio_entrenamiento):
-    """
-    Walk-forward evaluation:
-    - history empieza con los años de entrenamiento.
-    - para predecir cada año del test se usa la ventana más reciente.
-    - después de predecir, se incorpora el valor real observado.
-    """
-
+def evaluar_geografico(
+    model,
+    series,
+    df_distritos_info,
+    window_size,
+    tamanio_entrenamiento,
+):
     model.eval()
 
     horizonte = series.shape[1] - tamanio_entrenamiento
@@ -225,17 +242,16 @@ def evaluar_geografico(model, series, df_distritos_info, window_size, tamanio_en
 
         for t in range(horizonte):
             x = torch.tensor(
-                np.array(history[-window_size:], dtype=np.float32)[np.newaxis, np.newaxis, :]
-            )
-            # shape CNN: (1, 1, window_size)
+                np.array(history[-window_size:], dtype=np.float32)
+            ).unsqueeze(0).unsqueeze(-1)
+
+            # De (1, window_size, 1) a (1, 1, window_size)
+            x = preparar_X_cnn(x).to(DEVICE)
 
             with torch.no_grad():
                 yhat = model(x).item()
 
             preds.append(yhat)
-
-            # Walk-forward one-step-ahead:
-            # se agrega el valor real observado del año que acaba de predecirse
             history.append(float(y_true_i[t]))
 
         y_pred_total.append(preds)
@@ -244,12 +260,13 @@ def evaluar_geografico(model, series, df_distritos_info, window_size, tamanio_en
         rmse_i, mae_i = calcular_metricas(y_true_i, preds_arr)
 
         info = df_distritos_info.iloc[i]
+
         registros.append({
-            "geocode":      info["geocode"],
+            "geocode": info["geocode"],
             "departamento": info["departamento"],
-            "distrito":     info["distrito"],
-            "rmse":         round(rmse_i, 6),
-            "mae":          round(mae_i, 6),
+            "distrito": info["distrito"],
+            "rmse": round(rmse_i, 6),
+            "mae": round(mae_i, 6),
         })
 
     y_pred_total = np.array(y_pred_total)
@@ -288,6 +305,44 @@ def evaluar_geografico(model, series, df_distritos_info, window_size, tamanio_en
     return df_distrito, df_departamento, rmse_global, mae_global, y_pred_total
 
 
+def construir_df_predicciones(
+    modelo_nombre,
+    y_true_total,
+    y_pred_total,
+    df_distritos_info,
+    anios_test=None,
+):
+    registros = []
+
+    for i in range(y_true_total.shape[0]):
+        info = df_distritos_info.iloc[i]
+
+        for j in range(y_true_total.shape[1]):
+            y_true = float(y_true_total[i, j])
+            y_pred = float(y_pred_total[i, j])
+            error = y_pred - y_true
+
+            registro = {
+                "modelo": modelo_nombre,
+                "geocode": info["geocode"],
+                "departamento": info["departamento"],
+                "distrito": info["distrito"],
+                "horizonte": j + 1,
+                "y_true": y_true,
+                "y_pred": y_pred,
+                "error": error,
+                "abs_error": abs(error),
+                "squared_error": error ** 2,
+            }
+
+            if anios_test is not None:
+                registro["anio"] = anios_test[j]
+
+            registros.append(registro)
+
+    return pd.DataFrame(registros)
+
+
 def graficar_curva(train_losses, nombre, ruta_png):
     fig, ax = plt.subplots(figsize=(7, 4))
 
@@ -295,7 +350,7 @@ def graficar_curva(train_losses, nombre, ruta_png):
         range(1, len(train_losses) + 1),
         train_losses,
         label="Train MSE",
-        linewidth=1.5
+        linewidth=1.5,
     )
 
     ax.set_xlabel("Época")
@@ -309,6 +364,10 @@ def graficar_curva(train_losses, nombre, ruta_png):
     plt.close(fig)
 
 
+# ============================================================
+# FASE 1: Grid search exploratorio CNN
+# ============================================================
+
 def pipeline_cnn(
     dataset_dl,
     ruta_base,
@@ -320,17 +379,26 @@ def pipeline_cnn(
     dropout_values,
     activation_values,
     dense_size_values,
-    series,
-    df_distritos_info,
-    tamanio_entrenamiento,
 ):
-    print("\n[INFO] Pipeline CNN — búsqueda de hiperparámetros")
-    print("=" * 60)
+    """
+    Fase 1: búsqueda exploratoria de hiperparámetros.
+
+    Genera:
+    - _resultados.csv
+    - _top5_configuraciones.csv
+    - _mejores_por_ventana.csv
+
+    No guarda modelo.
+    No guarda curva.
+    No hace evaluación geográfica.
+    """
+
+    print("\n[INFO] Pipeline CNN — búsqueda exploratoria de hiperparámetros")
+    print("=" * 70)
+    print(f"[INFO] Device usado: {DEVICE}")
 
     if not dataset_dl:
         raise RuntimeError("Pipeline CNN: dataset_dl vacío, no hay ventanas válidas.")
-
-    fijar_semilla()
 
     grid = list(product(
         dataset_dl.items(),
@@ -347,12 +415,8 @@ def pipeline_cnn(
     print(f"[INFO] Combinaciones totales: {len(grid)}")
 
     resultados = []
-    mejor_rmse = float("inf")
-    mejor_modelo = None
-    mejor_fila = None
-    mejor_losses = None
 
-    for (
+    for idx, (
         (w, data),
         conv_channels,
         kernel_size,
@@ -362,149 +426,321 @@ def pipeline_cnn(
         epochs,
         lr,
         batch_size,
-    ) in grid:
+    ) in enumerate(grid, start=1):
 
-        # Saltar kernels mayores que la ventana.
         if kernel_size > int(w):
             continue
 
         X_train, y_train = data["train"]
         X_test, y_test = data["test"]
 
-        model, train_losses = entrenar(
-            X_train,
-            y_train,
-            conv_channels,
-            kernel_size,
-            dropout,
-            activation,
-            dense_size,
-            epochs,
-            batch_size,
-            lr,
+        conv_channels = parse_conv_channels(conv_channels)
+
+        model, _ = entrenar(
+            X_train_t=X_train,
+            y_train_t=y_train,
+            conv_channels=conv_channels,
+            kernel_size=kernel_size,
+            dropout=dropout,
+            activation=activation,
+            dense_size=dense_size,
+            epochs=epochs,
+            batch_size=batch_size,
+            lr=lr,
+            seed=SEMILLA,
         )
 
         rmse_train, mae_train = evaluar(model, X_train, y_train)
         rmse_test, mae_test = evaluar(model, X_test, y_test)
 
         diag = diagnosticar_ajuste(
-            rmse_train,
-            mae_train,
-            rmse_test,
-            mae_test
+            rmse_train=rmse_train,
+            mae_train=mae_train,
+            rmse_test=rmse_test,
+            mae_test=mae_test,
         )
 
         c_str = "x".join(map(str, conv_channels))
+
         nombre = (
             f"CNN_w{w}_c{c_str}_k{kernel_size}_act{activation}"
             f"_d{dropout}_dense{dense_size}_e{epochs}_lr{lr}_b{batch_size}"
         )
 
         print(
-            f"  {nombre}  "
+            f"  [{idx}/{len(grid)}] {nombre}  "
             f"RMSE_test={rmse_test:.4f}  MAE_test={mae_test:.4f}"
         )
 
         fila = {
-            "modelo":       nombre,
-            "window_size":  w,
+            "modelo": nombre,
+            "window_size": int(w),
             "conv_channels": str(conv_channels),
-            "kernel_size":  kernel_size,
-            "activation":   activation,
-            "dropout":      dropout,
-            "dense_size":   dense_size,
-            "epochs":       epochs,
-            "lr":           lr,
-            "batch_size":   batch_size,
-            "rmse_train":   round(rmse_train, 6),
-            "mae_train":    round(mae_train,  6),
-            "rmse_test":    round(rmse_test,  6),
-            "mae_test":     round(mae_test,   6),
-            "gap_rmse":     diag["gap_rmse"],
-            "gap_mae":      diag["gap_mae"],
-            "ratio_rmse":   diag["ratio_rmse"],
-            "ratio_mae":    diag["ratio_mae"],
+            "kernel_size": int(kernel_size),
+            "activation": activation,
+            "dropout": float(dropout),
+            "dense_size": int(dense_size),
+            "epochs": int(epochs),
+            "lr": float(lr),
+            "batch_size": int(batch_size),
+            "rmse_train": round(rmse_train, 6),
+            "mae_train": round(mae_train, 6),
+            "rmse_test": round(rmse_test, 6),
+            "mae_test": round(mae_test, 6),
+            "gap_rmse": diag["gap_rmse"],
+            "gap_mae": diag["gap_mae"],
+            "ratio_rmse": diag["ratio_rmse"],
+            "ratio_mae": diag["ratio_mae"],
         }
 
         resultados.append(fila)
 
-        if rmse_test < mejor_rmse:
-            mejor_rmse = rmse_test
-            mejor_modelo = model
-            mejor_fila = fila
-            mejor_losses = train_losses
-
     if not resultados:
         raise RuntimeError("Pipeline CNN: no se entrenó ninguna configuración válida.")
 
-    df = pd.DataFrame(resultados).sort_values("rmse_test").reset_index(drop=True)
-
-    ruta_csv = ruta_base.replace(".csv", "_resultados.csv")
-    df.to_csv(ruta_csv, index=False)
-    print(f"\n[OK] Resultados CNN guardados: {ruta_csv}")
-
-    ruta_pth = ruta_base.replace(".csv", "_mejor.pth")
-    torch.save(
-        {
-            "model_state_dict": mejor_modelo.state_dict(),
-            "config": mejor_fila
-        },
-        ruta_pth
+    df = (
+        pd.DataFrame(resultados)
+        .sort_values(["rmse_test", "mae_test", "gap_rmse"])
+        .reset_index(drop=True)
     )
-    print(f"[OK] Mejor modelo guardado:   {ruta_pth}")
 
-    ruta_png = ruta_base.replace(".csv", "_mejor_curva.png")
-    graficar_curva(mejor_losses, mejor_fila["modelo"], ruta_png)
-    print(f"[OK] Curva de aprendizaje:    {ruta_png}")
+    ruta_resultados = ruta_base.replace(".csv", "_resultados.csv")
+    df.to_csv(ruta_resultados, index=False)
+    print(f"\n[OK] Resultados completos guardados: {ruta_resultados}")
+
+    df_top5 = df.head(5).copy()
+
+    ruta_top5 = ruta_base.replace(".csv", "_top5_configuraciones.csv")
+    df_top5.to_csv(ruta_top5, index=False)
+    print(f"[OK] Top 5 configuraciones guardadas: {ruta_top5}")
 
     df_mejores_por_ventana = (
-        pd.DataFrame(resultados)
-        .sort_values("rmse_test")
-        .groupby("window_size", sort=True)
+        df.groupby("window_size", sort=True)
         .first()
         .reset_index()
     )
 
-    ruta_mejores = ruta_base.replace(".csv", "_mejores_por_ventana.csv")
-    df_mejores_por_ventana.to_csv(ruta_mejores, index=False)
-    print(f"[OK] Mejores por ventana:     {ruta_mejores}")
+    ruta_mejores_ventana = ruta_base.replace(".csv", "_mejores_por_ventana.csv")
+    df_mejores_por_ventana.to_csv(ruta_mejores_ventana, index=False)
+    print(f"[OK] Mejores por ventana guardado: {ruta_mejores_ventana}")
 
-    df_distrito, df_departamento, rmse_wf, mae_wf, y_pred_wf = evaluar_geografico(
-        mejor_modelo,
-        series,
-        df_distritos_info,
-        int(mejor_fila["window_size"]),
-        tamanio_entrenamiento,
-    )
+    top1 = df.iloc[0]
 
-    ruta_dist = ruta_base.replace(".csv", "_mejor_distrito.csv")
-    df_distrito.to_csv(ruta_dist, index=False)
-    print(f"[OK] Por distrito:            {ruta_dist}")
-
-    ruta_dep = ruta_base.replace(".csv", "_mejor_departamento.csv")
-    df_departamento.to_csv(ruta_dep, index=False)
-    print(f"[OK] Por departamento:        {ruta_dep}")
-
-    ruta_global = ruta_base.replace(".csv", "_global.csv")
-    pd.DataFrame([{
-        "modelo": mejor_fila["modelo"],
-        "rmse":   round(rmse_wf, 6),
-        "mae":    round(mae_wf,  6),
-    }]).to_csv(ruta_global, index=False)
-    print(f"[OK] Métricas globales:       {ruta_global}")
-
-    ruta_ypred = ruta_base.replace(".csv", "_mejor_ypred.npy")
-    np.save(ruta_ypred, y_pred_wf)
-    print(f"[OK] y_pred walk-forward:     {ruta_ypred}")
-
-    print(
-        f"[OK] Mejor config: {mejor_fila['modelo']}  "
-        f"RMSE_wf={rmse_wf:.4f}  MAE_wf={mae_wf:.4f}"
-    )
+    print("\n[OK] Top 1 exploratorio. Revisar CSVs antes de elegir config final:")
+    print(f"     Modelo:    {top1['modelo']}")
+    print(f"     RMSE_test: {top1['rmse_test']}")
+    print(f"     MAE_test:  {top1['mae_test']}")
+    print(f"     gap_rmse:  {top1['gap_rmse']}")
+    print(f"     ratio_rmse:{top1['ratio_rmse']}")
+    print(f"     Device:    {DEVICE}")
 
     return {
-        "modelo": mejor_fila["modelo"],
-        "rmse":   rmse_wf,
-        "mae":    mae_wf,
+        "grid_resultados": df,
+        "top5": df_top5,
+        "mejores_por_ventana": df_mejores_por_ventana,
+    }
+
+
+# ============================================================
+# FASE 2: Entrenamiento final CNN
+# ============================================================
+
+def entrenar_config_final_cnn(
+    dataset_dl,
+    final_config,
+    ruta_base,
+    series,
+    df_distritos_info,
+    tamanio_entrenamiento,
+    anios=None,
+):
+    """
+    Fase 2: entrenamiento final con UNA configuración elegida.
+
+    Genera:
+    - _final_model.pth
+    - _final_curva.png
+    - _final_config.json
+    - _final_global.csv
+    - _final_distrito.csv
+    - _final_departamento.csv
+    - _final_predicciones.csv
+    - _final_ypred.npy
+    """
+
+    print("\n[INFO] Entrenamiento final CNN")
+    print("=" * 70)
+    print(f"[INFO] Device usado: {DEVICE}")
+
+    final_config = dict(final_config)
+
+    window_size = int(final_config["window_size"])
+    conv_channels = parse_conv_channels(final_config["conv_channels"])
+    kernel_size = int(final_config["kernel_size"])
+    activation = final_config["activation"]
+    dropout = float(final_config["dropout"])
+    dense_size = int(final_config["dense_size"])
+    epochs = int(final_config["epochs"])
+    lr = float(final_config["lr"])
+    batch_size = int(final_config["batch_size"])
+
+    if window_size not in dataset_dl:
+        raise ValueError(f"window_size={window_size} no existe en dataset_dl.")
+
+    if kernel_size > window_size:
+        raise ValueError(
+            f"kernel_size={kernel_size} no puede ser mayor que window_size={window_size}."
+        )
+
+    data = dataset_dl[window_size]
+    X_train, y_train = data["train"]
+    X_test, y_test = data["test"]
+
+    c_str = "x".join(map(str, conv_channels))
+
+    nombre = (
+        f"CNN_FINAL_w{window_size}_c{c_str}_k{kernel_size}_act{activation}"
+        f"_d{dropout}_dense{dense_size}_e{epochs}_lr{lr}_b{batch_size}"
+    )
+
+    model, train_losses = entrenar(
+        X_train_t=X_train,
+        y_train_t=y_train,
+        conv_channels=conv_channels,
+        kernel_size=kernel_size,
+        dropout=dropout,
+        activation=activation,
+        dense_size=dense_size,
+        epochs=epochs,
+        batch_size=batch_size,
+        lr=lr,
+        seed=SEMILLA,
+    )
+
+    rmse_train, mae_train = evaluar(model, X_train, y_train)
+    rmse_test, mae_test = evaluar(model, X_test, y_test)
+
+    diag = diagnosticar_ajuste(
+        rmse_train=rmse_train,
+        mae_train=mae_train,
+        rmse_test=rmse_test,
+        mae_test=mae_test,
+    )
+
+    final_row = {
+        "modelo": nombre,
+        "window_size": window_size,
+        "conv_channels": str(conv_channels),
+        "kernel_size": kernel_size,
+        "activation": activation,
+        "dropout": dropout,
+        "dense_size": dense_size,
+        "epochs": epochs,
+        "lr": lr,
+        "batch_size": batch_size,
+        "seed": SEMILLA,
+        "rmse_train": round(rmse_train, 6),
+        "mae_train": round(mae_train, 6),
+        "rmse_test": round(rmse_test, 6),
+        "mae_test": round(mae_test, 6),
+        "gap_rmse": diag["gap_rmse"],
+        "gap_mae": diag["gap_mae"],
+        "ratio_rmse": diag["ratio_rmse"],
+        "ratio_mae": diag["ratio_mae"],
+    }
+
+    df_distrito, df_departamento, rmse_wf, mae_wf, y_pred_wf = evaluar_geografico(
+        model=model,
+        series=series,
+        df_distritos_info=df_distritos_info,
+        window_size=window_size,
+        tamanio_entrenamiento=tamanio_entrenamiento,
+    )
+
+    y_true_total = series[:, tamanio_entrenamiento:]
+
+    anios_test = None
+    if anios is not None:
+        anios_test = anios[tamanio_entrenamiento:]
+
+    df_predicciones = construir_df_predicciones(
+        modelo_nombre=nombre,
+        y_true_total=y_true_total,
+        y_pred_total=y_pred_wf,
+        df_distritos_info=df_distritos_info,
+        anios_test=anios_test,
+    )
+
+    ruta_model = ruta_base.replace(".csv", "_final_model.pth")
+
+    torch.save(
+        {
+            "model_state_dict": model.state_dict(),
+            "config": final_row,
+            "train_losses": train_losses,
+            "seed": SEMILLA,
+            "model_type": "CNN",
+            "device_entrenamiento": str(DEVICE),
+        },
+        ruta_model,
+    )
+
+    ruta_curva = ruta_base.replace(".csv", "_final_curva.png")
+    graficar_curva(train_losses, nombre, ruta_curva)
+
+    ruta_config = ruta_base.replace(".csv", "_final_config.json")
+    with open(ruta_config, "w", encoding="utf-8") as f:
+        json.dump(final_row, f, indent=4, ensure_ascii=False)
+
+    ruta_global = ruta_base.replace(".csv", "_final_global.csv")
+    pd.DataFrame([{
+        "modelo": nombre,
+        "rmse": round(rmse_wf, 6),
+        "mae": round(mae_wf, 6),
+        "rmse_train": round(rmse_train, 6),
+        "mae_train": round(mae_train, 6),
+        "rmse_test_directo": round(rmse_test, 6),
+        "mae_test_directo": round(mae_test, 6),
+        "gap_rmse": diag["gap_rmse"],
+        "gap_mae": diag["gap_mae"],
+        "ratio_rmse": diag["ratio_rmse"],
+        "ratio_mae": diag["ratio_mae"],
+    }]).to_csv(ruta_global, index=False)
+
+    ruta_dist = ruta_base.replace(".csv", "_final_distrito.csv")
+    df_distrito.to_csv(ruta_dist, index=False)
+
+    ruta_dep = ruta_base.replace(".csv", "_final_departamento.csv")
+    df_departamento.to_csv(ruta_dep, index=False)
+
+    ruta_pred = ruta_base.replace(".csv", "_final_predicciones.csv")
+    df_predicciones.to_csv(ruta_pred, index=False)
+
+    ruta_ypred = ruta_base.replace(".csv", "_final_ypred.npy")
+    np.save(ruta_ypred, y_pred_wf)
+
+    print(f"[OK] Modelo final guardado:        {ruta_model}")
+    print(f"[OK] Curva final guardada:         {ruta_curva}")
+    print(f"[OK] Config final guardada:        {ruta_config}")
+    print(f"[OK] Métricas globales:            {ruta_global}")
+    print(f"[OK] Métricas por distrito:        {ruta_dist}")
+    print(f"[OK] Métricas por departamento:    {ruta_dep}")
+    print(f"[OK] Predicciones finales CSV:     {ruta_pred}")
+    print(f"[OK] Predicciones finales NPY:     {ruta_ypred}")
+
+    print("\n[OK] Resultado final CNN:")
+    print(f"     Modelo:  {nombre}")
+    print(f"     RMSE_wf: {rmse_wf:.6f}")
+    print(f"     MAE_wf:  {mae_wf:.6f}")
+    print(f"     Device:  {DEVICE}")
+
+    return {
+        "modelo": nombre,
+        "rmse": rmse_wf,
+        "mae": mae_wf,
         "y_pred": y_pred_wf,
+        "config": final_row,
+        "df_predicciones": df_predicciones,
+        "df_departamento": df_departamento,
+        "df_distrito": df_distrito,
     }

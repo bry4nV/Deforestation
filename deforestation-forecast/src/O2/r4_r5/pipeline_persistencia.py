@@ -1,98 +1,166 @@
+import json
+
 import numpy as np
 import pandas as pd
-from sklearn.metrics import mean_squared_error, mean_absolute_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error
 
-def pipeline_persistencia(X_train, y_train, df_distritos_info, ruta_modelo_persistencia):
+
+def calcular_metricas(y_true, y_pred):
+    y_true = np.asarray(y_true).reshape(-1)
+    y_pred = np.asarray(y_pred).reshape(-1)
+    rmse = float(np.sqrt(mean_squared_error(y_true, y_pred)))
+    mae = float(mean_absolute_error(y_true, y_pred))
+    return rmse, mae
+
+
+def pipeline_persistencia(X_train, y_train, df_distritos_info, ruta_base, anios=None):
     """
-    Modelo baseline de persistencia:
-    predice que el futuro será igual al último valor observado.
+    Modelo baseline de persistencia: predice que el futuro será igual
+    al último valor observado (walk-forward con oracle).
+
+    Genera:
+    - _resultados.csv        (por distrito)
+    - _departamento.csv
+    - _global.csv
+    - _config.json
+    - _predicciones.csv
+    - _ypred.npy
     """
 
-    print("[INFO] Ejecutando persistencia (walk-forward)...")
+    print("\n[INFO] Ejecutando persistencia (walk-forward)...")
+    print("=" * 60)
+
+    MODELO = "Persistencia_WF"
 
     n_distritos = X_train.shape[0]
-    horizonte = y_train.shape[1]
+    horizonte   = y_train.shape[1]
 
     y_pred_total = []
-    registros = []
+    registros    = []
 
     for i in range(n_distritos):
-
         history = X_train[i, :, 0].tolist()
-        preds = []
+        preds   = []
 
         for t in range(horizonte):
             yhat = history[-1]
             preds.append(yhat)
-            history.append(y_train[i, t])
+            history.append(float(y_train[i, t]))
 
         y_pred_total.append(preds)
 
-        rmse = np.sqrt(mean_squared_error(y_train[i], preds))
-        mae = mean_absolute_error(y_train[i], preds)
+        rmse_i, mae_i = calcular_metricas(y_train[i], preds)
 
         info = df_distritos_info.iloc[i]
-
         registros.append({
-            "geocode": info["geocode"],
+            "geocode":      info["geocode"],
             "departamento": info["departamento"],
-            "distrito": info["distrito"],
-            "rmse": rmse,
-            "mae": mae
+            "distrito":     info["distrito"],
+            "rmse":         round(rmse_i, 6),
+            "mae":          round(mae_i, 6),
         })
 
     y_pred_total = np.array(y_pred_total)
 
-    rmse_global = np.sqrt(mean_squared_error(y_train, y_pred_total))
-    mae_global = mean_absolute_error(y_train, y_pred_total)
+    rmse_global, mae_global = calcular_metricas(y_train, y_pred_total)
 
-    print(f"[RESULT] RMSE global: {rmse_global:.4f}")
-    print(f"[RESULT] MAE global: {mae_global:.4f}")
-
-    # -----------------------------
-    # Crear DataFrames
-    # -----------------------------
-    df_metricas = pd.DataFrame(registros)
-    df_metricas = df_metricas.sort_values(by=["mae", "rmse"], ascending=False)
+    df_distrito = (
+        pd.DataFrame(registros)
+        .sort_values(["mae", "rmse"], ascending=False)
+        .reset_index(drop=True)
+    )
 
     departamentos = df_distritos_info["departamento"].values
     registros_dep = []
     for dep in np.unique(departamentos):
-        mask    = departamentos == dep
-        y_t     = y_train[mask]
-        y_p     = y_pred_total[mask]
-        rmse_dep = round(float(np.sqrt(np.mean((y_t - y_p) ** 2))), 6)
-        mae_dep  = round(float(np.mean(np.abs(y_t - y_p))), 6)
-        registros_dep.append({"departamento": dep, "rmse": rmse_dep, "mae": mae_dep})
-    df_dep = (
+        mask = departamentos == dep
+        rmse_dep, mae_dep = calcular_metricas(y_train[mask], y_pred_total[mask])
+        registros_dep.append({
+            "departamento": dep,
+            "rmse":         round(rmse_dep, 6),
+            "mae":          round(mae_dep, 6),
+        })
+
+    df_departamento = (
         pd.DataFrame(registros_dep)
         .sort_values(["mae", "rmse"], ascending=False)
         .reset_index(drop=True)
     )
 
-    df_metricas.to_csv(ruta_modelo_persistencia, index=False)
-    print(f"[OK] Métricas por distrito: {ruta_modelo_persistencia}")
+    # Predicciones en formato largo
+    pred_registros = []
+    for i in range(n_distritos):
+        info = df_distritos_info.iloc[i]
+        for t in range(horizonte):
+            y_true_val = float(y_train[i, t])
+            y_pred_val = float(y_pred_total[i, t])
+            error      = y_pred_val - y_true_val
+            pred_registros.append({
+                "modelo":        MODELO,
+                "geocode":       info["geocode"],
+                "departamento":  info["departamento"],
+                "distrito":      info["distrito"],
+                "horizonte":     t + 1,
+                "anio":          anios[t] if anios is not None else None,
+                "y_true":        y_true_val,
+                "y_pred":        y_pred_val,
+                "error":         error,
+                "abs_error":     abs(error),
+                "squared_error": error ** 2,
+            })
 
-    ruta_dep = ruta_modelo_persistencia.replace(".csv", "_departamento.csv")
-    df_dep.to_csv(ruta_dep, index=False)
-    print(f"[OK] Métricas por departamento: {ruta_dep}")
+    df_predicciones = pd.DataFrame(pred_registros)
+    if anios is None:
+        df_predicciones = df_predicciones.drop(columns=["anio"])
 
-    ruta_global = ruta_modelo_persistencia.replace(".csv", "_global.csv")
-    df_global = pd.DataFrame([{
-        "modelo": "Persistencia_WF",
-        "rmse": rmse_global,
-        "mae": mae_global
-    }])
-    df_global.to_csv(ruta_global, index=False)
-    print(f"[OK] Métricas globales: {ruta_global}")
+    config_dict = {
+        "modelo": MODELO,
+        "rmse":   round(rmse_global, 6),
+        "mae":    round(mae_global, 6),
+    }
 
-    ruta_ypred = ruta_modelo_persistencia.replace(".csv", "_ypred.npy")
+    # Guardar
+    ruta_dist = ruta_base.replace(".csv", "_resultados.csv")
+    df_distrito.to_csv(ruta_dist, index=False)
+    print(f"[OK] Por distrito:         {ruta_dist}")
+
+    ruta_dep = ruta_base.replace(".csv", "_departamento.csv")
+    df_departamento.to_csv(ruta_dep, index=False)
+    print(f"[OK] Por departamento:     {ruta_dep}")
+
+    ruta_global = ruta_base.replace(".csv", "_global.csv")
+    pd.DataFrame([{
+        "modelo": MODELO,
+        "rmse":   round(rmse_global, 6),
+        "mae":    round(mae_global, 6),
+    }]).to_csv(ruta_global, index=False)
+    print(f"[OK] Métricas globales:    {ruta_global}")
+
+    ruta_config = ruta_base.replace(".csv", "_config.json")
+    with open(ruta_config, "w", encoding="utf-8") as f:
+        json.dump(config_dict, f, indent=4, ensure_ascii=False)
+    print(f"[OK] Config:               {ruta_config}")
+
+    ruta_pred = ruta_base.replace(".csv", "_predicciones.csv")
+    df_predicciones.to_csv(ruta_pred, index=False)
+    print(f"[OK] Predicciones largas:  {ruta_pred}")
+
+    ruta_ypred = ruta_base.replace(".csv", "_ypred.npy")
     np.save(ruta_ypred, y_pred_total)
-    print(f"[OK] y_pred: {ruta_ypred}")
+    print(f"[OK] y_pred:               {ruta_ypred}")
+
+    print(f"\n[OK] Resultado final Persistencia:")
+    print(f"     Modelo: {MODELO}")
+    print(f"     RMSE:   {rmse_global:.6f}")
+    print(f"     MAE:    {mae_global:.6f}")
 
     return {
-        "modelo": "Persistencia_WF",
-        "rmse": rmse_global,
-        "mae": mae_global,
-        "y_pred": y_pred_total
+        "modelo":          MODELO,
+        "rmse":            rmse_global,
+        "mae":             mae_global,
+        "y_pred":          y_pred_total,
+        "config":          config_dict,
+        "df_predicciones": df_predicciones,
+        "df_departamento": df_departamento,
+        "df_distrito":     df_distrito,
     }

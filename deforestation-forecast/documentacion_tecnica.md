@@ -1,1086 +1,362 @@
 # Documentación Técnica — Pronóstico de Deforestación en Distritos Amazónicos del Perú
 
-**Descripción:** Pipeline completo para el pronóstico de cobertura boscosa en los 200 distritos amazónicos del Perú con mayor cambio histórico, abarcando desde la ingesta de rasters MapBiomas hasta la comparación de modelos de series temporales.
+**Variable objetivo:** Porcentaje de cobertura boscosa (`pct_bosque`) por distrito y año.  
+**Período de entrenamiento:** 1985–2019 (35 años).  
+**Horizonte de pronóstico:** 2020–2024 (5 años).  
+**Universo:** 180 distritos amazónicos del Perú con mayor cambio histórico de cobertura boscosa.
 
 ---
 
 ## Tabla de contenidos
 
-1. [Visión general](#1-visión-general)
-2. [Estructura del proyecto](#2-estructura-del-proyecto)
-3. [O1 — Preprocesamiento y análisis de datos](#3-o1--preprocesamiento-y-análisis-de-datos)
-   - [3.1 Configuración global (O1/config.py)](#31-configuración-global-o1configpy)
-   - [3.2 R1/R2 — Delimitación a la Amazonía y reclasificación](#32-r1r2--delimitación-a-la-amazonía-y-reclasificación)
-   - [3.3 R3 — Detección de cambios, zonificación y series temporales](#33-r3--detección-de-cambios-zonificación-y-series-temporales)
-4. [O2 — Modelado de pronóstico](#4-o2--modelado-de-pronóstico)
-   - [4.1 Configuración global (O2/config.py)](#41-configuración-global-o2configpy)
-   - [4.2 Construcción de datasets (construir_dataset.py)](#42-construcción-de-datasets-construir_datasetpy)
-   - [4.3 Análisis diagnóstico ARIMA (analisis_arima.py)](#43-análisis-diagnóstico-arima-analisis_arimapy)
-   - [4.4 Modelo Persistencia — baseline (pipeline_persistencia.py)](#44-modelo-persistencia--baseline-pipeline_persistenciapy)
-   - [4.5 Modelo ARIMA (pipeline_arima.py)](#45-modelo-arima-pipeline_arimapy)
-   - [4.6 Modelo MLP (pipeline_mlp.py)](#46-modelo-mlp-pipeline_mlppy)
-   - [4.7 Modelo LSTM (pipeline_lstm.py)](#47-modelo-lstm-pipeline_lstmpy)
-   - [4.8 Comparación final (pipeline_comparacion.py)](#48-comparación-final-pipeline_comparacionpy)
-   - [4.9 Orquestador principal (main.py)](#49-orquestador-principal-mainpy)
-5. [Flujo de datos extremo a extremo](#5-flujo-de-datos-extremo-a-extremo)
-6. [Convenciones y reproducibilidad](#6-convenciones-y-reproducibilidad)
-7. [Inventario de archivos de salida](#7-inventario-de-archivos-de-salida)
+1. [Diseño del problema](#1-diseño-del-problema)
+2. [Preprocesamiento geoespacial (O1)](#2-preprocesamiento-geoespacial-o1)
+3. [Protocolo de evaluación compartido](#3-protocolo-de-evaluación-compartido)
+4. [Construcción del dataset para modelos DL](#4-construcción-del-dataset-para-modelos-dl)
+5. [Modelo Persistencia — baseline](#5-modelo-persistencia--baseline)
+6. [Modelo ARIMA](#6-modelo-arima)
+7. [Modelo MLP](#7-modelo-mlp)
+8. [Modelo LSTM](#8-modelo-lstm)
+9. [Modelo CNN](#9-modelo-cnn)
+10. [Criterios de comparabilidad entre modelos DL](#10-criterios-de-comparabilidad-entre-modelos-dl)
+11. [Comparación final](#11-comparación-final)
+12. [Inventario de salidas](#12-inventario-de-salidas)
 
 ---
 
-## 1. Visión general
+## 1. Diseño del problema
 
-El proyecto está dividido en dos objetivos principales:
+El pronóstico de deforestación se plantea como un problema de **predicción de series temporales univariadas**: dado el histórico de porcentaje de cobertura boscosa de un distrito, predecir los 5 años siguientes. Cada distrito se trata como una serie independiente; los modelos no explotan correlaciones espaciales entre distritos vecinos.
 
-| Objetivo | Carpeta | Descripción |
-|----------|---------|-------------|
-| **O1** | `src/O1/` | Preprocesamiento geoespacial: recorte a Amazonía, reclasificación bosque/no-bosque, detección de cambios, selección de distritos y extracción de series temporales. |
-| **O2** | `src/O2/` | Modelado: entrenamiento y evaluación de cuatro modelos de pronóstico (Persistencia, ARIMA, MLP, LSTM) y comparación final. |
+Se evalúan cinco familias de modelos con complejidad creciente:
 
-**Datos de entrada:** Colección 3 de MapBiomas Perú (40 mapas anuales 1985–2024, resolución 30 m).  
-**Variable objetivo:** Porcentaje de cobertura boscosa por distrito (`pct_bosque`).  
-**Período de pronóstico:** 5 años (2020–2024).  
-**Universo de distritos:** 200 distritos amazónicos con mayor cambio histórico de cobertura boscosa.
+| Modelo | Tipo | Supuesto principal |
+|--------|------|--------------------|
+| Persistencia | Estadístico naive | El futuro igual al presente |
+| ARIMA | Estadístico clásico | Autocorrelación lineal estacionaria |
+| MLP | Redes neuronales | Patrones no lineales en una ventana plana |
+| LSTM | Redes neuronales recurrentes | Dependencias secuenciales explícitas |
+| CNN 1D | Redes neuronales convolucionales | Patrones locales repetibles en la secuencia |
 
----
-
-## 2. Estructura del proyecto
-
-```
-deforestation-forecast/
-├── data/
-│   ├── raw/                          # Datos originales (solo lectura)
-│   │   ├── mapbiomas-peru/           # 40 rasters MapBiomas (YYYY)
-│   │   ├── biomas-peru/              # Shapefile biomas del Perú
-│   │   └── distritos-peru/           # Shapefile distritos políticos
-│   ├── interim/
-│   │   ├── O1/                       # Salidas intermedias O1
-│   │   │   ├── mapas-amazonia/
-│   │   │   ├── mapas-reclasificados/
-│   │   │   ├── mapas-cambios/
-│   │   │   ├── distritos-amazonia/
-│   │   │   ├── metricas-distritos/
-│   │   │   ├── distritos-alto-cambio/
-│   │   │   └── series-temporales/
-│   │   │       ├── entrenamiento/
-│   │   │       └── generalizacion-espacial/
-│   │   └── O2/
-│   │       └── modelos/
-│   │           ├── persistencia/
-│   │           ├── arima/
-│   │           ├── mlp/
-│   │           ├── lstm/
-│   │           └── comparacion/
-│   └── outputs/                      # Productos finales
-└── src/
-    ├── O1/
-    │   ├── config.py
-    │   ├── r1_r2/
-    │   │   ├── main.py
-    │   │   ├── pipeline.py
-    │   │   └── delimitacion_mapa_amazonas.py
-    │   └── r3/
-    │       ├── main.py
-    │       ├── deteccion_cambios.py
-    │       ├── delimitacion_distritos_amazonas.py
-    │       ├── zonificacion_distrito.py
-    │       ├── distritos_alto_cambio.py
-    │       └── series_temporales.py
-    └── O2/
-        ├── config.py
-        └── r4_r5/
-            ├── main.py
-            ├── construir_dataset.py
-            ├── analisis_arima.py
-            ├── pipeline_persistencia.py
-            ├── pipeline_arima.py
-            ├── pipeline_mlp.py
-            ├── pipeline_lstm.py
-            └── pipeline_comparacion.py
-```
+El criterio de selección del mejor modelo en cada familia es el **RMSE global walk-forward** sobre el período 2020–2024.
 
 ---
 
-## 3. O1 — Preprocesamiento y análisis de datos
+## 2. Preprocesamiento geoespacial (O1)
 
-### 3.1 Configuración global (`O1/config.py`)
+### 2.1 Delimitación del dominio de estudio
 
-Define todas las rutas y constantes compartidas por los módulos O1.
+La Amazonía peruana se delimita a partir del shapefile oficial de biomas nacionales. Un distrito se considera "amazónico" si más del **50 % de su área** cae dentro del polígono de la Amazonía. Este umbral evita incluir distritos mayoritariamente andinos con pequeñas franjas de selva de altura, sin excluir distritos de ecotono con presencia forestal relevante.
 
-#### Rutas principales
+Todos los cálculos de área se realizan en proyección **UTM zona 18S (EPSG:32718)**, la proyección métrica adecuada para el territorio peruano, y los productos se almacenan en **WGS84 (EPSG:4326)** para interoperabilidad.
 
-| Variable | Descripción |
-|----------|-------------|
-| `BASE_DIR` | Raíz del proyecto |
-| `DATA_DIR`, `RAW_DIR` | Datos originales |
-| `INTERIM_DIR` | Datos intermedios procesados |
-| `MAPAS_RAW_DIR` | Rasters MapBiomas originales |
-| `MAPAS_AMAZONIA_DIR` | Rasters recortados a Amazonía |
-| `MAPAS_RECLAS_DIR` | Rasters binarios bosque/no-bosque |
-| `DISTRITOS_AMAZONIA_DIR` | GeoPackage distritos amazónicos |
-| `MAPAS_CAMBIOS_DIR` | Raster de cambios históricos |
-| `METRICAS_DISTRITOS_DIR` | Métricas de cambio por distrito |
-| `DISTRITOS_ALTO_CAMBIO_DIR` | Top 200 distritos seleccionados |
-| `SERIES_ENTRENAMIENTO_DIR` | Series temporales para O2 |
-| `SERIES_GENERALIZACION_DIR` | Series para validación espacial |
+### 2.2 Reclasificación bosque / no-bosque
 
-#### Clasificación MapBiomas (Colección 3 Perú)
+MapBiomas Colección 3 Perú distingue más de 20 clases de uso del suelo. Para el pronóstico se adopta una **reclasificación binaria**: las clases 3, 4, 5 y 6 (formaciones forestales) se agrupan como bosque (1); el resto como no-bosque (0). Los píxeles con código 27 ("no observado") se marcan como NODATA (255) y se excluyen de todos los cálculos.
 
-```python
-CLASES_BOSQUE   = {3, 4, 5, 6}          # Formaciones forestales
-CLASES_VALIDAS  = {3,4,5,6,11,12,29,66,70,
-                   13,15,18,35,40,72,9,21,
-                   23,24,30,32,61,68,25,33,31,34}
-CLASE_NOBSERVADO = 27                    # No observado → NODATA
-NODATA           = 255                   # Marcador ausencia de dato
+Esta simplificación está justificada porque el interés de la tesis es la pérdida neta de cobertura forestal, no la dinámica interna entre tipos de bosque.
+
+### 2.3 Selección de los 200 distritos con mayor cambio
+
+La detección de cambio opera píxel a píxel: un píxel "cambia" si su clase bosque/no-bosque varía en al menos un año consecutivo del período 1985–2024. El porcentaje de cambio de cada distrito es la fracción de sus píxeles válidos que experimentaron cambio. Los **200 distritos** con mayor porcentaje se seleccionan como dominio de estudio, garantizando que el universo analizado concentre la deforestación histórica relevante.
+
+### 2.4 Split entrenamiento / generalización espacial
+
+Los 200 distritos se dividen aleatoriamente (semilla 42) en **180 para entrenamiento** (90 %) y **20 para generalización espacial** (10 %). Los modelos se ajustan únicamente sobre los 180 distritos de entrenamiento. Los 20 de generalización están reservados para una evaluación de transferencia geográfica futura y no intervienen en ninguna decisión de hiperparámetros.
+
+### 2.5 Variable objetivo
+
+Para cada distrito y año se calcula:
+
+```
+pct_bosque = píxeles_bosque / píxeles_válidos
 ```
 
-La reclasificación es binaria: píxeles en `CLASES_BOSQUE` → 1, el resto → 0, no observado → 255.
-
-#### Proyecciones
-
-| Constante | Valor | Uso |
-|-----------|-------|-----|
-| `CRS_PROYECTADO` | `EPSG:32718` | Cálculos de área (UTM zona 18S) |
-| `CRS_GEOG` | `EPSG:4326` | Almacenamiento geográfico (WGS84) |
-
-#### Parámetros de series temporales
-
-```python
-ANIOS              = list(range(1985, 2025))  # 40 años
-TAMANIO_ENTRENAMIENTO = 0.9                   # 90 % de distritos para entrenamiento
-SEMILLA_SPLIT      = 42                       # Reproducibilidad del split 90/10
-```
+El resultado es un valor en **[0, 1]**, interpretable directamente como fracción de territorio con cobertura forestal. Esta escala es adecuada para redes neuronales sin necesidad de normalización adicional: los gradientes de la pérdida MSE son naturalmente pequeños y los optimizadores basados en Adam se comportan establemente en este rango.
 
 ---
 
-### 3.2 R1/R2 — Delimitación a la Amazonía y reclasificación
+## 3. Protocolo de evaluación compartido
 
-**Punto de entrada:** `O1/r1_r2/main.py`
+### 3.1 Walk-forward one-step-ahead
 
-#### Flujo de ejecución
+Todos los modelos se evalúan con el mismo protocolo de **evaluación walk-forward**: el modelo predice un año a la vez, y tras cada predicción incorpora el valor **real** observado para construir la ventana del siguiente paso. El proceso se repite durante los 5 años del horizonte.
 
 ```
-main.py
-  ├── Si no existen distritos amazónicos:
-  │     pipeline_delimitacion_amazonia()
-  │       ├── identificar_distritos_amazonia_interseccion()
-  │       └── recortar_mapas_amazonia()
-  └── Para cada año en 1985–2024:
-        ejecutar_pipeline_anio(anio)
-          ├── etapa1_cargar_y_verificar()
-          ├── etapa2_validar_y_depurar_clases()
-          ├── etapa3_reclasificar()
-          └── etapa4_exportar()
-  └── Guarda metadatos acumulados en dos CSVs
+history = [obs_1985, ..., obs_2019]   ← 35 años reales
+Para t ∈ {2020, 2021, 2022, 2023, 2024}:
+    ŷ_t = modelo(history[-ventana:])
+    history.append(obs_t)              ← valor real, no la predicción
 ```
+
+Esta elección es deliberada: al usar valores reales en lugar de predicciones previas se evita el acumulado de error propio del multi-step forecasting recursivo, y se obtiene la estimación más honesta de la capacidad predictiva paso a paso de cada modelo.
+
+### 3.2 Métricas
+
+Se reportan RMSE y MAE en la escala original de `pct_bosque` (fracción de bosque, no porcentaje ×100). Las métricas se calculan a tres niveles de agregación:
+
+| Nivel | Descripción |
+|-------|-------------|
+| **Global** | Todos los residuos de los 180 distritos × 5 años (900 valores) |
+| **Departamento** | Residuos pooled de todos los distritos del departamento |
+| **Distrito** | Residuos de los 5 años del horizonte de ese distrito |
+
+Las métricas departamentales y global son **pooled** (un único cálculo sobre el conjunto de residuos), no el promedio de las métricas individuales. Esto es equivalente a darle el mismo peso a cada predicción año-distrito, independientemente de cuántos distritos tenga el departamento.
+
+### 3.3 Diagnóstico de sobreajuste
+
+Para los modelos de aprendizaje profundo se reporta adicionalmente el gap de generalización:
+
+```
+gap_RMSE  = RMSE_test − RMSE_train
+ratio_RMSE = RMSE_test / RMSE_train
+```
+
+Valores `gap > 0` indican sobreajuste; valores cercanos a 1 en el ratio indican buen ajuste generalizable. Esta información se guarda en los CSV de resultados del grid search pero no interviene en la selección del mejor modelo (que se rige únicamente por `rmse_test`).
 
 ---
 
-#### `delimitacion_mapa_amazonas.py`
+## 4. Construcción del dataset para modelos DL
 
-**`identificar_distritos_amazonia_interseccion(ruta_biomas_peru, ruta_distritos_peru, ruta_distritos_amazonia_delimitados)`**
+### 4.1 Formato canónico
 
-Selecciona los distritos del Perú que tienen más del 50 % de su área dentro del bioma Amazonía.
+Los tres modelos de aprendizaje profundo (MLP, LSTM, CNN) reciben los datos en un formato canónico tridimensional:
 
-| Parámetro | Tipo | Descripción |
-|-----------|------|-------------|
-| `ruta_biomas_peru` | `str` | Ruta al shapefile de biomas nacionales |
-| `ruta_distritos_peru` | `str` | Ruta al shapefile de distritos |
-| `ruta_distritos_amazonia_delimitados` | `str` | Ruta de salida (GeoPackage) |
+```
+X: (n_muestras, window_size, 1)
+y: (n_muestras, 1)
+```
 
-Proceso:
-1. Filtra el bioma `"[Amazonía]"`.
-2. Reproyecta a `EPSG:32718` para medir áreas en m².
-3. Calcula intersección distrito–bioma y retiene los distritos con `área_intersección / área_distrito ≥ 0.50`.
-4. Convierte el resultado a `EPSG:4326` y guarda el GeoPackage.
+La última dimensión (tamaño 1) representa el número de variables — en este caso uno, ya que la serie es univariada. Cada modelo transforma internamente este tensor según su arquitectura: el MLP lo aplana, la LSTM lo usa directamente como secuencia, y la CNN lo permuta a `(n_muestras, 1, window_size)`.
 
-Salida:
-- `distritos_amazonia.gpkg` — geometrías + columnas de área.
-- CSV auxiliar con porcentajes de intersección por geocode.
+### 4.2 Ventanas deslizantes y split temporal
+
+Para cada distrito se generan ventanas deslizantes de tamaño `window_size`. Una ventana `[t, t+w)` va al conjunto de **entrenamiento** si su año objetivo `t+w` cae dentro del período 1985–2019; va al **test** si cae en 2020–2024.
+
+Esta separación es **estrictamente temporal**: ninguna observación posterior a 2019 interviene en el ajuste del modelo. La separación por ventanas, en lugar de por distritos, aumenta el número de muestras de entrenamiento disponibles ya que los 180 distritos contribuyen cada uno con múltiples ventanas.
+
+### 4.3 Tamaños de ventana explorados
+
+```
+DL_WINDOW_VALUES = [3, 4, 5, 6, 7]
+```
+
+Se exploran ventanas de 3 a 7 años. Ventanas muy cortas (1–2) no capturan tendencias; ventanas largas (≥8) reducen el número de muestras de entrenamiento disponibles y podrían sobreajustarse a la trayectoria inicial de la serie. El tamaño de ventana óptimo se determina por grid search y forma parte de la especificación del mejor modelo reportado.
 
 ---
 
-**`recortar_mapas_amazonia(gdf_amazonia, carpeta_mapas_raw, carpeta_mapas_amazonia)`**
+## 5. Modelo Persistencia — baseline
 
-Para cada uno de los 40 años recorta el raster MapBiomas original a la envolvente geométrica unificada de los distritos amazónicos.
+El modelo de persistencia predice que el valor de cobertura boscosa del próximo año será igual al del año actual. Su propósito es establecer el **piso de rendimiento**: cualquier modelo con RMSE superior al de Persistencia no aporta valor predictivo.
 
-Salida: `peru_amazonia_YYYY.tif` (40 rasters, mismo CRS que el original).
-
----
-
-#### `pipeline.py`
-
-Procesa un raster anual en cuatro etapas encadenadas:
-
-**`etapa1_cargar_y_verificar(ruta_archivo)`** — Lectura y metadatos
-
-Carga el raster con `rasterio` y extrae: CRS, resolución, dimensiones, clases únicas y tamaño en disco.
-
-```python
-retorna: (img: ndarray, meta: dict, info: dict)
-```
+La evaluación sigue el mismo protocolo walk-forward que los modelos complejos, con la diferencia de que "el modelo" es simplemente `ŷ_t = history[-1]`. Este diseño garantiza que la comparación sea metodológicamente válida.
 
 ---
 
-**`etapa2_validar_y_depurar_clases(img)`** — Limpieza de clases
+## 6. Modelo ARIMA
 
-- Convierte píxeles `CLASE_NOBSERVADO` (27) a `NODATA` (255).
-- Convierte cualquier clase fuera de `CLASES_VALIDAS` a `NODATA`.
+### 6.1 Selección del orden de diferenciación
 
-```python
-retorna: img_dep (ndarray) — igual forma, solo clases válidas o 255
-```
+El análisis ACF/PACF sobre tres series representativas (máxima variabilidad, mínima variabilidad y mediana) muestra autocorrelaciones significativas en la serie original que desaparecen tras una diferenciación de orden 1. Por ello `d=1` se fija como constante en el grid search.
 
----
+### 6.2 Estrategia de ventana rodante
 
-**`etapa3_reclasificar(img_dep)`** — Binarización bosque/no-bosque
-
-```python
-bosque_bin[pixel] = 1    si pixel ∈ CLASES_BOSQUE
-bosque_bin[pixel] = 0    si pixel válido y ∉ CLASES_BOSQUE
-bosque_bin[pixel] = 255  si pixel == NODATA
-```
-
-```python
-retorna: bosque_bin (ndarray, dtype=uint8)
-```
-
----
-
-**`etapa4_exportar(bosque_bin, meta, ruta_salida)`** — Exportación y estadísticas
-
-Escribe el GeoTIFF comprimido (`LZW`) y calcula:
-
-| Estadística | Descripción |
-|-------------|-------------|
-| `bosque_pix` | Píxeles con valor 1 |
-| `nobosque_pix` | Píxeles con valor 0 |
-| `nodata_pix` | Píxeles con valor 255 |
-| `bosque_pct` | Porcentaje bosque sobre píxeles válidos |
-| `bosque_area_km2` | Área boscosa estimada (km²) |
-
-```python
-retorna: info_reclasificado (dict) — estadísticas completas
-```
-
----
-
-**Salidas generadas por R1/R2**
-
-| Archivo | Descripción |
-|---------|-------------|
-| `mapas-amazonia/peru_amazonia_YYYY.tif` | 40 rasters recortados a Amazonía |
-| `mapas-reclasificados/bosque_nobosque_amazonia_YYYY.tif` | 40 rasters binarios (0/1/255) |
-| `mapas-amazonia/metadatos_mapas_amazonia.csv` | Metadatos de los rasters originales |
-| `mapas-reclasificados/metadatos_mapas_reclasificados_amazonia.csv` | Estadísticas de los rasters binarios |
-| `distritos-amazonia/distritos_amazonia.gpkg` | Límites de los distritos amazónicos |
-
----
-
-### 3.3 R3 — Detección de cambios, zonificación y series temporales
-
-**Punto de entrada:** `O1/r3/main.py`
-
-#### Flujo de ejecución
+En lugar de ajustar ARIMA sobre los 35 años completos, se ajusta sobre una **ventana de los últimos `w` años**. Esto responde a dos consideraciones: (1) las series de deforestación pueden tener rupturas estructurales que invalidan el supuesto de estacionariedad en el largo plazo; (2) el ajuste sobre ventanas cortas es computacionalmente tractable para los 180 distritos × 5 pasos × 81 configuraciones.
 
 ```
-main.py
-  ├── Paso 1 — Detección de cambios
-  │     detectar_cambios_por_tiles()
-  │     guardar_mapa_cambios()
-  │     exportar_estadisticas_cambios()
-  │
-  ├── Paso 2 — Zonificación por distrito
-  │     pipeline_zonificacion_distrito()
-  │       ├── calcular_metricas_por_distrito()  (rasterstats)
-  │       ├── guardar_mapa_cambios_distrito()
-  │       ├── exportar_csv_distritos()
-  │       └── exportar_csv_resumen()
-  │
-  ├── Paso 3 — Selección distritos alto cambio
-  │     pipeline_seleccion_distritos_alto_cambio()
-  │
-  └── Paso 4 — Series temporales
-        pipeline_extraer_series_temporales()
-          ├── split_aleatorio()  →  180 entrenamiento / 20 generalización
-          ├── extraer_series(gdf_train)
-          └── extraer_series(gdf_test)
-```
-
----
-
-#### `deteccion_cambios.py`
-
-**`detectar_cambios_por_tiles(rutas_mapas_reclasificados, tamanio_tile=5000)`**
-
-Procesa los 40 rasters binarios en *tiles* de 5 000 × 5 000 píxeles para evitar problemas de memoria.
-
-Para cada tile:
-1. Carga el stack temporal (shape: 40 × alto_tile × ancho_tile).
-2. Llama a `detectar_cambios_tile()`.
-3. Escribe el resultado en el mapa global de cambios.
-
-**`detectar_cambios_tile(conjunto_tiles)`**
-
-```python
-# Para cada par de años consecutivos detecta cambio de categoría
-cambio[y, x] = 1  si ∃ t: tile[t, y, x] ≠ tile[t+1, y, x]  y ninguno es NODATA
-cambio[y, x] = 0  si la serie es constante y sin NODATA
-cambio[y, x] = 255  si algún año tiene NODATA
-```
-
-```
-entrada:  conjunto_tiles (ndarray, shape: n_años × alto × ancho)
-salida:   mapa_cambios (ndarray, shape: alto × ancho, dtype=uint8)
-```
-
-**`exportar_estadisticas_cambios(ruta_mapa_cambios, ruta_estadisticas_cambios)`**
-
-Genera CSV con recuentos y porcentajes de píxeles con/sin cambio sobre el mapa completo.
-
----
-
-#### `zonificacion_distrito.py`
-
-**`calcular_metricas_por_distrito(ruta_mapa_cambios, gdf_distritos)`**
-
-Usa `rasterstats.zonal_stats()` en modo categórico para contar píxeles `0` y `1` dentro de cada polígono distrital. Calcula:
-
-```
-porcentaje_cambio = pixeles_cambiados / pixeles_validos × 100
-```
-
-**`pipeline_zonificacion_distrito(...)`**
-
-Orquesta: cálculo de métricas → merge con geometrías → exportación GeoPackage + dos CSVs (detalle por distrito y resumen global).
-
----
-
-#### `distritos_alto_cambio.py`
-
-**`pipeline_seleccion_distritos_alto_cambio(ruta_mapa_cambios_distrito, ruta_distritos_alto_cambio)`**
-
-Ordena los distritos por `porcentaje_cambio` descendente y retiene los **200 primeros**. Exporta GeoPackage y CSV.
-
----
-
-#### `series_temporales.py`
-
-**`extraer_series(gdf, rutas_mapas_reclasificados)`**
-
-Para cada año (40 iteraciones) extrae con `zonal_stats()` el recuento de píxeles bosque (1) y no-bosque (0) por distrito y calcula `pct_bosque`.
-
-```
-salida:  DataFrame — (n_distritos × 40) filas
-         columnas: geocode, departamento, distrito, anio,
-                   pix_total, pix_bosque, pix_no_bosque,
-                   pct_bosque, pct_no_bosque
-```
-
-**`split_aleatorio(gdf)`**
-
-Divide los 200 distritos en 90 % entrenamiento (180 distritos) y 10 % generalización espacial (20 distritos) con semilla fija `SEMILLA_SPLIT = 42`.
-
-**`pipeline_extraer_series_temporales(...)`**
-
-Ejecuta `split_aleatorio` y luego `extraer_series` para cada subconjunto, guardando dos CSVs independientes.
-
----
-
-**Salidas generadas por R3**
-
-| Archivo | Descripción |
-|---------|-------------|
-| `mapas-cambios/mapa_cambios_1985_2024.tif` | Raster binario de cambio histórico (0/1/255) |
-| `mapas-cambios/estadisticas_cambios.csv` | Resumen global de cambios |
-| `metricas-distritos/mapa_cambios_distrito_1985_2024.gpkg` | Geometrías + métricas por distrito |
-| `metricas-distritos/metricas_distritos.csv` | Tabla de métricas por distrito |
-| `distritos-alto-cambio/distritos_alto_cambio.gpkg` | Top 200 distritos seleccionados |
-| `distritos-alto-cambio/distritos_alto_cambio.csv` | Versión tabular sin geometría |
-| `series-temporales/entrenamiento/distritos_entrenamiento.csv` | 180 distritos × 40 años |
-| `series-temporales/generalizacion-espacial/distritos_generalizacion_espacial.csv` | 20 distritos × 40 años |
-
----
-
-## 4. O2 — Modelado de pronóstico
-
-### 4.1 Configuración global (`O2/config.py`)
-
-#### Rutas de salida
-
-| Variable | Ruta relativa bajo `interim/O2/modelos/` |
-|----------|------------------------------------------|
-| `PERSISTENCIA_DIR` | `persistencia/` |
-| `ARIMA_DIR` | `arima/` |
-| `ANALISIS_ARIMA_DIR` | `arima/analisis_arima/` |
-| `MLP_DIR` | `mlp/` |
-| `LSTM_DIR` | `lstm/` |
-| `COMPARACION_DIR` | `comparacion/` |
-
-Todos los directorios se crean automáticamente al importar el módulo.
-
-#### Parámetros temporales
-
-| Constante | Valor | Descripción |
-|-----------|-------|-------------|
-| `TAMANIO_ENTRENAMIENTO` | `35` | Años de histórico usados para ajustar modelos (1985–2019) |
-| `HORIZONTE` | `5` | Años de pronóstico (2020–2024) |
-| `ANIO_INICIO` | `1985` | Año base para etiquetas en gráficos |
-| `SEMILLA` | `42` | Semilla global de aleatoriedad |
-
-#### Hiperparámetros ARIMA
-
-```python
 ARIMA_P_VALUES      = [0, 1, 2]
 ARIMA_D_VALUES      = [1]
 ARIMA_Q_VALUES      = [0, 1, 2]
-ARIMA_WINDOW_VALUES = [3, 4, 5, 10, 15, 20, 25, 30, 35]
+ARIMA_WINDOW_VALUES = [3, 4, 5, 6, 7, 10, 15, 20, 25, 30, 35, None]
 ```
 
-Combinaciones totales: 3 × 1 × 3 × 9 = **81 configuraciones**, evaluadas con walk-forward para los 180 distritos.
+`window=None` equivale a usar el histórico completo disponible en cada paso.
 
-#### Hiperparámetros MLP
+### 6.3 Fallback ante divergencia
 
-```python
+Si el ajuste ARIMA no converge para un distrito en un paso dado, la predicción cae de vuelta al valor de persistencia. Este fallback se registra implícitamente en los residuos y puede inflar ligeramente el RMSE del modelo ARIMA en distritos con series irregulares.
+
+---
+
+## 7. Modelo MLP
+
+### 7.1 Representación de la entrada
+
+El MLP recibe la ventana temporal como un **vector plano** de longitud `window_size`. Esta representación no preserva el orden temporal explícitamente — el modelo trata la posición `t-3` y la posición `t-1` como dos features independientes. La capacidad de capturar dependencias temporales depende enteramente de que el optimizador descubra los pesos correctos para cada posición.
+
+### 7.2 Arquitectura
+
+Capas lineales apiladas con activación no lineal y dropout entre capas:
+
+```
+Input(window_size) → [Linear → Activación → Dropout] × n_capas → Linear(1)
+```
+
+La activación es un hiperparámetro del grid search porque sin ella las capas colapsarían a una transformación lineal equivalente a una sola capa.
+
+```
 MLP_HIDDEN_SIZES_VALUES = [[32, 16], [64, 32], [128, 64, 32]]
+MLP_ACTIVATION_VALUES   = ["relu", "leaky_relu"]
 MLP_DROPOUT_VALUES      = [0.0, 0.1]
 MLP_EPOCHS_VALUES       = [50]
 MLP_LR_VALUES           = [0.001, 0.0005]
 MLP_BATCH_SIZE_VALUES   = [8, 16]
-DL_WINDOW_VALUES        = [3, 4, 5, 10]
 ```
 
-Combinaciones totales (por ventana): 3 × 2 × 1 × 2 × 2 = 24; con 4 ventanas: **96 configuraciones**.
+Combinaciones totales (por ventana): 3 × 2 × 2 × 1 × 2 × 2 = **48**; con 5 ventanas: **240 configuraciones**.
 
-#### Hiperparámetros LSTM
+### 7.3 Función de pérdida y optimizador
 
-```python
-LSTM_HIDDEN_SIZE_VALUES = [32, 64, 128]
-LSTM_NUM_LAYERS_VALUES  = [1]
-LSTM_DROPOUT_VALUES     = [0.0, 0.1]
+Se usa **MSELoss** como función de pérdida, consistente con la métrica de evaluación (RMSE). El optimizador **Adam** se eligió por su robustez ante diferentes escalas de gradiente y su convergencia más rápida que SGD puro en datasets pequeños. La pérdida de entrenamiento se normaliza por el número total de muestras del dataset (no por el número de batches), lo que hace que el valor reportado sea independiente del `batch_size`.
+
+---
+
+## 8. Modelo LSTM
+
+### 8.1 Representación de la entrada
+
+A diferencia del MLP, la LSTM recibe la ventana como una **secuencia ordenada** `(batch, window_size, 1)`. Las celdas recurrentes procesan un paso temporal a la vez, manteniendo un estado interno que acumula información de los pasos anteriores. Esto le permite capturar tendencias y patrones de cambio interanual sin que el diseñador tenga que especificar explícitamente qué posiciones de la ventana son relevantes.
+
+### 8.2 Activaciones internas — no son hiperparámetros
+
+Las celdas LSTM tienen activaciones fijas por definición matemática: sigmoid en las puertas de olvido, entrada y salida; tanh en el candidato de celda y en la salida del estado oculto. Modificarlas produciría una arquitectura diferente (GRU, MGU, etc.), no una variante de LSTM. Por ello el grid search de LSTM no incluye `activation` como parámetro, a diferencia del MLP y CNN.
+
+### 8.3 Dropout en arquitecturas recurrentes multicapa
+
+El parámetro `dropout` de `nn.LSTM` aplica regularización **entre capas** (no sobre la salida de la última capa). Con `num_layers=1` este mecanismo no tiene efecto matemático, y PyTorch emite una advertencia. La implementación resuelve esto con:
+
+```
+lstm_dropout = dropout  si num_layers > 1
+lstm_dropout = 0.0      si num_layers = 1
+```
+
+El dropout sobre el estado oculto final (antes de la capa lineal de salida) se aplica siempre mediante un módulo `nn.Dropout` separado, independientemente del número de capas.
+
+```
+LSTM_HIDDEN_SIZE_VALUES = [16, 32, 64]
+LSTM_NUM_LAYERS_VALUES  = [1, 2]
+LSTM_DROPOUT_VALUES     = [0.0]
 LSTM_EPOCHS_VALUES      = [50]
 LSTM_LR_VALUES          = [0.001, 0.0005]
 LSTM_BATCH_SIZE_VALUES  = [8, 16]
 ```
 
-Combinaciones totales: 3 × 1 × 2 × 1 × 2 × 2 × 4 ventanas = **96 configuraciones**.
+Combinaciones totales: 3 × 2 × 1 × 1 × 2 × 2 = **24**; con 5 ventanas: **120 configuraciones**.
+
+`LSTM_DROPOUT_VALUES = [0.0]` refleja que con las series cortas disponibles (≤35 puntos por distrito) introducir dropout en la LSTM tiende a dificultar la convergencia más que a regularizar.
 
 ---
 
-### 4.2 Construcción de datasets (`construir_dataset.py`)
+## 9. Modelo CNN
 
-Este módulo transforma el CSV de series temporales en las estructuras de datos que consumen los modelos.
+### 9.1 Mecanismo de extracción de características
+
+Una convolución 1D desliza un kernel de tamaño `kernel_size` a lo largo de la dimensión temporal, detectando patrones locales (tendencias cortas, cambios bruscos, rupturas). Con `padding="same"` la longitud temporal de salida es idéntica a la de entrada, lo que permite apilar varias capas convolucionales sin reducir la resolución temporal.
+
+La salida de la última capa convolucional se aplana y se procesa por una capa densa antes de la predicción final:
+
+```
+Input(1, window_size) → [Conv1d → Activación → Dropout] × n_capas
+                      → Flatten → Linear(dense_size) → Activación → Dropout → Linear(1)
+```
+
+### 9.2 Restricción kernel ≤ window_size
+
+Un kernel más grande que la ventana no tiene sentido físico y PyTorch produciría un error. El pipeline omite automáticamente las combinaciones inválidas durante el grid search antes de intentar entrenar, y el constructor de la clase valida el mismo criterio como red de seguridad.
+
+### 9.3 `dense_size` como hiperparámetro adicional
+
+La CNN incluye una capa densa intermedia entre el aplanado y la salida. Esta capa comprime la representación `(conv_channels[-1] × window_size)` antes de la predicción. Su tamaño es un hiperparámetro específico de la CNN que no tiene análogo directo en MLP o LSTM, pero cumple la misma función de regularización que `hidden_sizes` en el MLP.
+
+```
+CNN_CONV_CHANNELS_VALUES = [[16], [32], [16, 32]]
+CNN_KERNEL_SIZE_VALUES   = [2, 3]
+CNN_DROPOUT_VALUES       = [0.0, 0.1]
+CNN_ACTIVATION_VALUES    = ["relu", "leaky_relu"]
+CNN_DENSE_SIZE_VALUES    = [16, 32]
+CNN_EPOCHS_VALUES        = [50]
+CNN_LR_VALUES            = [0.001, 0.0005]
+CNN_BATCH_SIZE_VALUES    = [8, 16]
+```
+
+Combinaciones antes de filtrar kernels inválidos: 3 × 2 × 2 × 2 × 2 × 1 × 2 × 2 = **192**; con 5 ventanas: hasta **960 configuraciones** (reducidas por el filtro de kernel).
+
+### 9.4 Dropout en capas convolucionales
+
+El dropout se aplica tras cada capa convolucional, a diferencia del MLP (una aplicación por capa oculta) y la LSTM (una aplicación antes del FC). Con dos capas conv y dropout=0.1, la CNN experimenta tres operaciones de dropout en total. Esto es comportamiento estándar para CNNs y el grid search seleccionará el valor de dropout que mejor equilibre regularización y capacidad.
 
 ---
 
-**`cargar_series(ruta_series)`**
+## 10. Criterios de comparabilidad entre modelos DL
 
-Lee el CSV de entrenamiento y pivotea a formato matricial.
+Los tres modelos de aprendizaje profundo (MLP, LSTM, CNN) comparten las siguientes condiciones para garantizar comparabilidad:
 
-```
-entrada:  CSV con columnas {geocode, departamento, distrito, anio, pct_bosque}
-salida:
-  series           ndarray (180, 40)  — pct_bosque[distrito, año]
-  df_distritos_info  DataFrame (180, 3)  — geocode, departamento, distrito
-```
+| Criterio | Decisión |
+|----------|----------|
+| **Datos de entrada** | Mismo `dataset_dl` — idénticas muestras de train y test por ventana |
+| **Normalización de datos** | Ninguna — `pct_bosque ∈ [0,1]` es adecuado para todas las arquitecturas |
+| **Función de pérdida** | MSELoss en todos |
+| **Optimizador** | Adam en todos |
+| **Normalización de la loss** | `epoch_loss / len(dataloader.dataset)` en todos (por muestra, no por batch) |
+| **Early stopping** | Ninguno — todos entrenan el número de épocas configurado |
+| **Evaluación** | Walk-forward geográfico idéntico sobre los 180 distritos |
+| **Métrica de selección** | `rmse_test` sobre ventanas deslizantes |
+| **Semilla** | `SEMILLA = 42` fijada al inicio de cada pipeline |
 
-El índice geográfico se preserva: `series[i, :]` corresponde a `df_distritos_info.iloc[i]`.
-
----
-
-**`construir_dataset_estadistico(series, train_size=35, horizon=5)`**
-
-Divide la matriz de series en período de ajuste y período de evaluación para los modelos estadísticos.
-
-```
-entrada:  series (180, 40)
-salida:
-  X_train_stat  ndarray (180, 35, 1)  — histórico 1985–2019
-  y_train_stat  ndarray (180, 5)      — horizonte 2020–2024
-```
-
-La dimensión extra al final de `X_train_stat` es requerida por las funciones ARIMA y Persistencia.
+La ausencia de early stopping es deliberada: garantiza que todos los modelos consuman el mismo presupuesto de entrenamiento (en épocas) para la misma configuración, eliminando una fuente de asimetría.
 
 ---
 
-**`crear_ventanas_split(series, window_size, tamanio_entrenamiento)`**
+## 11. Comparación final
 
-Genera ventanas deslizantes para modelos de aprendizaje profundo.
+### 11.1 Ranking global
 
-```
-Para cada distrito i:
-  Para cada t en [0, n_anios - window_size):
-    X_window = series[i, t : t + window_size]
-    y_target = series[i, t + window_size]
-    Si t + window_size < 35  →  train
-    Si t + window_size >= 35 →  test
-```
+Los cinco modelos se ordenan por RMSE walk-forward global sobre el período 2020–2024. Esta métrica resume el error medio por predicción año-distrito sobre los 900 pares (180 distritos × 5 años).
 
-```
-salida (con window_size=4, 180 distritos):
-  X_train  (≈6 120, 4, 1)    muestras de entrenamiento
-  y_train  (≈6 120, 1)
-  X_test   (≈900, 4, 1)      muestras de test
-  y_test   (≈900, 1)
-```
+### 11.2 Criterio de selección de distritos para visualización
 
-**Nota:** Con `window_size ≥ tamanio_entrenamiento` no se generan muestras de entrenamiento y la ventana se omite.
+Se identifican los 5 distritos mejor predichos y los 5 peor predichos usando un criterio de **consenso entre modelos**:
+
+- **Mejores:** distritos donde el `max(RMSE entre modelos)` es mínimo — todos los modelos aciertan consistentemente. Representan casos de deforestación con patrón predecible.
+- **Peores:** distritos donde el `min(RMSE entre modelos)` es máximo — incluso el mejor modelo falla. Representan dinámicas de cobertura que escapan a cualquiera de los enfoques evaluados.
+
+Este criterio evita sesgar la selección hacia los casos donde un modelo en particular sobresale, y ofrece una lectura del comportamiento colectivo del conjunto de modelos.
+
+### 11.3 Visualización
+
+Para cada uno de los 10 distritos se genera un gráfico de panel doble: el panel izquierdo muestra el histórico de cobertura desde el año 2000 hasta 2019 (contexto), y el panel derecho muestra el período 2020–2024 con los valores reales y las predicciones de cada modelo superpuestas. El RMSE individual de cada modelo se incluye en la leyenda.
 
 ---
 
-**`construir_dataset_dl(series, window_sizes, tamanio_entrenamiento)`**
-
-Aplica `crear_ventanas_split` para cada ventana en `DL_WINDOW_VALUES` y convierte los arrays a `torch.float32`.
-
-```
-salida:  dict[window_size → {
-           "train": (X_tensor, y_tensor),
-           "test":  (X_tensor, y_tensor)
-         }]
-```
-
----
-
-### 4.3 Análisis diagnóstico ARIMA (`analisis_arima.py`)
-
-Módulo de exploración previa al ajuste ARIMA. Genera gráficos para orientar la selección de los órdenes `(p, d, q)`.
-
-**`generar_analisis_arima(ruta_estadisticas, ruta_series, ruta_analisis_arima)`**
-
-Flujo:
-1. Selecciona tres series representativas: distrito de mayor variabilidad, de menor variabilidad y mediana global.
-2. Traza las series originales.
-3. Aplica diferenciación de orden 1 y traza las series diferenciadas.
-4. Genera gráficos ACF y PACF (hasta 10 lags) para cada serie.
-
-Salida: 11 imágenes PNG en `ANALISIS_ARIMA_DIR/`.
-
----
-
-### 4.4 Modelo Persistencia — baseline (`pipeline_persistencia.py`)
-
-**`pipeline_persistencia(X_train, y_train, df_distritos_info, ruta_modelo_persistencia)`**
-
-Implementa el modelo de persistencia con evaluación walk-forward: en cada paso del horizonte utiliza el último valor observado como pronóstico y luego incorpora el valor real para el siguiente paso.
-
-```
-Para cada distrito i:
-    history = X_train[i, :, 0]          # 35 valores reales
-    Para t en {0, 1, 2, 3, 4}:
-        ŷ[t] = history[-1]              # Último valor conocido
-        history.append(y_train[i, t])   # Actualiza con el real
-```
-
-**Cálculo de métricas por departamento**
-
-Las métricas se calculan sobre el conjunto **pooled** de residuos de todos los distritos del departamento, garantizando comparabilidad con ARIMA:
-
-```python
-y_t = y_train[mask]        # (n_dist_dep, 5)
-y_p = y_pred_total[mask]   # (n_dist_dep, 5)
-RMSE_dep = sqrt(mean((y_t - y_p)²))   # sobre todos los elementos
-MAE_dep  = mean(|y_t - y_p|)
-```
-
-**Salidas**
-
-| Archivo | Contenido |
-|---------|-----------|
-| `persistencia_resultados.csv` | RMSE y MAE por distrito |
-| `persistencia_resultados_departamento.csv` | RMSE y MAE pooled por departamento |
-| `persistencia_resultados_global.csv` | Métrica escalar global |
-| `persistencia_resultados_ypred.npy` | Array (180, 5) de predicciones |
-
-**Return**
-
-```python
-{"modelo": "Persistencia_WF", "rmse": float, "mae": float, "y_pred": ndarray(180,5)}
-```
-
----
-
-### 4.5 Modelo ARIMA (`pipeline_arima.py`)
-
-#### `metricas_por_departamento(df_distritos_info, y_true, y_pred)`
-
-Función auxiliar de referencia. Calcula el RMSE y MAE pooled por departamento — la misma lógica se replica en MLP y LSTM.
-
-```python
-Para dep en departamentos únicos:
-    mask = departamento == dep
-    RMSE_dep = sqrt(mean_squared_error(y_true[mask], y_pred[mask]))
-    MAE_dep  = mean_absolute_error(y_true[mask], y_pred[mask])
-```
-
----
-
-#### `evaluar_arima(X_train, y_train, df_distritos_info, window_size, order, exportar, ruta)`
-
-Evaluación walk-forward de una configuración `(window_size, p, d, q)`.
-
-```
-Para cada distrito i:
-    history = X_train[i, :, 0]           # Histórico completo
-    Para t en {0, 1, 2, 3, 4}:
-        ventana = history[-window_size:]
-        Ajusta ARIMA(p,d,q) sobre ventana
-        ŷ[t] = model.forecast()[0]
-        history.append(y_train[i, t])    # Incorpora real
-        Si falla ARIMA → ŷ[t] = ventana[-1]  (fallback persistencia)
-```
-
-Con `exportar=True` escribe tres CSVs (distritos, departamentos, global) en `ruta`.
-
-**Return**
-
-```python
-{
-  "modelo":         "ARIMA_WF_w{window_size}",
-  "rmse":           float,       # Global sobre 180×5 residuos
-  "mae":            float,
-  "y_pred":         ndarray(180,5),
-  "df_metricas":    DataFrame,   # Por distrito
-  "df_dep":         DataFrame,   # Por departamento (pooled)
-  "rmse_distritos": ndarray(180) # Para boxplot
-}
-```
-
----
-
-#### `grid_search(...)`
-
-Evalúa las 81 combinaciones `(p, d, q, window)` y selecciona la que minimiza el RMSE global.
-
-Salidas por ventana: `arima_w{w}_grid.csv`.  
-Resumen de mejores: `arima_mejores_por_ventana.csv`.
-
----
-
-#### `boxplot_ventanas(X_train, y_train, df_distritos_info, df_mejores, ruta_base)`
-
-Para la mejor configuración de cada ventana, genera un boxplot que muestra la distribución del RMSE entre los 180 distritos.
-
----
-
-#### `pipeline_arima(...)`
-
-Orquesta en orden: grid search → boxplot → análisis departamental → exportación de la mejor configuración global.
-
-Además de los CSVs, guarda las predicciones de la mejor configuración:
-
-| Archivo | Contenido |
-|---------|-----------|
-| `arima_w{w}_grid.csv` | Todas las combinaciones por ventana |
-| `arima_mejores_por_ventana.csv` | Mejor `(p,d,q)` por ventana |
-| `arima_best_w{w}_p{p}_d{d}_q{q}.csv` | Métricas de la mejor config global |
-| `arima_best_w{w}_p{p}_d{d}_q{q}_departamento.csv` | Por departamento |
-| `arima_best_w{w}_p{p}_d{d}_q{q}_global.csv` | Métrica escalar |
-| `arima_best_ypred.npy` | Array (180, 5) de predicciones |
-| `arima_boxplot_ventanas.png` | Distribución RMSE por ventana |
-
----
-
-### 4.6 Modelo MLP (`pipeline_mlp.py`)
-
-#### Arquitectura
-
-```
-Clase MLP(nn.Module):
-    Para cada h en hidden_sizes:
-        Linear(prev → h) → ReLU → Dropout(p)
-    Linear(h_final → 1)
-
-Ejemplo con hidden_sizes=[64, 32]:
-    Input(window_size) → Linear(w→64) → ReLU → Dropout
-                       → Linear(64→32) → ReLU → Dropout
-                       → Linear(32→1) → ŷ
-```
-
-La entrada se aplana: tensor `(batch, window, 1)` → `(batch, window)`.
-
----
-
-#### `entrenar(X_train_t, y_train_t, hidden_sizes, dropout, epochs, batch_size, lr, patience=10)`
-
-- Pérdida: `MSELoss`.
-- Optimizador: `Adam`.
-- Early stopping: si el train loss no mejora en `patience=10` épocas consecutivas, se detiene y restaura los pesos del mejor epoch.
-
-```python
-retorna: (model, train_losses)
-```
-
----
-
-#### `evaluar_geografico(model, series, df_distritos_info, window_size, tamanio_entrenamiento)`
-
-Evaluación walk-forward sobre la geografía completa (análoga a ARIMA):
-
-```
-Para cada distrito i:
-    history = series[i, :35]
-    Para t en {0, 1, 2, 3, 4}:
-        x = tensor(history[-window_size:]).unsqueeze(0)
-        ŷ[t] = model(x).item()
-        history.append(y_real[i, t])
-```
-
-Las métricas por departamento se calculan con el mismo método **pooled** que ARIMA:
-
-```python
-y_t, y_p = y_true_total[mask], y_pred_total[mask]
-RMSE_dep = sqrt(mean((y_t - y_p)²))
-```
-
-```python
-retorna: (df_distrito, df_departamento, rmse_global, mae_global, y_pred_wf)
-```
-
----
-
-#### `pipeline_mlp(...)`
-
-1. **Grid search** (96 configuraciones): entrena cada combinación y evalúa en test (ventanas deslizantes).
-2. **Mejor modelo**: la configuración con menor `rmse_test`.
-3. **Evaluación walk-forward geográfica**: sobre los 180 distritos completos.
-4. **Exportaciones**:
-
-| Archivo | Contenido |
-|---------|-----------|
-| `mlp_resultados.csv` | RMSE/MAE train+test de las 96 configs |
-| `mlp_mejor.pth` | State dict + configuración del mejor modelo |
-| `mlp_mejor_curva.png` | Evolución de la pérdida por época |
-| `mlp_mejores_por_ventana.csv` | Mejor config por tamaño de ventana |
-| `mlp_mejor_distrito.csv` | RMSE/MAE walk-forward por distrito |
-| `mlp_mejor_departamento.csv` | RMSE/MAE pooled por departamento |
-| `mlp_global.csv` | Métrica escalar walk-forward |
-| `mlp_mejor_ypred.npy` | Array (180, 5) de predicciones walk-forward |
-
-**Return**
-
-```python
-{"modelo": str, "rmse": float, "mae": float, "y_pred": ndarray(180,5)}
-```
-
----
-
-### 4.7 Modelo LSTM (`pipeline_lstm.py`)
-
-#### Arquitectura
-
-```
-Clase LSTM(nn.Module):
-    nn.LSTM(input_size=1, hidden_size, num_layers, batch_first=True)
-        → estado final [batch, hidden_size]
-    Dropout(p)
-    Linear(hidden_size → 1)
-```
-
-A diferencia del MLP, la entrada **no se aplana**: el tensor mantiene la dimensión de secuencia `(batch, window_size, 1)`, lo que permite que el LSTM capture dependencias temporales implícitas.
-
----
-
-#### Diferencias respecto al MLP
-
-| Aspecto | MLP | LSTM |
-|---------|-----|------|
-| Forma de entrada | `(batch, window)` — aplanado | `(batch, window, 1)` — secuencial |
-| Capas recurrentes | No | Sí (`num_layers`) |
-| Hiperparámetro adicional | `hidden_sizes` (lista) | `hidden_size` (escalar) + `num_layers` |
-
-Todos los demás aspectos —entrenamiento, early stopping, evaluación walk-forward, métricas por departamento, exportaciones— son análogos al MLP.
-
----
-
-**Salidas** (análogas a MLP, con prefijo `lstm_`):
-
-| Archivo | Contenido |
-|---------|-----------|
-| `lstm_resultados.csv` | RMSE/MAE train+test de las 96 configs |
-| `lstm_mejor.pth` | Pesos del mejor modelo |
-| `lstm_mejor_curva.png` | Curva de aprendizaje |
-| `lstm_mejores_por_ventana.csv` | Mejor config por ventana |
-| `lstm_mejor_distrito.csv` | Métricas walk-forward por distrito |
-| `lstm_mejor_departamento.csv` | Métricas pooled por departamento |
-| `lstm_global.csv` | Métrica escalar |
-| `lstm_mejor_ypred.npy` | Array (180, 5) de predicciones |
-
----
-
-### 4.8 Comparación final (`pipeline_comparacion.py`)
-
-#### `exportar_comparacion(resultados, ruta_csv)`
-
-Tabulación de métricas de los cuatro modelos, ordenada por RMSE ascendente.
-
-```python
-entrada:  lista de dicts — [{"modelo", "rmse", "mae"}, ...]
-salida:   DataFrame guardado en comparacion_modelos.csv
-```
-
----
-
-#### `graficar_predicciones(resultados, series, df_distritos_info, tamanio_entrenamiento, comparacion_dir, n=5, contexto_anios=5, anio_inicio=1985)`
-
-**Criterio de ranking:** Para cada distrito se calcula el MAE de cada modelo y luego se promedia entre todos los modelos con `y_pred` disponible. Esto da un ranking de *consenso* que no favorece a ningún modelo en particular.
-
-```
-mean_MAE[i] = mean over models { mean(|y_true[i] - y_pred_modelo[i]|) }
-```
-
-- **Top 5 menores** `mean_MAE` → grupo `mejores`.
-- **Top 5 mayores** `mean_MAE` → grupo `peores`.
-
-**Contenido de cada gráfico (10 en total):**
-
-```
-Eje X: años del período de análisis
-  - contexto: [anio_inicio + 30 ... anio_inicio + 34]  (5 años de entrenamiento)
-  - test:     [anio_inicio + 35 ... anio_inicio + 39]  (5 años pronóstico)
-
-Línea negra sólida     → valores reales en el contexto
-Línea negra punteada   → valores reales en el período de test
-Línea vertical gris    → separación entrenamiento/test
-Líneas de color        → predicciones de cada modelo (MAE individual en leyenda)
-Título                 → departamento, distrito, geocode, MAE promedio entre modelos
-```
-
-Archivos generados: `mejores_01_{geocode}.png` ... `mejores_05_{geocode}.png` y `peores_01_{geocode}.png` ... `peores_05_{geocode}.png`.
-
----
-
-#### `pipeline_comparacion(resultados, series, df_distritos_info, tamanio_entrenamiento, comparacion_dir, anio_inicio)`
-
-Orquesta las dos funciones anteriores y anuncia el modelo con menor RMSE global.
-
-**Salidas en `comparacion/`:**
-
-| Archivo | Contenido |
-|---------|-----------|
-| `comparacion_modelos.csv` | Ranking de los 4 modelos por RMSE |
-| `mejores_01_*.png` … `mejores_05_*.png` | Gráficos de los 5 distritos mejor predichos |
-| `peores_01_*.png` … `peores_05_*.png` | Gráficos de los 5 distritos peor predichos |
-
----
-
-### 4.9 Orquestador principal (`main.py`)
-
-El orquestador implementa **idempotencia por caché**: si los archivos de salida de un modelo ya existen, los carga desde disco en lugar de re-ejecutar el entrenamiento. En ese caso también intenta cargar el archivo `.npy` de predicciones para que la comparación final cuente con las predicciones de todos los modelos.
-
-#### Función auxiliar `_cargar_ypred(ruta_npy)`
-
-Carga un archivo `.npy` si existe; en caso contrario emite un aviso y devuelve `None` (el modelo se incluye en el ranking CSV pero no en las gráficas de comparación).
-
-#### Flujo completo
-
-```
-main()
- │
- ├── PASO 1 — Dataset
- │     cargar_series()
- │     construir_dataset_estadistico()
- │     construir_dataset_dl()
- │
- ├── PASO 2 — Modelos estadísticos
- │     [Persistencia]
- │       Si existe _global.csv → carga (+ .npy si existe)
- │       Si no               → pipeline_persistencia()
- │
- │     [Diagnóstico ARIMA]
- │       Si existen PNGs en analisis_arima/ → omite
- │       Si no                              → generar_analisis_arima()
- │
- │     [ARIMA]
- │       Si existe _mejores_por_ventana.csv → carga mejor fila (+ .npy)
- │       Si no                             → pipeline_arima()
- │
- ├── PASO 3 — Modelos Deep Learning
- │     [MLP]
- │       Si existe _resultados.csv → carga primera fila (+ .npy)
- │       Si no                    → pipeline_mlp()
- │
- │     [LSTM]
- │       Si existe _resultados.csv → carga primera fila (+ .npy)
- │       Si no                    → pipeline_lstm()
- │
- └── PASO 4 — Comparación
-       pipeline_comparacion(resultados, series, ...)
-```
-
-Todos los modelos devuelven al menos `{"modelo", "rmse", "mae", "y_pred"}` al objeto `resultados` que se pasa a la comparación.
-
----
-
-## 5. Flujo de datos extremo a extremo
-
-```
-[RAW] MapBiomas (40 rasters) + Biomas + Distritos
-          │
-          ▼
-   ┌──────────────────────────────────────────────┐
-   │ O1 / R1-R2  Delimitación & Reclasificación   │
-   │  - Recorte a Amazonía (40 rasters)           │
-   │  - Binario bosque/no-bosque (40 rasters)     │
-   └──────────────────┬───────────────────────────┘
-                      │
-                      ▼
-   ┌──────────────────────────────────────────────┐
-   │ O1 / R3  Cambios + Zonificación + Series     │
-   │  - Mapa de cambio histórico (1 raster)       │
-   │  - Top 200 distritos amazónicos              │
-   │  - Series temporales pct_bosque (180×40)     │
-   └──────────────────┬───────────────────────────┘
-                      │
-                      ▼
-           distritos_entrenamiento.csv
-           (180 distritos × 40 años)
-                      │
-                      ▼
-   ┌──────────────────────────────────────────────┐
-   │ O2  construir_dataset                        │
-   │  series    (180, 40)                         │
-   │  X_stat    (180, 35, 1) — train              │
-   │  y_stat    (180, 5)     — test               │
-   │  dataset_dl (dict por window_size)            │
-   └──────────┬─────────────┬────────────────┬────┘
-              │             │                │
-              ▼             ▼                ▼
-      Persistencia        ARIMA          MLP / LSTM
-      walk-forward     grid_search      grid_search
-      (180 × 5)       (81 configs)     (96 configs)
-              │             │                │
-              └──────┬──────┘                │
-                     └──────────┬────────────┘
-                                │
-                    evaluar_geografico (walk-forward)
-                    y_pred (180, 5) × 4 modelos
-                                │
-                                ▼
-                    pipeline_comparacion
-                     comparacion_modelos.csv
-                     10 PNG (5 mejores + 5 peores)
-```
-
----
-
-## 6. Convenciones y reproducibilidad
-
-### Semillas de aleatoriedad
-
-| Módulo | Semilla | Uso |
-|--------|---------|-----|
-| `O1/config.py` | `SEMILLA_SPLIT = 42` | Split 90/10 de distritos |
-| `O2/config.py` | `SEMILLA = 42` | Inicialización modelos PyTorch |
-
-La función `fijar_semilla()` en `pipeline_mlp.py` y `pipeline_lstm.py` fija `random`, `numpy`, `torch.manual_seed` y desactiva el benchmark de cuDNN para garantizar determinismo.
-
-### Protocolo de evaluación
-
-Todos los modelos utilizan **evaluación walk-forward multistep**:
-
-1. El modelo recibe como entrada únicamente el histórico hasta el año anterior al primer punto de pronóstico.
-2. Después de cada predicción, el valor **real** del año correspondiente se incorpora al histórico.
-3. Se repite durante los 5 años del horizonte.
-
-Esto garantiza que las métricas sean comparables entre modelos estadísticos y de aprendizaje profundo.
-
-### Métricas por departamento
-
-Las métricas departamentales se calculan de forma **pooled** (no como promedio de métricas de distritos), igual que la métrica global:
-
-```python
-RMSE_dep = sqrt( mean( (y_true[distritos_dep] - y_pred[distritos_dep])² ) )
-```
-
-Esto corresponde a la implementación de referencia en `metricas_por_departamento()` de `pipeline_arima.py` y se replica en Persistencia, MLP y LSTM.
-
-### Caché de resultados
-
-`main.py` detecta la existencia de archivos de salida antes de ejecutar cada pipeline. Esto permite:
-- Reanudar una ejecución interrumpida sin re-entrenar desde cero.
-- Re-generar únicamente las comparaciones finales sin tocar los modelos.
-
----
-
-## 7. Inventario de archivos de salida
+## 12. Inventario de salidas
 
 ### O1
 
 ```
 data/interim/O1/
-├── mapas-amazonia/
-│   ├── peru_amazonia_YYYY.tif            × 40
-│   └── metadatos_mapas_amazonia.csv
-├── mapas-reclasificados/
-│   ├── bosque_nobosque_amazonia_YYYY.tif × 40
-│   └── metadatos_mapas_reclasificados_amazonia.csv
-├── distritos-amazonia/
-│   └── distritos_amazonia.gpkg
-├── mapas-cambios/
-│   ├── mapa_cambios_1985_2024.tif
-│   └── estadisticas_cambios.csv
-├── metricas-distritos/
-│   ├── mapa_cambios_distrito_1985_2024.gpkg
-│   ├── metricas_distritos.csv
-│   └── metricas_distritos_resumen.csv
-├── distritos-alto-cambio/
-│   ├── distritos_alto_cambio.gpkg
-│   └── distritos_alto_cambio.csv
+├── mapas-amazonia/             ← 40 rasters recortados a la Amazonía
+├── mapas-reclasificados/       ← 40 rasters binarios bosque/no-bosque
+├── mapas-cambios/              ← Mapa de cambio histórico 1985–2024
+├── metricas-distritos/         ← Métricas de cambio por distrito
+├── distritos-alto-cambio/      ← Top 200 distritos seleccionados
 └── series-temporales/
-    ├── entrenamiento/
-    │   ├── distritos_entrenamiento.csv         (180 × 40 registros)
-    │   └── estadisticas_distritos_entrenamiento.csv
-    └── generalizacion-espacial/
-        └── distritos_generalizacion_espacial.csv (20 × 40 registros)
+    ├── entrenamiento/          ← 180 distritos × 40 años
+    └── generalizacion-espacial/← 20 distritos reservados
 ```
 
 ### O2
 
 ```
 data/interim/O2/modelos/
-├── persistencia/
-│   ├── persistencia_resultados.csv
-│   ├── persistencia_resultados_departamento.csv
-│   ├── persistencia_resultados_global.csv
-│   └── persistencia_resultados_ypred.npy
+├── persistencia/               ← Métricas globales, por departamento y por distrito
 ├── arima/
-│   ├── analisis_arima/                    ← 11 PNG exploratorios
-│   ├── arima_w{w}_grid.csv                × 9 ventanas
-│   ├── arima_mejores_por_ventana.csv
-│   ├── arima_best_w{w}_p{p}_d{d}_q{q}.csv
-│   ├── arima_best_w{w}_p{p}_d{d}_q{q}_departamento.csv
-│   ├── arima_best_w{w}_p{p}_d{d}_q{q}_global.csv
-│   ├── arima_best_ypred.npy
-│   └── arima_boxplot_ventanas.png
-├── mlp/
-│   ├── mlp_resultados.csv
-│   ├── mlp_mejor.pth
-│   ├── mlp_mejor_curva.png
-│   ├── mlp_mejores_por_ventana.csv
-│   ├── mlp_mejor_distrito.csv
-│   ├── mlp_mejor_departamento.csv
-│   ├── mlp_global.csv
-│   └── mlp_mejor_ypred.npy
-├── lstm/
-│   ├── lstm_resultados.csv
-│   ├── lstm_mejor.pth
-│   ├── lstm_mejor_curva.png
-│   ├── lstm_mejores_por_ventana.csv
-│   ├── lstm_mejor_distrito.csv
-│   ├── lstm_mejor_departamento.csv
-│   ├── lstm_global.csv
-│   └── lstm_mejor_ypred.npy
+│   ├── analisis_arima/         ← Gráficos ACF/PACF exploratorios
+│   └── ...                     ← Grid CSV, mejor config, predicciones .npy
+├── mlp/                        ← Grid CSV, mejor .pth, curva, métricas, predicciones .npy
+├── lstm/                       ← Ídem
+├── cnn/                        ← Ídem
 └── comparacion/
-    ├── comparacion_modelos.csv
-    ├── mejores_01_{geocode}.png
-    ├── mejores_02_{geocode}.png
-    ├── mejores_03_{geocode}.png
-    ├── mejores_04_{geocode}.png
-    ├── mejores_05_{geocode}.png
-    ├── peores_01_{geocode}.png
-    ├── peores_02_{geocode}.png
-    ├── peores_03_{geocode}.png
-    ├── peores_04_{geocode}.png
-    └── peores_05_{geocode}.png
+    ├── comparacion_modelos.csv ← Ranking de los 5 modelos por RMSE
+    ├── mejores_01–05_*.png     ← Gráficos de los 5 distritos mejor predichos
+    └── peores_01–05_*.png      ← Gráficos de los 5 distritos peor predichos
 ```
