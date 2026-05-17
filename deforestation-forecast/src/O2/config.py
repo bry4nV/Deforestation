@@ -15,11 +15,12 @@ ANALISIS_ARIMA_DIR  = os.path.join(ARIMA_DIR,   "analisis_arima")
 MLP_DIR             = os.path.join(MODELOS_DIR, "mlp")
 LSTM_DIR            = os.path.join(MODELOS_DIR, "lstm")
 CNN_DIR             = os.path.join(MODELOS_DIR, "cnn")
+TCN_DIR             = os.path.join(MODELOS_DIR, "tcn")
 COMPARACION_DIR     = os.path.join(MODELOS_DIR, "comparacion")
 
 for d in [O2_INTERIM_DIR, MODELOS_DIR,
           PERSISTENCIA_DIR, ARIMA_DIR, ANALISIS_ARIMA_DIR, MLP_DIR, LSTM_DIR,
-          CNN_DIR, COMPARACION_DIR]:
+          CNN_DIR, TCN_DIR, COMPARACION_DIR]:
     os.makedirs(d, exist_ok=True)
 
 ANIO_INICIO = 1985
@@ -82,3 +83,15 @@ CNN_BATCH_SIZE_VALUES    = [8, 16]
 # =============================
 
 DL_WINDOW_VALUES = [3, 4, 5, 6, 7]
+
+# =============================
+# Hiperparámetros TCN
+# =============================
+
+TCN_NUM_CHANNELS_VALUES = [[16], [32], [16, 32]]
+TCN_KERNEL_SIZE_VALUES  = [2, 3]
+TCN_DROPOUT_VALUES      = [0.0, 0.1]
+TCN_ACTIVATION_VALUES   = ["relu", "leaky_relu"]
+TCN_EPOCHS_VALUES       = [50]
+TCN_LR_VALUES           = [0.001, 0.0005]
+TCN_BATCH_SIZE_VALUES   = [8, 16]

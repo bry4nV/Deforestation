@@ -1,0 +1,19 @@
+{
+    "modelo": "MLP_FINAL_w3_h128x64x32_actleaky_relu_d0.0_e50_lr0.001_b16",
+    "window_size": 3,
+    "hidden_sizes": "[128, 64, 32]",
+    "activation": "leaky_relu",
+    "dropout": 0.0,
+    "epochs": 50,
+    "lr": 0.001,
+    "batch_size": 16,
+    "seed": 42,
+    "rmse_train": 0.010326,
+    "mae_train": 0.00714,
+    "rmse_test": 0.011695,
+    "mae_test": 0.007993,
+    "gap_rmse": 0.001369,
+    "gap_mae": 0.000853,
+    "ratio_rmse": 1.132535,
+    "ratio_mae": 1.119431
+}

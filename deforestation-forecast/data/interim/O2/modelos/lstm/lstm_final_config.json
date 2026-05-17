@@ -1,0 +1,19 @@
+{
+    "modelo": "LSTM_FINAL_w6_h64_l1_d0.0_e50_lr0.001_b16",
+    "window_size": 6,
+    "hidden_size": 64,
+    "num_layers": 1,
+    "dropout": 0.0,
+    "epochs": 50,
+    "lr": 0.001,
+    "batch_size": 16,
+    "seed": 42,
+    "rmse_train": 0.01019,
+    "mae_train": 0.007462,
+    "rmse_test": 0.01173,
+    "mae_test": 0.007968,
+    "gap_rmse": 0.00154,
+    "gap_mae": 0.000506,
+    "ratio_rmse": 1.151113,
+    "ratio_mae": 1.067813
+}

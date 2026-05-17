@@ -1,0 +1,21 @@
+{
+    "modelo": "CNN_FINAL_w5_c16x32_k3_actrelu_d0.0_dense32_e50_lr0.001_b8",
+    "window_size": 5,
+    "conv_channels": "[16, 32]",
+    "kernel_size": 3,
+    "activation": "relu",
+    "dropout": 0.0,
+    "dense_size": 32,
+    "epochs": 50,
+    "lr": 0.001,
+    "batch_size": 8,
+    "seed": 42,
+    "rmse_train": 0.010139,
+    "mae_train": 0.007488,
+    "rmse_test": 0.011925,
+    "mae_test": 0.008169,
+    "gap_rmse": 0.001786,
+    "gap_mae": 0.00068,
+    "ratio_rmse": 1.176189,
+    "ratio_mae": 1.090825
+}

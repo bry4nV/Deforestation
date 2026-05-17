@@ -1,0 +1,2 @@
+modelo,rmse,mae,rmse_train,mae_train,rmse_test_directo,mae_test_directo,gap_rmse,gap_mae,ratio_rmse,ratio_mae
+CNN_FINAL_w5_c16x32_k3_actrelu_d0.0_dense32_e50_lr0.001_b8,0.011925,0.008169,0.010139,0.007488,0.011925,0.008169,0.001786,0.00068,1.176189,1.090825
