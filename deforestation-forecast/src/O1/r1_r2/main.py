@@ -3,11 +3,13 @@ from O1.config import (
     MAPAS_RAW_DIR, MAPAS_AMAZONIA_DIR, MAPAS_RECLAS_DIR
 )
 from O1.r1_r2.pipeline import ejecutar_pipeline_anio
-from O1.r1_r2.delimitacion_mapa_amazonas import pipeline_delimitacion_amazonia;
+from O1.r1_r2.delimitacion_mapa_amazonas import pipeline_delimitacion_amazonia
+from O1.utils import log_config
 import pandas as pd
 import os
 
 if __name__ == "__main__":
+    log_config()
 
     # Delimitacion mapa amazonas.
     ruta_biomas_peru = os.path.join(BIOMAS_PERU_DIR, "BIOMES_v1.shp")

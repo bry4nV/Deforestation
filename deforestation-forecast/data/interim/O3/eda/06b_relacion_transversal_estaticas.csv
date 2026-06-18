@@ -1,0 +1,5 @@
+variable,n_distritos,r_pearson_vs_pct_bosque_medio,p_pearson_vs_pct_bosque_medio,r_spearman_vs_pct_bosque_medio,p_spearman_vs_pct_bosque_medio,r_pearson_vs_tasa_cambio,p_pearson_vs_tasa_cambio,r_spearman_vs_tasa_cambio,p_spearman_vs_tasa_cambio,interpretacion
+densidad_carreteras_km_km2,180,-0.5269,3.0097e-14,-0.5977,8.1022e-19,0.1762,0.018012,0.1441,0.053641,"-FUERTE (sig.) (transversal, n=distritos)"
+densidad_rios_km_km2,180,-0.1598,0.032176,-0.0782,0.29694,0.1428,0.055833,0.1288,0.084941,"-DEBIL (sig.) (transversal, n=distritos)"
+elev_media_m,180,-0.1632,0.02861,-0.167,0.025053,0.395,4.0944e-08,0.3903,6.1009e-08,"-DEBIL (sig.) (transversal, n=distritos)"
+pendiente_media_deg,180,0.0253,0.736,0.0328,0.66158,0.3769,1.8369e-07,0.3336,4.7273e-06,"+NULA (no sig.) (transversal, n=distritos)"

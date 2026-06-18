@@ -1,0 +1,8 @@
+variable,n_filas,n_nulos,pct_nulos,rango_plausible,n_fuera_de_rango,pct_fuera_de_rango,es_constante_global,pct_ceros,distritos_siempre_cero,pct_distritos_siempre_cero
+pct_bosque,6300,0,0.0,"[0.0, 1.0]",0,0.0,False,0.0,0,0.0
+pct_agropecuario,6300,0,0.0,"[0.0, 1.0]",0,0.0,False,0.0,0,0.0
+pct_anp,6300,0,0.0,"[0.0, 1.0]",0,0.0,False,85.413,107,59.444
+densidad_carreteras_km_km2,6300,0,0.0,"[0.0, None]",0,0.0,False,1.111,2,1.111
+densidad_rios_km_km2,6300,0,0.0,"[0.0, None]",0,0.0,False,32.222,58,32.222
+elev_media_m,6300,0,0.0,"[0.0, 6962.0]",0,0.0,False,0.0,0,0.0
+pendiente_media_deg,6300,0,0.0,"[0.0, 90.0]",0,0.0,False,0.0,0,0.0

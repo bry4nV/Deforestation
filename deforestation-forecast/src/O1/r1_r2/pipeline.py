@@ -5,11 +5,11 @@ import rasterio
 from O1.config import (
     MAPAS_RECLAS_DIR,
     MAPAS_AMAZONIA_DIR,
-
     CLASES_VALIDAS,
     CLASES_BOSQUE,
     CLASE_NOBSERVADO,
-    NODATA
+    NODATA,
+    PIXEL_AREA_KM2,
 )
 
 # =====================================================
@@ -110,8 +110,8 @@ def etapa4_exportar(bosque_bin, meta, ruta_salida):
 
     with rasterio.open(ruta_salida, "w", **meta_out) as dst:
         dst.write(bosque_bin, 1)
-        valores, cuentas = np.unique(bosque_bin, return_counts=True)
 
+    valores, cuentas = np.unique(bosque_bin, return_counts=True)
     dist = dict(zip(valores.tolist(), cuentas.tolist()))
     total = bosque_bin.size
 
@@ -119,13 +119,11 @@ def etapa4_exportar(bosque_bin, meta, ruta_salida):
     nobosque_pix = dist.get(0, 0)
     nodata_pix = dist.get(NODATA, 0)
 
-    pixel_area_km2 = 0.0009
-
     info = {
         "archivo_salida": os.path.basename(ruta_salida),
         "dtype_salida": meta_out["dtype"],
         "nodata_salida": meta_out["nodata"],
-        "clases_unicas_salida": sorted(np.unique(bosque_bin).tolist()),
+        "clases_unicas_salida": sorted(valores.tolist()),
         "total_pixeles": int(total),
         "bosque_pix": int(bosque_pix),
         "nobosque_pix": int(nobosque_pix),
@@ -133,9 +131,9 @@ def etapa4_exportar(bosque_bin, meta, ruta_salida):
         "bosque_pct": round(bosque_pix / total * 100, 6),
         "nobosque_pct": round(nobosque_pix / total * 100, 6),
         "nodata_pct": round(nodata_pix / total * 100, 6),
-        "bosque_area_km2": round(bosque_pix * pixel_area_km2, 4),
-        "nobosque_area_km2": round(nobosque_pix * pixel_area_km2, 4),
-        "nodata_area_km2": round(nodata_pix * pixel_area_km2, 4),
+        "bosque_area_km2": round(bosque_pix * PIXEL_AREA_KM2, 4),
+        "nobosque_area_km2": round(nobosque_pix * PIXEL_AREA_KM2, 4),
+        "nodata_area_km2": round(nodata_pix * PIXEL_AREA_KM2, 4),
     }
 
     return info

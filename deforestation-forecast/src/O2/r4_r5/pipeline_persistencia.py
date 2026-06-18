@@ -2,15 +2,8 @@ import json
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import mean_absolute_error, mean_squared_error
 
-
-def calcular_metricas(y_true, y_pred):
-    y_true = np.asarray(y_true).reshape(-1)
-    y_pred = np.asarray(y_pred).reshape(-1)
-    rmse = float(np.sqrt(mean_squared_error(y_true, y_pred)))
-    mae = float(mean_absolute_error(y_true, y_pred))
-    return rmse, mae
+from O2.r4_r5.utils import calcular_metricas
 
 
 def pipeline_persistencia(X_train, y_train, df_distritos_info, ruta_base, anios=None):

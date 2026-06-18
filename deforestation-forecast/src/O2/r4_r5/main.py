@@ -66,9 +66,12 @@ def main():
     ruta_pers_global  = ruta_persistencia.replace(".csv", "_global.csv")
     ruta_pers_ypred   = ruta_persistencia.replace(".csv", "_ypred.npy")
 
-    if os.path.exists(ruta_pers_ypred):
+    if os.path.exists(ruta_pers_ypred) and os.path.exists(ruta_pers_global):
         print("\n[SKIP] Persistencia — cargando resultados existentes.")
-        row = pd.read_csv(ruta_pers_global).iloc[0]
+        df_gbl = pd.read_csv(ruta_pers_global)
+        if df_gbl.empty:
+            raise RuntimeError(f"Archivo vacío: {ruta_pers_global}")
+        row = df_gbl.iloc[0]
         resultados.append({
             "modelo": row["modelo"],
             "rmse":   float(row["rmse"]),
@@ -108,9 +111,12 @@ def main():
         print("\n[SKIP] ARIMA Fase 1 — ya existe. Revisar arima_resultados.csv.")
 
     if FINAL_CONFIG_ARIMA is not None:
-        if os.path.exists(ruta_arima_npy):
+        if os.path.exists(ruta_arima_npy) and os.path.exists(ruta_arima_gbl):
             print("\n[SKIP] ARIMA Fase 2 — cargando resultados existentes.")
-            row = pd.read_csv(ruta_arima_gbl).iloc[0]
+            df_gbl = pd.read_csv(ruta_arima_gbl)
+            if df_gbl.empty:
+                raise RuntimeError(f"Archivo vacío: {ruta_arima_gbl}")
+            row = df_gbl.iloc[0]
             res_arima = {
                 "modelo": row["modelo"],
                 "rmse":   float(row["rmse"]),
@@ -153,9 +159,12 @@ def main():
         print("\n[SKIP] MLP Fase 1 — ya existe. Revisar mlp_resultados.csv.")
 
     if FINAL_CONFIG_MLP is not None:
-        if os.path.exists(ruta_mlp_npy):
+        if os.path.exists(ruta_mlp_npy) and os.path.exists(ruta_mlp_gbl):
             print("\n[SKIP] MLP Fase 2 — cargando resultados existentes.")
-            row = pd.read_csv(ruta_mlp_gbl).iloc[0]
+            df_gbl = pd.read_csv(ruta_mlp_gbl)
+            if df_gbl.empty:
+                raise RuntimeError(f"Archivo vacío: {ruta_mlp_gbl}")
+            row = df_gbl.iloc[0]
             res_mlp = {
                 "modelo": row["modelo"],
                 "rmse":   float(row["rmse"]),
@@ -193,9 +202,12 @@ def main():
         print("\n[SKIP] LSTM Fase 1 — ya existe. Revisar lstm_resultados.csv.")
 
     if FINAL_CONFIG_LSTM is not None:
-        if os.path.exists(ruta_lstm_npy):
+        if os.path.exists(ruta_lstm_npy) and os.path.exists(ruta_lstm_gbl):
             print("\n[SKIP] LSTM Fase 2 — cargando resultados existentes.")
-            row = pd.read_csv(ruta_lstm_gbl).iloc[0]
+            df_gbl = pd.read_csv(ruta_lstm_gbl)
+            if df_gbl.empty:
+                raise RuntimeError(f"Archivo vacío: {ruta_lstm_gbl}")
+            row = df_gbl.iloc[0]
             res_lstm = {
                 "modelo": row["modelo"],
                 "rmse":   float(row["rmse"]),
@@ -235,9 +247,12 @@ def main():
         print("\n[SKIP] CNN Fase 1 — ya existe. Revisar cnn_resultados.csv.")
 
     if FINAL_CONFIG_CNN is not None:
-        if os.path.exists(ruta_cnn_npy):
+        if os.path.exists(ruta_cnn_npy) and os.path.exists(ruta_cnn_gbl):
             print("\n[SKIP] CNN Fase 2 — cargando resultados existentes.")
-            row = pd.read_csv(ruta_cnn_gbl).iloc[0]
+            df_gbl = pd.read_csv(ruta_cnn_gbl)
+            if df_gbl.empty:
+                raise RuntimeError(f"Archivo vacío: {ruta_cnn_gbl}")
+            row = df_gbl.iloc[0]
             res_cnn = {
                 "modelo": row["modelo"],
                 "rmse":   float(row["rmse"]),
@@ -278,9 +293,12 @@ def main():
         print("\n[SKIP] TCN Fase 1 — ya existe. Revisar tcn_resultados.csv.")
 
     if FINAL_CONFIG_TCN is not None:
-        if os.path.exists(ruta_tcn_npy):
+        if os.path.exists(ruta_tcn_npy) and os.path.exists(ruta_tcn_gbl):
             print("\n[SKIP] TCN Fase 2 — cargando resultados existentes.")
-            row = pd.read_csv(ruta_tcn_gbl).iloc[0]
+            df_gbl = pd.read_csv(ruta_tcn_gbl)
+            if df_gbl.empty:
+                raise RuntimeError(f"Archivo vacío: {ruta_tcn_gbl}")
+            row = df_gbl.iloc[0]
             res_tcn = {
                 "modelo": row["modelo"],
                 "rmse":   float(row["rmse"]),

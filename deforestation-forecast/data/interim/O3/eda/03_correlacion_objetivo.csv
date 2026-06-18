@@ -1,0 +1,7 @@
+variable,r_pearson,p_pearson,r_spearman,p_spearman,interpretacion_pearson,interpretacion_spearman
+pct_agropecuario,-0.7361,0.0,-0.717,0.0,-FUERTE (sig.),-FUERTE (sig.)
+densidad_carreteras_km_km2,-0.5136,0.0,-0.5851,0.0,-FUERTE (sig.),-FUERTE (sig.)
+pct_anp,0.1787,2.2463e-46,0.2257,1.3821e-73,+DEBIL (sig.),+DEBIL (sig.)
+elev_media_m,-0.1591,5.6296e-37,-0.1581,1.5149e-36,-DEBIL (sig.),-DEBIL (sig.)
+densidad_rios_km_km2,-0.1557,1.7188e-35,-0.0756,1.8587e-09,-DEBIL (sig.),-NULA (sig.)
+pendiente_media_deg,0.0247,0.050289,0.036,0.0042254,+NULA (no sig.),+NULA (sig.)

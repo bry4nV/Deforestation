@@ -1,12 +1,12 @@
 import os
 from O1.config import (
-    ANIOS, BIOMAS_PERU_DIR, DISTRITOS_PERU_DIR, 
+    ANIOS,
     MAPAS_RECLAS_DIR, DISTRITOS_AMAZONIA_DIR, MAPAS_CAMBIOS_DIR,
-    METRICAS_DISTRITOS_DIR, DISTRITOS_ALTO_CAMBIO_DIR, 
-    SERIES_ENTRENAMIENTO_DIR, SERIES_GENERALIZACION_ESPACIAL_DIR
+    METRICAS_DISTRITOS_DIR, DISTRITOS_ALTO_CAMBIO_DIR,
+    SERIES_ENTRENAMIENTO_DIR, SERIES_GENERALIZACION_ESPACIAL_DIR,
+    TAMANIO_TILE,
 )
-
-from O1.r3.delimitacion_distritos_amazonas import pipeline_delimitacion_distritos_amazonia;
+from O1.utils import log_config
 
 from O1.r3.deteccion_cambios import (
     detectar_cambios_por_tiles, 
@@ -28,6 +28,8 @@ def main():
     4. Generar shapefile con densidad de cambios y Excel con estadísticas
     """
     
+    log_config()
+
     print("\n" + "="*70)
     print(" PIPELINE DE DETECCIÓN DE CAMBIOS + ZONIFICACIÓN ")
     print("="*70)
@@ -74,7 +76,7 @@ def main():
     else:
         mapa_cambios, meta = detectar_cambios_por_tiles(
             rutas_mapas_reclasificados,
-            tamanio_tile=5000
+            tamanio_tile=TAMANIO_TILE,
         )
         guardar_mapa_cambios(mapa_cambios, meta, ruta_mapa_cambios)
         exportar_estadisticas_cambios(ruta_mapa_cambios, ruta_estadisticas_cambios)
@@ -110,10 +112,13 @@ def main():
 
     ruta_distritos_alto_cambio = os.path.join(DISTRITOS_ALTO_CAMBIO_DIR, "distritos_alto_cambio.gpkg")
 
-    pipeline_seleccion_distritos_alto_cambio(
-        ruta_mapa_cambios_distrito,
-        ruta_distritos_alto_cambio
-    )
+    if os.path.exists(ruta_distritos_alto_cambio):
+        print(f"[INFO] La selección de distritos ya existe: {ruta_distritos_alto_cambio}.")
+    else:
+        pipeline_seleccion_distritos_alto_cambio(
+            ruta_mapa_cambios_distrito,
+            ruta_distritos_alto_cambio
+        )
 
     # ========================================================================
     # PASO 4: OBTENCIÓN DE SERIES TEMPORALES POR DISTRITOS
@@ -144,7 +149,5 @@ def main():
             ruta_estadisticas_series_generalizacion
         )
 
-    return
-    
 if __name__ == "__main__":
     main()

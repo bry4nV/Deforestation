@@ -1,0 +1,2 @@
+variable,fuente,crs_calculo,n_segmentos_raw,n_segmentos_dedup,n_duplicados_eliminados,metodo_unificacion,n_distritos,km_total,densidad_media,n_distritos_sin_carreteras,fecha_procesamiento
+carreteras,MTC Red Vial Nacional/Departamental/Vecinal dic-2018,EPSG:32718,50677,50648,29,unary_union topológico tras drop_duplicates WKB,200,20028.39,0.32202,2,2026-06-17T01:03:34.891876

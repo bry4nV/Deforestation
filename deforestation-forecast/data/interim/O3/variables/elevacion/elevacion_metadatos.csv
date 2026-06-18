@@ -1,0 +1,2 @@
+variable,fuente,n_tiles_srtm,mosaico,nodata_srtm,n_distritos,n_distritos_sin_datos,elev_media_global_m,elev_mediana_global_m,elev_std_promedio_m,elev_min_global_m,elev_max_global_m,fecha_procesamiento
+elevacion,SRTM SRTMGL1 30m (NASA/USGS),163,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\elevacion\dem_mosaico.tif,-32768,200,0,1466.356502707342,1251.5,374.1474337238705,-342.0,6234.0,2026-06-17T09:08:59.360761

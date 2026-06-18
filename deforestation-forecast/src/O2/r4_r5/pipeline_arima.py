@@ -5,8 +5,10 @@ from itertools import product
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.metrics import mean_absolute_error, mean_squared_error
 from statsmodels.tsa.arima.model import ARIMA
+
+from O2.r4_r5.utils import calcular_metricas
+
 
 def obtener_ventana(history, window_size):
     if window_size is None:
@@ -22,12 +24,6 @@ def parse_ventana(valor):
     if str(valor) == "full":
         return None
     return int(valor)
-
-
-def calcular_metricas(y_true, y_pred):
-    rmse = float(np.sqrt(mean_squared_error(y_true, y_pred)))
-    mae = float(mean_absolute_error(y_true, y_pred))
-    return rmse, mae
 
 
 def metricas_por_departamento(df_distritos_info, y_true_total, y_pred_total):

@@ -1,0 +1,2 @@
+variable,fuente,crs_calculo,n_segmentos,n_distritos,km_total,densidad_media,n_distritos_sin_rios,fecha_procesamiento
+rios,D:\VisualCode\Tesis\deforestation-forecast\data\raw\variables-locales\rios\Rios.shp,EPSG:32718,1224,200,3739.72,0.039727,66,2026-06-17T01:03:38.242267

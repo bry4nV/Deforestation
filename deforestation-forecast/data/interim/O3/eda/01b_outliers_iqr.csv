@@ -1,0 +1,8 @@
+variable,limite_inferior,limite_superior,n_outliers,pct_outliers
+pct_bosque,-0.150894,1.206274,0,0.0
+pct_agropecuario,-0.242587,0.88874,0,0.0
+pct_anp,0.0,0.0,919,14.587
+densidad_carreteras_km_km2,-0.222698,0.776128,385,6.111
+densidad_rios_km_km2,-0.091313,0.152188,175,2.778
+elev_media_m,-1748.958879,4646.976843,0,0.0
+pendiente_media_deg,-4.598945,40.113678,0,0.0

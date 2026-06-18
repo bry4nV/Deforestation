@@ -1,0 +1,2 @@
+variable,fuente,clases_mapbiomas,n_distritos,n_anios,anio_inicio,anio_fin,n_registros,fecha_procesamiento
+urbano,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O1\mapas-amazonia\peru_amazonia_{anio}.tif,[24],200,40,1985,2024,8000,2026-06-16T00:54:54.718455

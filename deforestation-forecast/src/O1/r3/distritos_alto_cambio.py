@@ -1,6 +1,7 @@
 import geopandas as gpd
 import pandas as pd
 import numpy as np
+from O1.config import N_DISTRITOS_ALTO_CAMBIO
 
 def pipeline_seleccion_distritos_alto_cambio(
     ruta_mapa_cambios_distrito,
@@ -41,7 +42,7 @@ def pipeline_seleccion_distritos_alto_cambio(
 
     gdf = gdf.sort_values("porcentaje_cambio", ascending=False)
 
-    gdf_seleccionados = gdf.head(200).copy()    
+    gdf_seleccionados = gdf.head(N_DISTRITOS_ALTO_CAMBIO).copy()
     gdf_seleccionados.to_file(ruta_distritos_alto_cambio, driver="GPKG", encoding="utf-8")
 
     print(f"[OK] Distritos seleccionados guardados: {ruta_distritos_alto_cambio}")

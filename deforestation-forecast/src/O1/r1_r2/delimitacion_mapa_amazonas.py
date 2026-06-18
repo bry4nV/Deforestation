@@ -3,23 +3,17 @@ import numpy as np
 import pandas as pd
 import geopandas as gpd
 from rasterio.mask import mask
-from O1.config import ANIOS, CRS_PROYECTADO
-
-def guardar_csv(gdf, ruta_csv):
-    df = gdf.copy()
-    if "geometry" in df.columns:
-        df = df.drop(columns="geometry")
-    
-    df.to_csv(ruta_csv, index=False)
+from O1.config import ANIOS, CRS_PROYECTADO, UMBRAL_AMAZONIA
+from O1.utils import guardar_csv
 
 def identificar_distritos_amazonia_interseccion(ruta_biomas_peru, ruta_distritos_peru, ruta_distritos_amazonia_delimitados):
-    
+
     biomas = gpd.read_file(ruta_biomas_peru)
     distritos = gpd.read_file(ruta_distritos_peru)
 
     if biomas.crs != distritos.crs:
         raise ValueError("CRS diferentes entre biomas y distritos")
-    
+
     biomas["geometry"] = biomas.geometry.buffer(0)
     distritos["geometry"] = distritos.geometry.buffer(0)
 
@@ -38,7 +32,7 @@ def identificar_distritos_amazonia_interseccion(ruta_biomas_peru, ruta_distritos
     distritos_intersectados["area_intersectada"] = distritos_intersectados.geometry.intersection(amazonia_union).area
     distritos_intersectados["porcentaje_amazonia"] = distritos_intersectados["area_intersectada"] / distritos_intersectados["area_total"]
 
-    distritos_umbral = distritos_intersectados[distritos_intersectados["porcentaje_amazonia"] > 0.50].copy()
+    distritos_umbral = distritos_intersectados[distritos_intersectados["porcentaje_amazonia"] > UMBRAL_AMAZONIA].copy()
     distritos_umbral = distritos_umbral.to_crs("EPSG:4326")
 
     distritos_umbral.to_file(ruta_distritos_amazonia_delimitados, driver="GPKG", encoding="utf-8")

@@ -1,4 +1,11 @@
 import os
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    datefmt="%H:%M:%S"
+)
 
 # =============================
 # R1 y R2 - PIPELINE
@@ -55,6 +62,22 @@ CRS_PROYECTADO = "EPSG:32718"  # UTM zona 18 sur
 CRS_GEOG = "EPSG:4326"  # WGS84 para distritos
 TAMANIO_ENTRENAMIENTO = 0.9
 SEMILLA_SPLIT = 42
+
+# =============================
+# PARÁMETROS DEL PIPELINE
+# =============================
+
+# Fracción mínima del área distrital que debe estar dentro de Amazonía para incluir el distrito
+UMBRAL_AMAZONIA = 0.50
+
+# Top-N distritos con mayor porcentaje de cambio para el dataset de entrenamiento
+N_DISTRITOS_ALTO_CAMBIO = 200
+
+# Área de un píxel MapBiomas C3 (resolución 30 m × 30 m)
+PIXEL_AREA_KM2 = 0.0009
+
+# Tamaño de tile (px) para procesamiento por bloques en detección de cambios
+TAMANIO_TILE = 5000
 
 # =============================
 # RUTAS SHAPEFILES
