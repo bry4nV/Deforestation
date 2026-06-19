@@ -33,6 +33,7 @@ from O3.r11.cargar_panel import cargar_panel
 from O3.r11.construir_dataset import construir_datasets
 from O3.r11.escalador import ajustar_y_escalar
 from O3.r11.transformaciones import aplicar_transformaciones
+from O3.utils import iniciar_log_archivo
 from O3.r11.final_configs import FINAL_CONFIG_CNN, FINAL_CONFIG_LSTM, FINAL_CONFIG_MLP
 from O3.r11.pipeline_cnn import entrenar_config_final_cnn, pipeline_cnn
 from O3.r11.pipeline_comparacion import pipeline_comparacion
@@ -262,4 +263,5 @@ if __name__ == "__main__":
         format="%(asctime)s [%(levelname)s] %(message)s",
         datefmt="%H:%M:%S",
     )
+    iniciar_log_archivo("r11")
     main()

@@ -1,5 +1,6 @@
 import logging
 import os
+from datetime import datetime
 
 import pandas as pd
 
@@ -18,6 +19,7 @@ from O3.config import (
     DISTRITOS_ALTO_CAMBIO_GPKG,
     DISTRITOS_ENTRENAMIENTO_CSV,
     DISTRITOS_GENERALIZACION_CSV,
+    LOGS_DIR,
     MAPBIOMAS_AMAZONIA_PATRON,
     O3_INTERIM_DIR,
     RIOS_SHP,
@@ -98,3 +100,29 @@ def validar_fuentes():
         )
 
     logger.info(f"[OK] Todas las fuentes verificadas ({len(fuentes)} archivos + {len(SRTM_TILES)} tiles SRTM)")
+
+
+def iniciar_log_archivo(nombre_pipeline: str) -> str:
+    """
+    Agrega un FileHandler con timestamp al root logger, además de la consola
+    ya configurada por logging.basicConfig(). Todo lo que pase por `logger.*`
+    en cualquier módulo de O3 a partir de este punto queda duplicado en el
+    archivo (los `print()` sueltos de las cabeceras/banners no, solo los logs).
+
+    Se agrega un handler nuevo (no reconfigura uno existente), por lo que
+    funciona sin importar si logging.basicConfig() ya corrió antes (siempre
+    corre al importar O3.config).
+
+    Returns
+    -------
+    ruta_log : ruta del archivo .log creado, en data/logs/.
+    """
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    ruta_log = os.path.join(LOGS_DIR, f"{nombre_pipeline}_run_debug_{timestamp}.log")
+
+    handler = logging.FileHandler(ruta_log, encoding="utf-8")
+    handler.setFormatter(logging.Formatter("%(asctime)s [%(levelname)s] %(message)s", datefmt="%H:%M:%S"))
+    logging.getLogger().addHandler(handler)
+
+    logger.info(f"[OK] Log de esta corrida: {ruta_log}")
+    return ruta_log

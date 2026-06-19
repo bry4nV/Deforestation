@@ -15,6 +15,8 @@ logging.basicConfig(
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA_DIR = os.path.join(BASE_DIR, "data")
 RAW_DIR  = os.path.join(DATA_DIR, "raw")
+LOGS_DIR = os.path.join(DATA_DIR, "logs")
+os.makedirs(LOGS_DIR, exist_ok=True)
 
 VARIABLES_LOCALES_RAW_DIR = os.path.join(RAW_DIR, "variables-locales")
 
