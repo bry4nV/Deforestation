@@ -49,6 +49,8 @@ def construir_agropecuaria(distritos_gdf):
                 "departamento":     row[GPKG_COL_DEPARTAMENTO],
                 "distrito":         row[GPKG_COL_DISTRITO],
                 "anio":             anio,
+                "pix_total":        pixeles_validos,
+                "pix_agropecuario": pixeles_clase,
                 "pct_agropecuario": pct,
             })
         logger.info(f"  {anio}: {n_distritos} distritos")

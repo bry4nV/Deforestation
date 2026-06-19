@@ -1,7 +1,7 @@
 ,pct_agropecuario,pct_anp,densidad_carreteras_km_km2,densidad_rios_km_km2,elev_media_m,pendiente_media_deg
-pct_agropecuario,1.0,-0.1424,0.5221,0.0697,-0.3603,-0.3935
-pct_anp,-0.1424,1.0,-0.1419,-0.0913,-0.0532,-0.0419
-densidad_carreteras_km_km2,0.5221,-0.1419,1.0,0.1787,0.0019,-0.0004
-densidad_rios_km_km2,0.0697,-0.0913,0.1787,1.0,-0.0842,-0.056
-elev_media_m,-0.3603,-0.0532,0.0019,-0.0842,1.0,0.7879
-pendiente_media_deg,-0.3935,-0.0419,-0.0004,-0.056,0.7879,1.0
+pct_agropecuario,1.0,-0.1716,0.5221,0.0697,-0.3603,-0.3935
+pct_anp,-0.1716,1.0,-0.1704,-0.0029,0.0614,0.0823
+densidad_carreteras_km_km2,0.5221,-0.1704,1.0,0.1787,0.0019,-0.0004
+densidad_rios_km_km2,0.0697,-0.0029,0.1787,1.0,-0.0842,-0.056
+elev_media_m,-0.3603,0.0614,0.0019,-0.0842,1.0,0.7879
+pendiente_media_deg,-0.3935,0.0823,-0.0004,-0.056,0.7879,1.0

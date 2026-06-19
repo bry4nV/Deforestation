@@ -144,7 +144,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,1985,0.0,0
 200303,Piura,El Carmen De La Frontera,1985,0.0,0
 100609,Huanuco,Pueblo Nuevo,1985,0.0,0
-080903,Cusco,Huayopata,1985,0.0,0
+080903,Cusco,Huayopata,1985,0.000284,1
 010604,Amazonas,Huambo,1985,0.0,0
 100505,Huanuco,Jircan,1985,0.0,0
 010512,Amazonas,Ocalli,1985,0.0,0
@@ -173,13 +173,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,1985,0.0,0
 010519,Amazonas,San Juan De Lopecancha,1985,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,1985,0.0,0
-080408,Cusco,Yanatile,1985,0.0,0
+080408,Cusco,Yanatile,1985,0.002679,1
 050408,Ayacucho,Llochegua,1985,0.0,0
 100507,Huanuco,Monzon,1985,0.0,0
-081304,Cusco,Machupicchu,1985,0.0,0
+081304,Cusco,Machupicchu,1985,0.905961,1
 220909,San Martin,La Banda De Shilcayo,1985,0.0,0
 220103,San Martin,Habana,1985,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,1985,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,1985,0.06402,1
 010508,Amazonas,Lonya Chico,1985,0.0,0
 170102,Madre De Dios,Inambari,1985,0.0,0
 050502,Ayacucho,Anco,1985,0.0,0
@@ -196,7 +196,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,1985,0.0,0
 160603,Loreto,Padre Marquez,1985,0.0,0
 010522,Amazonas,Tingo,1985,0.0,0
-080906,Cusco,Quellouno,1985,0.0,0
+080906,Cusco,Quellouno,1985,5.5e-05,1
 010301,Amazonas,Jumbilla,1985,0.0,0
 080917,Cusco,Manitea,1985,0.0,0
 250305,Ucayali,Alexander Von Humboldt,1986,0.0,0
@@ -344,7 +344,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,1986,0.0,0
 200303,Piura,El Carmen De La Frontera,1986,0.0,0
 100609,Huanuco,Pueblo Nuevo,1986,0.0,0
-080903,Cusco,Huayopata,1986,0.0,0
+080903,Cusco,Huayopata,1986,0.000284,1
 010604,Amazonas,Huambo,1986,0.0,0
 100505,Huanuco,Jircan,1986,0.0,0
 010512,Amazonas,Ocalli,1986,0.0,0
@@ -373,13 +373,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,1986,0.0,0
 010519,Amazonas,San Juan De Lopecancha,1986,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,1986,0.0,0
-080408,Cusco,Yanatile,1986,0.0,0
+080408,Cusco,Yanatile,1986,0.002679,1
 050408,Ayacucho,Llochegua,1986,0.0,0
 100507,Huanuco,Monzon,1986,0.0,0
-081304,Cusco,Machupicchu,1986,0.0,0
+081304,Cusco,Machupicchu,1986,0.905961,1
 220909,San Martin,La Banda De Shilcayo,1986,0.0,0
 220103,San Martin,Habana,1986,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,1986,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,1986,0.06402,1
 010508,Amazonas,Lonya Chico,1986,0.0,0
 170102,Madre De Dios,Inambari,1986,0.0,0
 050502,Ayacucho,Anco,1986,0.0,0
@@ -396,7 +396,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,1986,0.0,0
 160603,Loreto,Padre Marquez,1986,0.0,0
 010522,Amazonas,Tingo,1986,0.0,0
-080906,Cusco,Quellouno,1986,0.0,0
+080906,Cusco,Quellouno,1986,5.5e-05,1
 010301,Amazonas,Jumbilla,1986,0.0,0
 080917,Cusco,Manitea,1986,0.0,0
 250305,Ucayali,Alexander Von Humboldt,1987,0.0,0
@@ -544,7 +544,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,1987,0.0,0
 200303,Piura,El Carmen De La Frontera,1987,0.0,0
 100609,Huanuco,Pueblo Nuevo,1987,0.0,0
-080903,Cusco,Huayopata,1987,0.0,0
+080903,Cusco,Huayopata,1987,0.000284,1
 010604,Amazonas,Huambo,1987,0.0,0
 100505,Huanuco,Jircan,1987,0.0,0
 010512,Amazonas,Ocalli,1987,0.0,0
@@ -573,13 +573,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,1987,0.0,0
 010519,Amazonas,San Juan De Lopecancha,1987,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,1987,0.0,0
-080408,Cusco,Yanatile,1987,0.0,0
+080408,Cusco,Yanatile,1987,0.002679,1
 050408,Ayacucho,Llochegua,1987,0.0,0
 100507,Huanuco,Monzon,1987,0.0,0
-081304,Cusco,Machupicchu,1987,0.0,0
+081304,Cusco,Machupicchu,1987,0.905961,1
 220909,San Martin,La Banda De Shilcayo,1987,0.0,0
 220103,San Martin,Habana,1987,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,1987,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,1987,0.06402,1
 010508,Amazonas,Lonya Chico,1987,0.0,0
 170102,Madre De Dios,Inambari,1987,0.0,0
 050502,Ayacucho,Anco,1987,0.0,0
@@ -596,7 +596,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,1987,0.0,0
 160603,Loreto,Padre Marquez,1987,0.0,0
 010522,Amazonas,Tingo,1987,0.0,0
-080906,Cusco,Quellouno,1987,0.0,0
+080906,Cusco,Quellouno,1987,5.5e-05,1
 010301,Amazonas,Jumbilla,1987,0.0,0
 080917,Cusco,Manitea,1987,0.0,0
 250305,Ucayali,Alexander Von Humboldt,1988,0.0,0
@@ -744,7 +744,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,1988,0.0,0
 200303,Piura,El Carmen De La Frontera,1988,0.001006,1
 100609,Huanuco,Pueblo Nuevo,1988,0.0,0
-080903,Cusco,Huayopata,1988,0.0,0
+080903,Cusco,Huayopata,1988,0.000284,1
 010604,Amazonas,Huambo,1988,0.0,0
 100505,Huanuco,Jircan,1988,0.0,0
 010512,Amazonas,Ocalli,1988,0.0,0
@@ -773,13 +773,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,1988,0.0,0
 010519,Amazonas,San Juan De Lopecancha,1988,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,1988,0.0,0
-080408,Cusco,Yanatile,1988,0.0,0
+080408,Cusco,Yanatile,1988,0.002679,1
 050408,Ayacucho,Llochegua,1988,0.0,0
 100507,Huanuco,Monzon,1988,0.0,0
-081304,Cusco,Machupicchu,1988,0.0,0
+081304,Cusco,Machupicchu,1988,0.905961,1
 220909,San Martin,La Banda De Shilcayo,1988,0.0,0
 220103,San Martin,Habana,1988,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,1988,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,1988,0.06402,1
 010508,Amazonas,Lonya Chico,1988,0.0,0
 170102,Madre De Dios,Inambari,1988,0.0,0
 050502,Ayacucho,Anco,1988,0.0,0
@@ -796,7 +796,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,1988,0.0,0
 160603,Loreto,Padre Marquez,1988,0.0,0
 010522,Amazonas,Tingo,1988,0.0,0
-080906,Cusco,Quellouno,1988,0.0,0
+080906,Cusco,Quellouno,1988,5.5e-05,1
 010301,Amazonas,Jumbilla,1988,0.0,0
 080917,Cusco,Manitea,1988,0.0,0
 250305,Ucayali,Alexander Von Humboldt,1989,0.0,0
@@ -944,7 +944,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,1989,0.0,0
 200303,Piura,El Carmen De La Frontera,1989,0.001006,1
 100609,Huanuco,Pueblo Nuevo,1989,0.0,0
-080903,Cusco,Huayopata,1989,0.0,0
+080903,Cusco,Huayopata,1989,0.000284,1
 010604,Amazonas,Huambo,1989,0.0,0
 100505,Huanuco,Jircan,1989,0.0,0
 010512,Amazonas,Ocalli,1989,0.0,0
@@ -973,13 +973,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,1989,0.0,0
 010519,Amazonas,San Juan De Lopecancha,1989,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,1989,0.0,0
-080408,Cusco,Yanatile,1989,0.0,0
+080408,Cusco,Yanatile,1989,0.002679,1
 050408,Ayacucho,Llochegua,1989,0.0,0
 100507,Huanuco,Monzon,1989,0.0,0
-081304,Cusco,Machupicchu,1989,0.0,0
+081304,Cusco,Machupicchu,1989,0.905961,1
 220909,San Martin,La Banda De Shilcayo,1989,0.0,0
 220103,San Martin,Habana,1989,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,1989,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,1989,0.06402,1
 010508,Amazonas,Lonya Chico,1989,0.0,0
 170102,Madre De Dios,Inambari,1989,0.0,0
 050502,Ayacucho,Anco,1989,0.0,0
@@ -996,7 +996,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,1989,0.0,0
 160603,Loreto,Padre Marquez,1989,0.0,0
 010522,Amazonas,Tingo,1989,0.0,0
-080906,Cusco,Quellouno,1989,0.0,0
+080906,Cusco,Quellouno,1989,5.5e-05,1
 010301,Amazonas,Jumbilla,1989,0.0,0
 080917,Cusco,Manitea,1989,0.0,0
 250305,Ucayali,Alexander Von Humboldt,1990,0.0,0
@@ -1144,7 +1144,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,1990,0.0,0
 200303,Piura,El Carmen De La Frontera,1990,0.001006,1
 100609,Huanuco,Pueblo Nuevo,1990,0.0,0
-080903,Cusco,Huayopata,1990,0.0,0
+080903,Cusco,Huayopata,1990,0.000284,1
 010604,Amazonas,Huambo,1990,0.0,0
 100505,Huanuco,Jircan,1990,0.0,0
 010512,Amazonas,Ocalli,1990,0.0,0
@@ -1173,13 +1173,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,1990,0.0,0
 010519,Amazonas,San Juan De Lopecancha,1990,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,1990,0.0,0
-080408,Cusco,Yanatile,1990,0.0,0
+080408,Cusco,Yanatile,1990,0.002679,1
 050408,Ayacucho,Llochegua,1990,0.0,0
 100507,Huanuco,Monzon,1990,0.0,0
-081304,Cusco,Machupicchu,1990,0.0,0
+081304,Cusco,Machupicchu,1990,0.905961,1
 220909,San Martin,La Banda De Shilcayo,1990,0.0,0
 220103,San Martin,Habana,1990,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,1990,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,1990,0.06402,1
 010508,Amazonas,Lonya Chico,1990,0.0,0
 170102,Madre De Dios,Inambari,1990,0.0,0
 050502,Ayacucho,Anco,1990,0.0,0
@@ -1196,7 +1196,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,1990,0.0,0
 160603,Loreto,Padre Marquez,1990,0.0,0
 010522,Amazonas,Tingo,1990,0.0,0
-080906,Cusco,Quellouno,1990,0.0,0
+080906,Cusco,Quellouno,1990,5.5e-05,1
 010301,Amazonas,Jumbilla,1990,0.0,0
 080917,Cusco,Manitea,1990,0.0,0
 250305,Ucayali,Alexander Von Humboldt,1991,0.0,0
@@ -1344,7 +1344,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,1991,0.0,0
 200303,Piura,El Carmen De La Frontera,1991,0.001006,1
 100609,Huanuco,Pueblo Nuevo,1991,0.0,0
-080903,Cusco,Huayopata,1991,0.0,0
+080903,Cusco,Huayopata,1991,0.000284,1
 010604,Amazonas,Huambo,1991,0.0,0
 100505,Huanuco,Jircan,1991,0.0,0
 010512,Amazonas,Ocalli,1991,0.0,0
@@ -1373,13 +1373,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,1991,0.0,0
 010519,Amazonas,San Juan De Lopecancha,1991,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,1991,0.0,0
-080408,Cusco,Yanatile,1991,0.0,0
+080408,Cusco,Yanatile,1991,0.002679,1
 050408,Ayacucho,Llochegua,1991,0.0,0
 100507,Huanuco,Monzon,1991,0.0,0
-081304,Cusco,Machupicchu,1991,0.0,0
+081304,Cusco,Machupicchu,1991,0.905961,1
 220909,San Martin,La Banda De Shilcayo,1991,0.0,0
 220103,San Martin,Habana,1991,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,1991,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,1991,0.06402,1
 010508,Amazonas,Lonya Chico,1991,0.0,0
 170102,Madre De Dios,Inambari,1991,0.0,0
 050502,Ayacucho,Anco,1991,0.0,0
@@ -1396,7 +1396,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,1991,0.0,0
 160603,Loreto,Padre Marquez,1991,0.0,0
 010522,Amazonas,Tingo,1991,0.0,0
-080906,Cusco,Quellouno,1991,0.0,0
+080906,Cusco,Quellouno,1991,5.5e-05,1
 010301,Amazonas,Jumbilla,1991,0.0,0
 080917,Cusco,Manitea,1991,0.0,0
 250305,Ucayali,Alexander Von Humboldt,1992,0.0,0
@@ -1544,7 +1544,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,1992,0.0,0
 200303,Piura,El Carmen De La Frontera,1992,0.001006,1
 100609,Huanuco,Pueblo Nuevo,1992,0.0,0
-080903,Cusco,Huayopata,1992,0.0,0
+080903,Cusco,Huayopata,1992,0.000284,1
 010604,Amazonas,Huambo,1992,0.0,0
 100505,Huanuco,Jircan,1992,0.0,0
 010512,Amazonas,Ocalli,1992,0.0,0
@@ -1573,13 +1573,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,1992,0.0,0
 010519,Amazonas,San Juan De Lopecancha,1992,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,1992,0.0,0
-080408,Cusco,Yanatile,1992,0.0,0
+080408,Cusco,Yanatile,1992,0.002679,1
 050408,Ayacucho,Llochegua,1992,0.0,0
 100507,Huanuco,Monzon,1992,0.0,0
-081304,Cusco,Machupicchu,1992,0.0,0
+081304,Cusco,Machupicchu,1992,0.905961,1
 220909,San Martin,La Banda De Shilcayo,1992,0.0,0
 220103,San Martin,Habana,1992,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,1992,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,1992,0.06402,1
 010508,Amazonas,Lonya Chico,1992,0.0,0
 170102,Madre De Dios,Inambari,1992,0.0,0
 050502,Ayacucho,Anco,1992,0.0,0
@@ -1596,7 +1596,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,1992,0.0,0
 160603,Loreto,Padre Marquez,1992,0.0,0
 010522,Amazonas,Tingo,1992,0.0,0
-080906,Cusco,Quellouno,1992,0.0,0
+080906,Cusco,Quellouno,1992,5.5e-05,1
 010301,Amazonas,Jumbilla,1992,0.0,0
 080917,Cusco,Manitea,1992,0.0,0
 250305,Ucayali,Alexander Von Humboldt,1993,0.0,0
@@ -1744,7 +1744,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,1993,0.0,0
 200303,Piura,El Carmen De La Frontera,1993,0.001006,1
 100609,Huanuco,Pueblo Nuevo,1993,0.0,0
-080903,Cusco,Huayopata,1993,0.0,0
+080903,Cusco,Huayopata,1993,0.000284,1
 010604,Amazonas,Huambo,1993,0.0,0
 100505,Huanuco,Jircan,1993,0.0,0
 010512,Amazonas,Ocalli,1993,0.0,0
@@ -1773,13 +1773,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,1993,0.0,0
 010519,Amazonas,San Juan De Lopecancha,1993,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,1993,0.0,0
-080408,Cusco,Yanatile,1993,0.0,0
+080408,Cusco,Yanatile,1993,0.002679,1
 050408,Ayacucho,Llochegua,1993,0.0,0
 100507,Huanuco,Monzon,1993,0.0,0
-081304,Cusco,Machupicchu,1993,0.0,0
+081304,Cusco,Machupicchu,1993,0.905961,1
 220909,San Martin,La Banda De Shilcayo,1993,0.0,0
 220103,San Martin,Habana,1993,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,1993,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,1993,0.06402,1
 010508,Amazonas,Lonya Chico,1993,0.0,0
 170102,Madre De Dios,Inambari,1993,0.0,0
 050502,Ayacucho,Anco,1993,0.0,0
@@ -1796,7 +1796,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,1993,0.0,0
 160603,Loreto,Padre Marquez,1993,0.0,0
 010522,Amazonas,Tingo,1993,0.0,0
-080906,Cusco,Quellouno,1993,0.0,0
+080906,Cusco,Quellouno,1993,5.5e-05,1
 010301,Amazonas,Jumbilla,1993,0.0,0
 080917,Cusco,Manitea,1993,0.0,0
 250305,Ucayali,Alexander Von Humboldt,1994,0.0,0
@@ -1944,7 +1944,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,1994,0.0,0
 200303,Piura,El Carmen De La Frontera,1994,0.001006,1
 100609,Huanuco,Pueblo Nuevo,1994,0.0,0
-080903,Cusco,Huayopata,1994,0.0,0
+080903,Cusco,Huayopata,1994,0.000284,1
 010604,Amazonas,Huambo,1994,0.0,0
 100505,Huanuco,Jircan,1994,0.0,0
 010512,Amazonas,Ocalli,1994,0.0,0
@@ -1973,13 +1973,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,1994,0.0,0
 010519,Amazonas,San Juan De Lopecancha,1994,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,1994,0.0,0
-080408,Cusco,Yanatile,1994,0.0,0
+080408,Cusco,Yanatile,1994,0.002679,1
 050408,Ayacucho,Llochegua,1994,0.0,0
 100507,Huanuco,Monzon,1994,0.0,0
-081304,Cusco,Machupicchu,1994,0.0,0
+081304,Cusco,Machupicchu,1994,0.905961,1
 220909,San Martin,La Banda De Shilcayo,1994,0.0,0
 220103,San Martin,Habana,1994,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,1994,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,1994,0.06402,1
 010508,Amazonas,Lonya Chico,1994,0.0,0
 170102,Madre De Dios,Inambari,1994,0.0,0
 050502,Ayacucho,Anco,1994,0.0,0
@@ -1996,7 +1996,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,1994,0.0,0
 160603,Loreto,Padre Marquez,1994,0.0,0
 010522,Amazonas,Tingo,1994,0.0,0
-080906,Cusco,Quellouno,1994,0.0,0
+080906,Cusco,Quellouno,1994,5.5e-05,1
 010301,Amazonas,Jumbilla,1994,0.0,0
 080917,Cusco,Manitea,1994,0.0,0
 250305,Ucayali,Alexander Von Humboldt,1995,0.0,0
@@ -2144,7 +2144,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,1995,0.0,0
 200303,Piura,El Carmen De La Frontera,1995,0.001006,1
 100609,Huanuco,Pueblo Nuevo,1995,0.0,0
-080903,Cusco,Huayopata,1995,0.0,0
+080903,Cusco,Huayopata,1995,0.000284,1
 010604,Amazonas,Huambo,1995,0.0,0
 100505,Huanuco,Jircan,1995,0.0,0
 010512,Amazonas,Ocalli,1995,0.0,0
@@ -2173,13 +2173,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,1995,0.0,0
 010519,Amazonas,San Juan De Lopecancha,1995,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,1995,0.0,0
-080408,Cusco,Yanatile,1995,0.0,0
+080408,Cusco,Yanatile,1995,0.002679,1
 050408,Ayacucho,Llochegua,1995,0.0,0
 100507,Huanuco,Monzon,1995,0.0,0
-081304,Cusco,Machupicchu,1995,0.0,0
+081304,Cusco,Machupicchu,1995,0.905961,1
 220909,San Martin,La Banda De Shilcayo,1995,0.0,0
 220103,San Martin,Habana,1995,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,1995,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,1995,0.06402,1
 010508,Amazonas,Lonya Chico,1995,0.0,0
 170102,Madre De Dios,Inambari,1995,0.0,0
 050502,Ayacucho,Anco,1995,0.0,0
@@ -2196,7 +2196,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,1995,0.0,0
 160603,Loreto,Padre Marquez,1995,0.0,0
 010522,Amazonas,Tingo,1995,0.0,0
-080906,Cusco,Quellouno,1995,0.0,0
+080906,Cusco,Quellouno,1995,5.5e-05,1
 010301,Amazonas,Jumbilla,1995,0.0,0
 080917,Cusco,Manitea,1995,0.0,0
 250305,Ucayali,Alexander Von Humboldt,1996,0.0,0
@@ -2344,7 +2344,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,1996,0.0,0
 200303,Piura,El Carmen De La Frontera,1996,0.001006,1
 100609,Huanuco,Pueblo Nuevo,1996,0.0,0
-080903,Cusco,Huayopata,1996,0.0,0
+080903,Cusco,Huayopata,1996,0.000284,1
 010604,Amazonas,Huambo,1996,0.0,0
 100505,Huanuco,Jircan,1996,0.0,0
 010512,Amazonas,Ocalli,1996,0.0,0
@@ -2373,13 +2373,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,1996,0.0,0
 010519,Amazonas,San Juan De Lopecancha,1996,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,1996,0.0,0
-080408,Cusco,Yanatile,1996,0.0,0
+080408,Cusco,Yanatile,1996,0.002679,1
 050408,Ayacucho,Llochegua,1996,0.0,0
 100507,Huanuco,Monzon,1996,0.0,0
-081304,Cusco,Machupicchu,1996,0.0,0
+081304,Cusco,Machupicchu,1996,0.905961,1
 220909,San Martin,La Banda De Shilcayo,1996,0.0,0
 220103,San Martin,Habana,1996,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,1996,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,1996,0.06402,1
 010508,Amazonas,Lonya Chico,1996,0.0,0
 170102,Madre De Dios,Inambari,1996,0.203168,1
 050502,Ayacucho,Anco,1996,0.0,0
@@ -2396,7 +2396,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,1996,0.0,0
 160603,Loreto,Padre Marquez,1996,0.0,0
 010522,Amazonas,Tingo,1996,0.0,0
-080906,Cusco,Quellouno,1996,0.0,0
+080906,Cusco,Quellouno,1996,5.5e-05,1
 010301,Amazonas,Jumbilla,1996,0.0,0
 080917,Cusco,Manitea,1996,0.0,0
 250305,Ucayali,Alexander Von Humboldt,1997,0.0,0
@@ -2544,7 +2544,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,1997,0.0,0
 200303,Piura,El Carmen De La Frontera,1997,0.001006,1
 100609,Huanuco,Pueblo Nuevo,1997,0.0,0
-080903,Cusco,Huayopata,1997,0.0,0
+080903,Cusco,Huayopata,1997,0.000284,1
 010604,Amazonas,Huambo,1997,0.0,0
 100505,Huanuco,Jircan,1997,0.0,0
 010512,Amazonas,Ocalli,1997,0.0,0
@@ -2573,13 +2573,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,1997,0.0,0
 010519,Amazonas,San Juan De Lopecancha,1997,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,1997,0.0,0
-080408,Cusco,Yanatile,1997,0.0,0
+080408,Cusco,Yanatile,1997,0.002679,1
 050408,Ayacucho,Llochegua,1997,0.0,0
 100507,Huanuco,Monzon,1997,0.0,0
-081304,Cusco,Machupicchu,1997,0.0,0
+081304,Cusco,Machupicchu,1997,0.905961,1
 220909,San Martin,La Banda De Shilcayo,1997,0.0,0
 220103,San Martin,Habana,1997,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,1997,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,1997,0.06402,1
 010508,Amazonas,Lonya Chico,1997,0.0,0
 170102,Madre De Dios,Inambari,1997,0.203168,1
 050502,Ayacucho,Anco,1997,0.0,0
@@ -2596,7 +2596,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,1997,0.0,0
 160603,Loreto,Padre Marquez,1997,0.0,0
 010522,Amazonas,Tingo,1997,0.0,0
-080906,Cusco,Quellouno,1997,0.0,0
+080906,Cusco,Quellouno,1997,5.5e-05,1
 010301,Amazonas,Jumbilla,1997,0.0,0
 080917,Cusco,Manitea,1997,0.0,0
 250305,Ucayali,Alexander Von Humboldt,1998,0.0,0
@@ -2744,7 +2744,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,1998,0.0,0
 200303,Piura,El Carmen De La Frontera,1998,0.001006,1
 100609,Huanuco,Pueblo Nuevo,1998,0.0,0
-080903,Cusco,Huayopata,1998,0.0,0
+080903,Cusco,Huayopata,1998,0.000284,1
 010604,Amazonas,Huambo,1998,0.0,0
 100505,Huanuco,Jircan,1998,0.0,0
 010512,Amazonas,Ocalli,1998,0.0,0
@@ -2773,13 +2773,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,1998,0.0,0
 010519,Amazonas,San Juan De Lopecancha,1998,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,1998,0.0,0
-080408,Cusco,Yanatile,1998,0.0,0
+080408,Cusco,Yanatile,1998,0.002679,1
 050408,Ayacucho,Llochegua,1998,0.0,0
 100507,Huanuco,Monzon,1998,0.0,0
-081304,Cusco,Machupicchu,1998,0.0,0
+081304,Cusco,Machupicchu,1998,0.905961,1
 220909,San Martin,La Banda De Shilcayo,1998,0.0,0
 220103,San Martin,Habana,1998,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,1998,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,1998,0.06402,1
 010508,Amazonas,Lonya Chico,1998,0.0,0
 170102,Madre De Dios,Inambari,1998,0.203168,1
 050502,Ayacucho,Anco,1998,0.0,0
@@ -2796,7 +2796,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,1998,0.0,0
 160603,Loreto,Padre Marquez,1998,0.0,0
 010522,Amazonas,Tingo,1998,0.0,0
-080906,Cusco,Quellouno,1998,0.0,0
+080906,Cusco,Quellouno,1998,5.5e-05,1
 010301,Amazonas,Jumbilla,1998,0.0,0
 080917,Cusco,Manitea,1998,0.0,0
 250305,Ucayali,Alexander Von Humboldt,1999,0.0,0
@@ -2944,7 +2944,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,1999,0.0,0
 200303,Piura,El Carmen De La Frontera,1999,0.001006,1
 100609,Huanuco,Pueblo Nuevo,1999,0.0,0
-080903,Cusco,Huayopata,1999,0.0,0
+080903,Cusco,Huayopata,1999,0.000284,1
 010604,Amazonas,Huambo,1999,0.0,0
 100505,Huanuco,Jircan,1999,0.0,0
 010512,Amazonas,Ocalli,1999,0.0,0
@@ -2973,13 +2973,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,1999,0.0,0
 010519,Amazonas,San Juan De Lopecancha,1999,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,1999,0.0,0
-080408,Cusco,Yanatile,1999,0.0,0
+080408,Cusco,Yanatile,1999,0.002679,1
 050408,Ayacucho,Llochegua,1999,0.0,0
 100507,Huanuco,Monzon,1999,0.0,0
-081304,Cusco,Machupicchu,1999,0.0,0
+081304,Cusco,Machupicchu,1999,0.905961,1
 220909,San Martin,La Banda De Shilcayo,1999,0.0,0
 220103,San Martin,Habana,1999,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,1999,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,1999,0.06402,1
 010508,Amazonas,Lonya Chico,1999,0.0,0
 170102,Madre De Dios,Inambari,1999,0.203168,1
 050502,Ayacucho,Anco,1999,0.0,0
@@ -2996,7 +2996,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,1999,0.0,0
 160603,Loreto,Padre Marquez,1999,0.0,0
 010522,Amazonas,Tingo,1999,0.0,0
-080906,Cusco,Quellouno,1999,0.0,0
+080906,Cusco,Quellouno,1999,5.5e-05,1
 010301,Amazonas,Jumbilla,1999,0.0,0
 080917,Cusco,Manitea,1999,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2000,0.0,0
@@ -3144,7 +3144,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2000,0.0,0
 200303,Piura,El Carmen De La Frontera,2000,0.001006,1
 100609,Huanuco,Pueblo Nuevo,2000,0.0,0
-080903,Cusco,Huayopata,2000,0.0,0
+080903,Cusco,Huayopata,2000,0.000284,1
 010604,Amazonas,Huambo,2000,0.0,0
 100505,Huanuco,Jircan,2000,0.0,0
 010512,Amazonas,Ocalli,2000,0.0,0
@@ -3173,13 +3173,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2000,0.0,0
 010519,Amazonas,San Juan De Lopecancha,2000,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2000,0.0,0
-080408,Cusco,Yanatile,2000,0.0,0
+080408,Cusco,Yanatile,2000,0.002679,1
 050408,Ayacucho,Llochegua,2000,0.0,0
 100507,Huanuco,Monzon,2000,0.0,0
-081304,Cusco,Machupicchu,2000,0.0,0
+081304,Cusco,Machupicchu,2000,0.905961,1
 220909,San Martin,La Banda De Shilcayo,2000,0.0,0
 220103,San Martin,Habana,2000,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2000,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2000,0.06402,1
 010508,Amazonas,Lonya Chico,2000,0.0,0
 170102,Madre De Dios,Inambari,2000,0.372706,1
 050502,Ayacucho,Anco,2000,0.0,0
@@ -3196,7 +3196,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2000,0.0,0
 160603,Loreto,Padre Marquez,2000,0.0,0
 010522,Amazonas,Tingo,2000,0.0,0
-080906,Cusco,Quellouno,2000,0.0,0
+080906,Cusco,Quellouno,2000,5.5e-05,1
 010301,Amazonas,Jumbilla,2000,0.0,0
 080917,Cusco,Manitea,2000,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2001,0.0,0
@@ -3344,7 +3344,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2001,0.001566,1
 200303,Piura,El Carmen De La Frontera,2001,0.001006,1
 100609,Huanuco,Pueblo Nuevo,2001,0.0,0
-080903,Cusco,Huayopata,2001,0.0,0
+080903,Cusco,Huayopata,2001,0.000284,1
 010604,Amazonas,Huambo,2001,0.0,0
 100505,Huanuco,Jircan,2001,0.0,0
 010512,Amazonas,Ocalli,2001,0.0,0
@@ -3373,13 +3373,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2001,0.0,0
 010519,Amazonas,San Juan De Lopecancha,2001,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2001,0.0,0
-080408,Cusco,Yanatile,2001,0.0,0
+080408,Cusco,Yanatile,2001,0.002679,1
 050408,Ayacucho,Llochegua,2001,0.0,0
 100507,Huanuco,Monzon,2001,0.0,0
-081304,Cusco,Machupicchu,2001,0.0,0
+081304,Cusco,Machupicchu,2001,0.905961,1
 220909,San Martin,La Banda De Shilcayo,2001,0.0,0
 220103,San Martin,Habana,2001,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2001,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2001,0.06402,1
 010508,Amazonas,Lonya Chico,2001,0.0,0
 170102,Madre De Dios,Inambari,2001,0.372706,1
 050502,Ayacucho,Anco,2001,0.0,0
@@ -3396,7 +3396,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2001,0.0,0
 160603,Loreto,Padre Marquez,2001,0.0,0
 010522,Amazonas,Tingo,2001,0.0,0
-080906,Cusco,Quellouno,2001,0.0,0
+080906,Cusco,Quellouno,2001,5.5e-05,1
 010301,Amazonas,Jumbilla,2001,0.0,0
 080917,Cusco,Manitea,2001,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2002,0.0,0
@@ -3544,7 +3544,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2002,0.001566,1
 200303,Piura,El Carmen De La Frontera,2002,0.001006,1
 100609,Huanuco,Pueblo Nuevo,2002,0.0,0
-080903,Cusco,Huayopata,2002,0.0,0
+080903,Cusco,Huayopata,2002,0.000284,1
 010604,Amazonas,Huambo,2002,0.0,0
 100505,Huanuco,Jircan,2002,0.0,0
 010512,Amazonas,Ocalli,2002,0.0,0
@@ -3573,13 +3573,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2002,0.0,0
 010519,Amazonas,San Juan De Lopecancha,2002,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2002,0.0,0
-080408,Cusco,Yanatile,2002,0.0,0
+080408,Cusco,Yanatile,2002,0.002679,1
 050408,Ayacucho,Llochegua,2002,0.0,0
 100507,Huanuco,Monzon,2002,0.0,0
-081304,Cusco,Machupicchu,2002,0.0,0
+081304,Cusco,Machupicchu,2002,0.905961,1
 220909,San Martin,La Banda De Shilcayo,2002,0.0,0
 220103,San Martin,Habana,2002,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2002,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2002,0.06402,1
 010508,Amazonas,Lonya Chico,2002,0.0,0
 170102,Madre De Dios,Inambari,2002,0.372706,1
 050502,Ayacucho,Anco,2002,0.0,0
@@ -3596,7 +3596,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2002,0.0,0
 160603,Loreto,Padre Marquez,2002,0.0,0
 010522,Amazonas,Tingo,2002,0.0,0
-080906,Cusco,Quellouno,2002,0.0,0
+080906,Cusco,Quellouno,2002,5.5e-05,1
 010301,Amazonas,Jumbilla,2002,0.0,0
 080917,Cusco,Manitea,2002,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2003,0.0,0
@@ -3744,7 +3744,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2003,0.001566,1
 200303,Piura,El Carmen De La Frontera,2003,0.001006,1
 100609,Huanuco,Pueblo Nuevo,2003,0.0,0
-080903,Cusco,Huayopata,2003,0.0,0
+080903,Cusco,Huayopata,2003,0.000284,1
 010604,Amazonas,Huambo,2003,0.0,0
 100505,Huanuco,Jircan,2003,0.0,0
 010512,Amazonas,Ocalli,2003,0.0,0
@@ -3773,13 +3773,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2003,0.0,0
 010519,Amazonas,San Juan De Lopecancha,2003,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2003,0.0,0
-080408,Cusco,Yanatile,2003,0.0,0
+080408,Cusco,Yanatile,2003,0.002679,1
 050408,Ayacucho,Llochegua,2003,0.0,0
 100507,Huanuco,Monzon,2003,0.0,0
-081304,Cusco,Machupicchu,2003,0.0,0
+081304,Cusco,Machupicchu,2003,0.905961,1
 220909,San Martin,La Banda De Shilcayo,2003,0.0,0
 220103,San Martin,Habana,2003,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2003,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2003,0.06402,1
 010508,Amazonas,Lonya Chico,2003,0.0,0
 170102,Madre De Dios,Inambari,2003,0.372706,1
 050502,Ayacucho,Anco,2003,0.0,0
@@ -3796,7 +3796,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2003,0.0,0
 160603,Loreto,Padre Marquez,2003,0.0,0
 010522,Amazonas,Tingo,2003,0.0,0
-080906,Cusco,Quellouno,2003,0.0,0
+080906,Cusco,Quellouno,2003,5.5e-05,1
 010301,Amazonas,Jumbilla,2003,0.0,0
 080917,Cusco,Manitea,2003,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2004,0.0,0
@@ -3944,7 +3944,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2004,0.001566,1
 200303,Piura,El Carmen De La Frontera,2004,0.001006,1
 100609,Huanuco,Pueblo Nuevo,2004,0.0,0
-080903,Cusco,Huayopata,2004,0.0,0
+080903,Cusco,Huayopata,2004,0.000284,1
 010604,Amazonas,Huambo,2004,0.0,0
 100505,Huanuco,Jircan,2004,0.0,0
 010512,Amazonas,Ocalli,2004,0.0,0
@@ -3973,13 +3973,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2004,0.0,0
 010519,Amazonas,San Juan De Lopecancha,2004,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2004,0.0,0
-080408,Cusco,Yanatile,2004,0.0,0
+080408,Cusco,Yanatile,2004,0.002679,1
 050408,Ayacucho,Llochegua,2004,0.0,0
 100507,Huanuco,Monzon,2004,0.0,0
-081304,Cusco,Machupicchu,2004,0.0,0
+081304,Cusco,Machupicchu,2004,0.905961,1
 220909,San Martin,La Banda De Shilcayo,2004,0.0,0
 220103,San Martin,Habana,2004,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2004,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2004,0.06402,1
 010508,Amazonas,Lonya Chico,2004,0.0,0
 170102,Madre De Dios,Inambari,2004,0.372706,1
 050502,Ayacucho,Anco,2004,0.0,0
@@ -3996,7 +3996,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2004,0.0,0
 160603,Loreto,Padre Marquez,2004,0.0,0
 010522,Amazonas,Tingo,2004,0.0,0
-080906,Cusco,Quellouno,2004,0.000344,1
+080906,Cusco,Quellouno,2004,0.000399,1
 010301,Amazonas,Jumbilla,2004,0.0,0
 080917,Cusco,Manitea,2004,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2005,0.0,0
@@ -4144,7 +4144,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2005,0.001566,1
 200303,Piura,El Carmen De La Frontera,2005,0.001006,1
 100609,Huanuco,Pueblo Nuevo,2005,0.0,0
-080903,Cusco,Huayopata,2005,0.0,0
+080903,Cusco,Huayopata,2005,0.000284,1
 010604,Amazonas,Huambo,2005,0.0,0
 100505,Huanuco,Jircan,2005,0.0,0
 010512,Amazonas,Ocalli,2005,0.0,0
@@ -4173,13 +4173,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2005,0.0,0
 010519,Amazonas,San Juan De Lopecancha,2005,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2005,0.0,0
-080408,Cusco,Yanatile,2005,0.0,0
+080408,Cusco,Yanatile,2005,0.002679,1
 050408,Ayacucho,Llochegua,2005,0.0,0
 100507,Huanuco,Monzon,2005,0.0,0
-081304,Cusco,Machupicchu,2005,0.0,0
+081304,Cusco,Machupicchu,2005,0.905961,1
 220909,San Martin,La Banda De Shilcayo,2005,0.541966,1
 220103,San Martin,Habana,2005,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2005,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2005,0.06402,1
 010508,Amazonas,Lonya Chico,2005,0.0,0
 170102,Madre De Dios,Inambari,2005,0.372706,1
 050502,Ayacucho,Anco,2005,0.0,0
@@ -4196,7 +4196,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2005,0.0,0
 160603,Loreto,Padre Marquez,2005,0.0,0
 010522,Amazonas,Tingo,2005,0.0,0
-080906,Cusco,Quellouno,2005,0.000344,1
+080906,Cusco,Quellouno,2005,0.000399,1
 010301,Amazonas,Jumbilla,2005,0.0,0
 080917,Cusco,Manitea,2005,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2006,0.0,0
@@ -4344,7 +4344,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2006,0.001566,1
 200303,Piura,El Carmen De La Frontera,2006,0.001006,1
 100609,Huanuco,Pueblo Nuevo,2006,0.0,0
-080903,Cusco,Huayopata,2006,0.0,0
+080903,Cusco,Huayopata,2006,0.000284,1
 010604,Amazonas,Huambo,2006,0.0,0
 100505,Huanuco,Jircan,2006,0.0,0
 010512,Amazonas,Ocalli,2006,0.0,0
@@ -4373,13 +4373,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2006,0.0,0
 010519,Amazonas,San Juan De Lopecancha,2006,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2006,0.0,0
-080408,Cusco,Yanatile,2006,0.0,0
+080408,Cusco,Yanatile,2006,0.002679,1
 050408,Ayacucho,Llochegua,2006,0.0,0
 100507,Huanuco,Monzon,2006,0.0,0
-081304,Cusco,Machupicchu,2006,0.0,0
+081304,Cusco,Machupicchu,2006,0.905961,1
 220909,San Martin,La Banda De Shilcayo,2006,0.541966,1
 220103,San Martin,Habana,2006,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2006,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2006,0.06402,1
 010508,Amazonas,Lonya Chico,2006,0.0,0
 170102,Madre De Dios,Inambari,2006,0.372706,1
 050502,Ayacucho,Anco,2006,0.0,0
@@ -4396,7 +4396,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2006,0.0,0
 160603,Loreto,Padre Marquez,2006,0.0,0
 010522,Amazonas,Tingo,2006,0.104067,1
-080906,Cusco,Quellouno,2006,0.000344,1
+080906,Cusco,Quellouno,2006,0.000399,1
 010301,Amazonas,Jumbilla,2006,0.0,0
 080917,Cusco,Manitea,2006,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2007,0.0,0
@@ -4544,7 +4544,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2007,0.001566,1
 200303,Piura,El Carmen De La Frontera,2007,0.001006,1
 100609,Huanuco,Pueblo Nuevo,2007,0.0,0
-080903,Cusco,Huayopata,2007,0.0,0
+080903,Cusco,Huayopata,2007,0.000284,1
 010604,Amazonas,Huambo,2007,0.0,0
 100505,Huanuco,Jircan,2007,0.0,0
 010512,Amazonas,Ocalli,2007,0.0,0
@@ -4573,13 +4573,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2007,0.0,0
 010519,Amazonas,San Juan De Lopecancha,2007,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2007,0.0,0
-080408,Cusco,Yanatile,2007,0.0,0
+080408,Cusco,Yanatile,2007,0.002679,1
 050408,Ayacucho,Llochegua,2007,0.0,0
 100507,Huanuco,Monzon,2007,0.0,0
-081304,Cusco,Machupicchu,2007,0.0,0
+081304,Cusco,Machupicchu,2007,0.905961,1
 220909,San Martin,La Banda De Shilcayo,2007,0.541966,1
 220103,San Martin,Habana,2007,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2007,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2007,0.06402,1
 010508,Amazonas,Lonya Chico,2007,0.0,0
 170102,Madre De Dios,Inambari,2007,0.372706,1
 050502,Ayacucho,Anco,2007,0.0,0
@@ -4596,7 +4596,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2007,0.0,0
 160603,Loreto,Padre Marquez,2007,0.0,0
 010522,Amazonas,Tingo,2007,0.104067,1
-080906,Cusco,Quellouno,2007,0.000344,1
+080906,Cusco,Quellouno,2007,0.000399,1
 010301,Amazonas,Jumbilla,2007,0.0,0
 080917,Cusco,Manitea,2007,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2008,0.0,0
@@ -4744,7 +4744,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2008,0.001566,1
 200303,Piura,El Carmen De La Frontera,2008,0.001006,1
 100609,Huanuco,Pueblo Nuevo,2008,0.0,0
-080903,Cusco,Huayopata,2008,0.0,0
+080903,Cusco,Huayopata,2008,0.000284,1
 010604,Amazonas,Huambo,2008,0.0,0
 100505,Huanuco,Jircan,2008,0.0,0
 010512,Amazonas,Ocalli,2008,0.0,0
@@ -4773,13 +4773,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2008,0.0,0
 010519,Amazonas,San Juan De Lopecancha,2008,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2008,0.0,0
-080408,Cusco,Yanatile,2008,0.0,0
+080408,Cusco,Yanatile,2008,0.002679,1
 050408,Ayacucho,Llochegua,2008,0.0,0
 100507,Huanuco,Monzon,2008,0.0,0
-081304,Cusco,Machupicchu,2008,0.0,0
+081304,Cusco,Machupicchu,2008,0.905961,1
 220909,San Martin,La Banda De Shilcayo,2008,0.541966,1
 220103,San Martin,Habana,2008,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2008,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2008,0.06402,1
 010508,Amazonas,Lonya Chico,2008,0.0,0
 170102,Madre De Dios,Inambari,2008,0.372706,1
 050502,Ayacucho,Anco,2008,0.0,0
@@ -4796,7 +4796,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2008,0.0,0
 160603,Loreto,Padre Marquez,2008,0.0,0
 010522,Amazonas,Tingo,2008,0.104067,1
-080906,Cusco,Quellouno,2008,0.000344,1
+080906,Cusco,Quellouno,2008,0.000399,1
 010301,Amazonas,Jumbilla,2008,0.0,0
 080917,Cusco,Manitea,2008,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2009,0.0,0
@@ -4944,7 +4944,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2009,0.001566,1
 200303,Piura,El Carmen De La Frontera,2009,0.001006,1
 100609,Huanuco,Pueblo Nuevo,2009,0.0,0
-080903,Cusco,Huayopata,2009,0.0,0
+080903,Cusco,Huayopata,2009,0.000284,1
 010604,Amazonas,Huambo,2009,0.0,0
 100505,Huanuco,Jircan,2009,0.0,0
 010512,Amazonas,Ocalli,2009,0.0,0
@@ -4973,13 +4973,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2009,0.0,0
 010519,Amazonas,San Juan De Lopecancha,2009,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2009,0.0,0
-080408,Cusco,Yanatile,2009,0.0,0
+080408,Cusco,Yanatile,2009,0.002679,1
 050408,Ayacucho,Llochegua,2009,0.0,0
 100507,Huanuco,Monzon,2009,0.0,0
-081304,Cusco,Machupicchu,2009,0.0,0
+081304,Cusco,Machupicchu,2009,0.905961,1
 220909,San Martin,La Banda De Shilcayo,2009,0.541966,1
 220103,San Martin,Habana,2009,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2009,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2009,0.06402,1
 010508,Amazonas,Lonya Chico,2009,0.0,0
 170102,Madre De Dios,Inambari,2009,0.372706,1
 050502,Ayacucho,Anco,2009,0.0,0
@@ -4996,7 +4996,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2009,0.0,0
 160603,Loreto,Padre Marquez,2009,0.0,0
 010522,Amazonas,Tingo,2009,0.104067,1
-080906,Cusco,Quellouno,2009,0.000344,1
+080906,Cusco,Quellouno,2009,0.000399,1
 010301,Amazonas,Jumbilla,2009,0.0,0
 080917,Cusco,Manitea,2009,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2010,0.0,0
@@ -5144,7 +5144,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2010,0.001566,1
 200303,Piura,El Carmen De La Frontera,2010,0.001006,1
 100609,Huanuco,Pueblo Nuevo,2010,0.0,0
-080903,Cusco,Huayopata,2010,0.0,0
+080903,Cusco,Huayopata,2010,0.000284,1
 010604,Amazonas,Huambo,2010,0.0,0
 100505,Huanuco,Jircan,2010,0.0,0
 010512,Amazonas,Ocalli,2010,0.0,0
@@ -5173,13 +5173,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2010,0.0,0
 010519,Amazonas,San Juan De Lopecancha,2010,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2010,0.0,0
-080408,Cusco,Yanatile,2010,0.0,0
+080408,Cusco,Yanatile,2010,0.002679,1
 050408,Ayacucho,Llochegua,2010,0.0,0
 100507,Huanuco,Monzon,2010,0.0,0
-081304,Cusco,Machupicchu,2010,1.7e-05,1
+081304,Cusco,Machupicchu,2010,0.905978,1
 220909,San Martin,La Banda De Shilcayo,2010,0.542502,1
 220103,San Martin,Habana,2010,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2010,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2010,0.06402,1
 010508,Amazonas,Lonya Chico,2010,0.0,0
 170102,Madre De Dios,Inambari,2010,0.372706,1
 050502,Ayacucho,Anco,2010,0.0,0
@@ -5196,7 +5196,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2010,0.0,0
 160603,Loreto,Padre Marquez,2010,0.0,0
 010522,Amazonas,Tingo,2010,0.104067,1
-080906,Cusco,Quellouno,2010,0.000344,1
+080906,Cusco,Quellouno,2010,0.000399,1
 010301,Amazonas,Jumbilla,2010,0.0,0
 080917,Cusco,Manitea,2010,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2011,0.0,0
@@ -5344,7 +5344,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2011,0.001566,1
 200303,Piura,El Carmen De La Frontera,2011,0.001006,1
 100609,Huanuco,Pueblo Nuevo,2011,0.0,0
-080903,Cusco,Huayopata,2011,0.0,0
+080903,Cusco,Huayopata,2011,0.000284,1
 010604,Amazonas,Huambo,2011,0.0,0
 100505,Huanuco,Jircan,2011,0.0,0
 010512,Amazonas,Ocalli,2011,0.0,0
@@ -5373,13 +5373,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2011,0.0,0
 010519,Amazonas,San Juan De Lopecancha,2011,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2011,0.0,0
-080408,Cusco,Yanatile,2011,0.0,0
+080408,Cusco,Yanatile,2011,0.002679,1
 050408,Ayacucho,Llochegua,2011,0.0,0
 100507,Huanuco,Monzon,2011,0.0,0
-081304,Cusco,Machupicchu,2011,1.7e-05,1
+081304,Cusco,Machupicchu,2011,0.905978,1
 220909,San Martin,La Banda De Shilcayo,2011,0.542502,1
 220103,San Martin,Habana,2011,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2011,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2011,0.06402,1
 010508,Amazonas,Lonya Chico,2011,0.0,0
 170102,Madre De Dios,Inambari,2011,0.372706,1
 050502,Ayacucho,Anco,2011,0.0,0
@@ -5396,7 +5396,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2011,0.0,0
 160603,Loreto,Padre Marquez,2011,0.0,0
 010522,Amazonas,Tingo,2011,0.111164,1
-080906,Cusco,Quellouno,2011,0.000344,1
+080906,Cusco,Quellouno,2011,0.000399,1
 010301,Amazonas,Jumbilla,2011,0.0,0
 080917,Cusco,Manitea,2011,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2012,0.0,0
@@ -5544,7 +5544,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2012,0.001566,1
 200303,Piura,El Carmen De La Frontera,2012,0.001006,1
 100609,Huanuco,Pueblo Nuevo,2012,0.0,0
-080903,Cusco,Huayopata,2012,0.0,0
+080903,Cusco,Huayopata,2012,0.000284,1
 010604,Amazonas,Huambo,2012,0.0,0
 100505,Huanuco,Jircan,2012,0.0,0
 010512,Amazonas,Ocalli,2012,0.0,0
@@ -5573,13 +5573,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2012,0.0,0
 010519,Amazonas,San Juan De Lopecancha,2012,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2012,0.0,0
-080408,Cusco,Yanatile,2012,0.0,0
+080408,Cusco,Yanatile,2012,0.002679,1
 050408,Ayacucho,Llochegua,2012,0.0,0
 100507,Huanuco,Monzon,2012,0.0,0
-081304,Cusco,Machupicchu,2012,1.7e-05,1
+081304,Cusco,Machupicchu,2012,0.905978,1
 220909,San Martin,La Banda De Shilcayo,2012,0.542502,1
 220103,San Martin,Habana,2012,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2012,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2012,0.06402,1
 010508,Amazonas,Lonya Chico,2012,0.0,0
 170102,Madre De Dios,Inambari,2012,0.37275,1
 050502,Ayacucho,Anco,2012,0.0,0
@@ -5596,7 +5596,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2012,0.0,0
 160603,Loreto,Padre Marquez,2012,0.0,0
 010522,Amazonas,Tingo,2012,0.111164,1
-080906,Cusco,Quellouno,2012,0.000344,1
+080906,Cusco,Quellouno,2012,0.000399,1
 010301,Amazonas,Jumbilla,2012,0.0,0
 080917,Cusco,Manitea,2012,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2013,0.0,0
@@ -5744,7 +5744,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2013,0.001566,1
 200303,Piura,El Carmen De La Frontera,2013,0.001006,1
 100609,Huanuco,Pueblo Nuevo,2013,0.0,0
-080903,Cusco,Huayopata,2013,0.0,0
+080903,Cusco,Huayopata,2013,0.000284,1
 010604,Amazonas,Huambo,2013,0.0,0
 100505,Huanuco,Jircan,2013,0.0,0
 010512,Amazonas,Ocalli,2013,0.0,0
@@ -5773,13 +5773,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2013,0.0,0
 010519,Amazonas,San Juan De Lopecancha,2013,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2013,0.0,0
-080408,Cusco,Yanatile,2013,0.0,0
+080408,Cusco,Yanatile,2013,0.002679,1
 050408,Ayacucho,Llochegua,2013,0.0,0
 100507,Huanuco,Monzon,2013,0.0,0
-081304,Cusco,Machupicchu,2013,1.7e-05,1
+081304,Cusco,Machupicchu,2013,0.905978,1
 220909,San Martin,La Banda De Shilcayo,2013,0.542502,1
 220103,San Martin,Habana,2013,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2013,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2013,0.06402,1
 010508,Amazonas,Lonya Chico,2013,0.0,0
 170102,Madre De Dios,Inambari,2013,0.37275,1
 050502,Ayacucho,Anco,2013,0.0,0
@@ -5796,7 +5796,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2013,0.0,0
 160603,Loreto,Padre Marquez,2013,0.0,0
 010522,Amazonas,Tingo,2013,0.111164,1
-080906,Cusco,Quellouno,2013,0.000344,1
+080906,Cusco,Quellouno,2013,0.000399,1
 010301,Amazonas,Jumbilla,2013,0.0,0
 080917,Cusco,Manitea,2013,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2014,0.0,0
@@ -5944,7 +5944,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2014,0.001566,1
 200303,Piura,El Carmen De La Frontera,2014,0.001006,1
 100609,Huanuco,Pueblo Nuevo,2014,0.0,0
-080903,Cusco,Huayopata,2014,0.0,0
+080903,Cusco,Huayopata,2014,0.000284,1
 010604,Amazonas,Huambo,2014,0.0,0
 100505,Huanuco,Jircan,2014,0.0,0
 010512,Amazonas,Ocalli,2014,0.0,0
@@ -5973,13 +5973,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2014,0.0,0
 010519,Amazonas,San Juan De Lopecancha,2014,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2014,0.0,0
-080408,Cusco,Yanatile,2014,0.0,0
+080408,Cusco,Yanatile,2014,0.002679,1
 050408,Ayacucho,Llochegua,2014,0.0,0
 100507,Huanuco,Monzon,2014,0.0,0
-081304,Cusco,Machupicchu,2014,1.7e-05,1
+081304,Cusco,Machupicchu,2014,0.905978,1
 220909,San Martin,La Banda De Shilcayo,2014,0.542502,1
 220103,San Martin,Habana,2014,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2014,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2014,0.06402,1
 010508,Amazonas,Lonya Chico,2014,0.0,0
 170102,Madre De Dios,Inambari,2014,0.37275,1
 050502,Ayacucho,Anco,2014,0.0,0
@@ -5996,7 +5996,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2014,0.0,0
 160603,Loreto,Padre Marquez,2014,0.0,0
 010522,Amazonas,Tingo,2014,0.111164,1
-080906,Cusco,Quellouno,2014,0.000344,1
+080906,Cusco,Quellouno,2014,0.000399,1
 010301,Amazonas,Jumbilla,2014,0.0,0
 080917,Cusco,Manitea,2014,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2015,0.0,0
@@ -6144,7 +6144,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2015,0.001566,1
 200303,Piura,El Carmen De La Frontera,2015,0.001006,1
 100609,Huanuco,Pueblo Nuevo,2015,0.0,0
-080903,Cusco,Huayopata,2015,0.021277,1
+080903,Cusco,Huayopata,2015,0.021561,1
 010604,Amazonas,Huambo,2015,0.0,0
 100505,Huanuco,Jircan,2015,0.0,0
 010512,Amazonas,Ocalli,2015,0.0,0
@@ -6173,13 +6173,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2015,0.0,0
 010519,Amazonas,San Juan De Lopecancha,2015,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2015,0.0,0
-080408,Cusco,Yanatile,2015,0.0,0
+080408,Cusco,Yanatile,2015,0.002679,1
 050408,Ayacucho,Llochegua,2015,0.0,0
 100507,Huanuco,Monzon,2015,0.0,0
-081304,Cusco,Machupicchu,2015,1.7e-05,1
+081304,Cusco,Machupicchu,2015,0.905978,1
 220909,San Martin,La Banda De Shilcayo,2015,0.542502,1
 220103,San Martin,Habana,2015,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2015,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2015,0.06402,1
 010508,Amazonas,Lonya Chico,2015,0.0,0
 170102,Madre De Dios,Inambari,2015,0.37275,1
 050502,Ayacucho,Anco,2015,0.0,0
@@ -6196,7 +6196,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2015,0.0,0
 160603,Loreto,Padre Marquez,2015,0.000835,1
 010522,Amazonas,Tingo,2015,0.111164,1
-080906,Cusco,Quellouno,2015,0.000344,1
+080906,Cusco,Quellouno,2015,0.000399,1
 010301,Amazonas,Jumbilla,2015,0.0,0
 080917,Cusco,Manitea,2015,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2016,0.0,0
@@ -6344,7 +6344,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2016,0.001566,1
 200303,Piura,El Carmen De La Frontera,2016,0.376112,1
 100609,Huanuco,Pueblo Nuevo,2016,0.0,0
-080903,Cusco,Huayopata,2016,0.021277,1
+080903,Cusco,Huayopata,2016,0.021561,1
 010604,Amazonas,Huambo,2016,0.0,0
 100505,Huanuco,Jircan,2016,0.0,0
 010512,Amazonas,Ocalli,2016,0.0,0
@@ -6373,13 +6373,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2016,0.0,0
 010519,Amazonas,San Juan De Lopecancha,2016,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2016,0.0,0
-080408,Cusco,Yanatile,2016,0.0,0
+080408,Cusco,Yanatile,2016,0.002679,1
 050408,Ayacucho,Llochegua,2016,0.0,0
 100507,Huanuco,Monzon,2016,0.0,0
-081304,Cusco,Machupicchu,2016,1.7e-05,1
+081304,Cusco,Machupicchu,2016,0.905978,1
 220909,San Martin,La Banda De Shilcayo,2016,0.542502,1
 220103,San Martin,Habana,2016,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2016,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2016,0.06402,1
 010508,Amazonas,Lonya Chico,2016,0.0,0
 170102,Madre De Dios,Inambari,2016,0.37275,1
 050502,Ayacucho,Anco,2016,0.0,0
@@ -6396,7 +6396,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2016,0.0,0
 160603,Loreto,Padre Marquez,2016,0.000835,1
 010522,Amazonas,Tingo,2016,0.111164,1
-080906,Cusco,Quellouno,2016,0.000344,1
+080906,Cusco,Quellouno,2016,0.000399,1
 010301,Amazonas,Jumbilla,2016,0.0,0
 080917,Cusco,Manitea,2016,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2017,0.0,0
@@ -6544,7 +6544,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2017,0.001566,1
 200303,Piura,El Carmen De La Frontera,2017,0.376112,1
 100609,Huanuco,Pueblo Nuevo,2017,0.0,0
-080903,Cusco,Huayopata,2017,0.021277,1
+080903,Cusco,Huayopata,2017,0.021561,1
 010604,Amazonas,Huambo,2017,0.0,0
 100505,Huanuco,Jircan,2017,0.0,0
 010512,Amazonas,Ocalli,2017,0.0,0
@@ -6573,13 +6573,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2017,0.0,0
 010519,Amazonas,San Juan De Lopecancha,2017,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2017,0.0,0
-080408,Cusco,Yanatile,2017,0.0,0
+080408,Cusco,Yanatile,2017,0.002679,1
 050408,Ayacucho,Llochegua,2017,0.0,0
 100507,Huanuco,Monzon,2017,0.0,0
-081304,Cusco,Machupicchu,2017,1.7e-05,1
+081304,Cusco,Machupicchu,2017,0.905978,1
 220909,San Martin,La Banda De Shilcayo,2017,0.542502,1
 220103,San Martin,Habana,2017,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2017,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2017,0.06402,1
 010508,Amazonas,Lonya Chico,2017,0.0,0
 170102,Madre De Dios,Inambari,2017,0.37275,1
 050502,Ayacucho,Anco,2017,0.0,0
@@ -6596,7 +6596,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2017,0.0,0
 160603,Loreto,Padre Marquez,2017,0.000835,1
 010522,Amazonas,Tingo,2017,0.111164,1
-080906,Cusco,Quellouno,2017,0.003393,1
+080906,Cusco,Quellouno,2017,0.003448,1
 010301,Amazonas,Jumbilla,2017,0.0,0
 080917,Cusco,Manitea,2017,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2018,0.0,0
@@ -6744,7 +6744,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2018,0.001566,1
 200303,Piura,El Carmen De La Frontera,2018,0.376112,1
 100609,Huanuco,Pueblo Nuevo,2018,0.0,0
-080903,Cusco,Huayopata,2018,0.021277,1
+080903,Cusco,Huayopata,2018,0.021561,1
 010604,Amazonas,Huambo,2018,0.0,0
 100505,Huanuco,Jircan,2018,0.0,0
 010512,Amazonas,Ocalli,2018,0.0,0
@@ -6773,13 +6773,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2018,0.001512,1
 010519,Amazonas,San Juan De Lopecancha,2018,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2018,0.0,0
-080408,Cusco,Yanatile,2018,0.0,0
+080408,Cusco,Yanatile,2018,0.002679,1
 050408,Ayacucho,Llochegua,2018,0.0,0
 100507,Huanuco,Monzon,2018,0.0,0
-081304,Cusco,Machupicchu,2018,1.7e-05,1
+081304,Cusco,Machupicchu,2018,0.905978,1
 220909,San Martin,La Banda De Shilcayo,2018,0.543628,1
 220103,San Martin,Habana,2018,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2018,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2018,0.06402,1
 010508,Amazonas,Lonya Chico,2018,0.0,0
 170102,Madre De Dios,Inambari,2018,0.372804,1
 050502,Ayacucho,Anco,2018,0.0,0
@@ -6796,7 +6796,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2018,0.0,0
 160603,Loreto,Padre Marquez,2018,0.000835,1
 010522,Amazonas,Tingo,2018,0.111164,1
-080906,Cusco,Quellouno,2018,0.003393,1
+080906,Cusco,Quellouno,2018,0.003448,1
 010301,Amazonas,Jumbilla,2018,0.0,0
 080917,Cusco,Manitea,2018,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2019,0.0,0
@@ -6944,7 +6944,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2019,0.001566,1
 200303,Piura,El Carmen De La Frontera,2019,0.376112,1
 100609,Huanuco,Pueblo Nuevo,2019,0.0,0
-080903,Cusco,Huayopata,2019,0.021277,1
+080903,Cusco,Huayopata,2019,0.021561,1
 010604,Amazonas,Huambo,2019,0.0,0
 100505,Huanuco,Jircan,2019,0.0,0
 010512,Amazonas,Ocalli,2019,0.0,0
@@ -6973,13 +6973,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2019,0.001512,1
 010519,Amazonas,San Juan De Lopecancha,2019,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2019,0.0,0
-080408,Cusco,Yanatile,2019,0.0,0
+080408,Cusco,Yanatile,2019,0.002679,1
 050408,Ayacucho,Llochegua,2019,0.0,0
 100507,Huanuco,Monzon,2019,0.0,0
-081304,Cusco,Machupicchu,2019,1.7e-05,1
+081304,Cusco,Machupicchu,2019,0.905978,1
 220909,San Martin,La Banda De Shilcayo,2019,0.543628,1
 220103,San Martin,Habana,2019,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2019,0.0,0
+100606,Huanuco,Mariano Damaso Beraun,2019,0.06402,1
 010508,Amazonas,Lonya Chico,2019,0.0,0
 170102,Madre De Dios,Inambari,2019,0.372804,1
 050502,Ayacucho,Anco,2019,0.0,0
@@ -6996,7 +6996,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2019,0.0,0
 160603,Loreto,Padre Marquez,2019,0.000835,1
 010522,Amazonas,Tingo,2019,0.111164,1
-080906,Cusco,Quellouno,2019,0.003393,1
+080906,Cusco,Quellouno,2019,0.003448,1
 010301,Amazonas,Jumbilla,2019,0.000704,1
 080917,Cusco,Manitea,2019,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2020,0.0,0
@@ -7144,7 +7144,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2020,0.001566,1
 200303,Piura,El Carmen De La Frontera,2020,0.376112,1
 100609,Huanuco,Pueblo Nuevo,2020,0.0,0
-080903,Cusco,Huayopata,2020,0.021277,1
+080903,Cusco,Huayopata,2020,0.021561,1
 010604,Amazonas,Huambo,2020,0.0,0
 100505,Huanuco,Jircan,2020,0.0,0
 010512,Amazonas,Ocalli,2020,0.0,0
@@ -7173,13 +7173,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2020,0.001512,1
 010519,Amazonas,San Juan De Lopecancha,2020,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2020,0.0,0
-080408,Cusco,Yanatile,2020,0.0,0
+080408,Cusco,Yanatile,2020,0.002679,1
 050408,Ayacucho,Llochegua,2020,0.0,0
 100507,Huanuco,Monzon,2020,0.019657,1
-081304,Cusco,Machupicchu,2020,1.7e-05,1
+081304,Cusco,Machupicchu,2020,0.905978,1
 220909,San Martin,La Banda De Shilcayo,2020,0.543628,1
 220103,San Martin,Habana,2020,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2020,0.087146,1
+100606,Huanuco,Mariano Damaso Beraun,2020,0.151166,1
 010508,Amazonas,Lonya Chico,2020,0.0,0
 170102,Madre De Dios,Inambari,2020,0.372804,1
 050502,Ayacucho,Anco,2020,0.0,0
@@ -7196,7 +7196,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2020,0.0,0
 160603,Loreto,Padre Marquez,2020,0.000835,1
 010522,Amazonas,Tingo,2020,0.111164,1
-080906,Cusco,Quellouno,2020,0.003393,1
+080906,Cusco,Quellouno,2020,0.003448,1
 010301,Amazonas,Jumbilla,2020,0.000704,1
 080917,Cusco,Manitea,2020,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2021,0.0,0
@@ -7344,7 +7344,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2021,0.001566,1
 200303,Piura,El Carmen De La Frontera,2021,0.376112,1
 100609,Huanuco,Pueblo Nuevo,2021,0.0,0
-080903,Cusco,Huayopata,2021,0.021277,1
+080903,Cusco,Huayopata,2021,0.021561,1
 010604,Amazonas,Huambo,2021,0.0,0
 100505,Huanuco,Jircan,2021,0.0,0
 010512,Amazonas,Ocalli,2021,0.0,0
@@ -7373,13 +7373,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2021,0.001512,1
 010519,Amazonas,San Juan De Lopecancha,2021,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2021,0.0,0
-080408,Cusco,Yanatile,2021,0.0,0
+080408,Cusco,Yanatile,2021,0.002679,1
 050408,Ayacucho,Llochegua,2021,0.0,0
 100507,Huanuco,Monzon,2021,0.019657,1
-081304,Cusco,Machupicchu,2021,1.7e-05,1
+081304,Cusco,Machupicchu,2021,0.905978,1
 220909,San Martin,La Banda De Shilcayo,2021,0.543628,1
 220103,San Martin,Habana,2021,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2021,0.087146,1
+100606,Huanuco,Mariano Damaso Beraun,2021,0.151166,1
 010508,Amazonas,Lonya Chico,2021,0.0,0
 170102,Madre De Dios,Inambari,2021,0.372804,1
 050502,Ayacucho,Anco,2021,0.0,0
@@ -7396,7 +7396,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2021,0.0,0
 160603,Loreto,Padre Marquez,2021,0.000835,1
 010522,Amazonas,Tingo,2021,0.111164,1
-080906,Cusco,Quellouno,2021,0.003393,1
+080906,Cusco,Quellouno,2021,0.003448,1
 010301,Amazonas,Jumbilla,2021,0.000704,1
 080917,Cusco,Manitea,2021,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2022,0.0,0
@@ -7544,7 +7544,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2022,0.001566,1
 200303,Piura,El Carmen De La Frontera,2022,0.376112,1
 100609,Huanuco,Pueblo Nuevo,2022,0.0,0
-080903,Cusco,Huayopata,2022,0.021277,1
+080903,Cusco,Huayopata,2022,0.021561,1
 010604,Amazonas,Huambo,2022,0.0,0
 100505,Huanuco,Jircan,2022,0.0,0
 010512,Amazonas,Ocalli,2022,0.0,0
@@ -7573,13 +7573,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2022,0.001512,1
 010519,Amazonas,San Juan De Lopecancha,2022,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2022,0.0,0
-080408,Cusco,Yanatile,2022,0.0,0
+080408,Cusco,Yanatile,2022,0.002679,1
 050408,Ayacucho,Llochegua,2022,0.0,0
 100507,Huanuco,Monzon,2022,0.019657,1
-081304,Cusco,Machupicchu,2022,1.7e-05,1
+081304,Cusco,Machupicchu,2022,0.905978,1
 220909,San Martin,La Banda De Shilcayo,2022,0.543628,1
 220103,San Martin,Habana,2022,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2022,0.087146,1
+100606,Huanuco,Mariano Damaso Beraun,2022,0.151166,1
 010508,Amazonas,Lonya Chico,2022,0.0,0
 170102,Madre De Dios,Inambari,2022,0.372804,1
 050502,Ayacucho,Anco,2022,0.0,0
@@ -7596,7 +7596,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2022,0.0,0
 160603,Loreto,Padre Marquez,2022,0.000835,1
 010522,Amazonas,Tingo,2022,0.111164,1
-080906,Cusco,Quellouno,2022,0.003393,1
+080906,Cusco,Quellouno,2022,0.003448,1
 010301,Amazonas,Jumbilla,2022,0.000704,1
 080917,Cusco,Manitea,2022,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2023,0.0,0
@@ -7744,7 +7744,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2023,0.001566,1
 200303,Piura,El Carmen De La Frontera,2023,0.376112,1
 100609,Huanuco,Pueblo Nuevo,2023,0.0,0
-080903,Cusco,Huayopata,2023,0.021277,1
+080903,Cusco,Huayopata,2023,0.021561,1
 010604,Amazonas,Huambo,2023,0.0,0
 100505,Huanuco,Jircan,2023,0.0,0
 010512,Amazonas,Ocalli,2023,0.0,0
@@ -7773,13 +7773,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2023,0.001512,1
 010519,Amazonas,San Juan De Lopecancha,2023,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2023,0.0,0
-080408,Cusco,Yanatile,2023,0.0,0
+080408,Cusco,Yanatile,2023,0.002679,1
 050408,Ayacucho,Llochegua,2023,0.0,0
 100507,Huanuco,Monzon,2023,0.019657,1
-081304,Cusco,Machupicchu,2023,1.7e-05,1
+081304,Cusco,Machupicchu,2023,0.905978,1
 220909,San Martin,La Banda De Shilcayo,2023,0.543628,1
 220103,San Martin,Habana,2023,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2023,0.087146,1
+100606,Huanuco,Mariano Damaso Beraun,2023,0.151166,1
 010508,Amazonas,Lonya Chico,2023,0.0,0
 170102,Madre De Dios,Inambari,2023,0.372953,1
 050502,Ayacucho,Anco,2023,0.0,0
@@ -7796,7 +7796,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2023,0.0,0
 160603,Loreto,Padre Marquez,2023,0.000835,1
 010522,Amazonas,Tingo,2023,0.111164,1
-080906,Cusco,Quellouno,2023,0.003393,1
+080906,Cusco,Quellouno,2023,0.003448,1
 010301,Amazonas,Jumbilla,2023,0.000704,1
 080917,Cusco,Manitea,2023,0.0,0
 250305,Ucayali,Alexander Von Humboldt,2024,0.0,0
@@ -7944,7 +7944,7 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 221002,San Martin,Nuevo Progreso,2024,0.001566,1
 200303,Piura,El Carmen De La Frontera,2024,0.376112,1
 100609,Huanuco,Pueblo Nuevo,2024,0.0,0
-080903,Cusco,Huayopata,2024,0.021277,1
+080903,Cusco,Huayopata,2024,0.021561,1
 010604,Amazonas,Huambo,2024,0.0,0
 100505,Huanuco,Jircan,2024,0.0,0
 010512,Amazonas,Ocalli,2024,0.0,0
@@ -7973,13 +7973,13 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 010601,Amazonas,San Nicolas,2024,0.001512,1
 010519,Amazonas,San Juan De Lopecancha,2024,0.0,0
 160211,Loreto,Teniente Cesar Lopez Rojas,2024,0.0,0
-080408,Cusco,Yanatile,2024,0.0,0
+080408,Cusco,Yanatile,2024,0.002679,1
 050408,Ayacucho,Llochegua,2024,0.0,0
 100507,Huanuco,Monzon,2024,0.019657,1
-081304,Cusco,Machupicchu,2024,1.7e-05,1
+081304,Cusco,Machupicchu,2024,0.905978,1
 220909,San Martin,La Banda De Shilcayo,2024,0.543628,1
 220103,San Martin,Habana,2024,0.0,0
-100606,Huanuco,Mariano Damaso Beraun,2024,0.087146,1
+100606,Huanuco,Mariano Damaso Beraun,2024,0.151166,1
 010508,Amazonas,Lonya Chico,2024,0.0,0
 170102,Madre De Dios,Inambari,2024,0.372953,1
 050502,Ayacucho,Anco,2024,0.0,0
@@ -7996,6 +7996,6 @@ geocode,departamento,distrito,anio,pct_anp,tiene_anp
 220809,San Martin,Yuracyacu,2024,0.0,0
 160603,Loreto,Padre Marquez,2024,0.000835,1
 010522,Amazonas,Tingo,2024,0.111164,1
-080906,Cusco,Quellouno,2024,0.003393,1
+080906,Cusco,Quellouno,2024,0.003448,1
 010301,Amazonas,Jumbilla,2024,0.000704,1
 080917,Cusco,Manitea,2024,0.0,0

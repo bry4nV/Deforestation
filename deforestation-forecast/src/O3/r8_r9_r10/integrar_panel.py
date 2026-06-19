@@ -40,7 +40,7 @@ _COLS_LIGHT_VARS = [
 ]
 
 
-def _cargar_si_existe(ruta, nombre):
+def cargar_si_existe(ruta, nombre):
     """Carga un CSV si existe; si no, devuelve None con advertencia."""
     if os.path.exists(ruta):
         return pd.read_csv(ruta, dtype={"geocode": str})
@@ -53,7 +53,7 @@ def integrar_panel(distritos_gdf):
 
     panel_integrado.csv  — todas las variables disponibles (exploración).
     panel_integrado_light.csv — solo las variables del modelo:
-        pct_agropecuario, densidad_carreteras_km_km2, densidad_rios_km_km2,
+        pct_agropecuario, pct_anp, densidad_carreteras_km_km2, densidad_rios_km_km2,
         elev_media_m, pendiente_media_deg.
 
     panel_integrado_entrenamiento.csv / _generalizacion.csv → versión light
@@ -92,14 +92,14 @@ def integrar_panel(distritos_gdf):
     # ── 2. Variables temporales ─────────────────────────────────────────────
     join_cols = ["geocode", "anio"]
 
-    agropecuaria = _cargar_si_existe(AGROPECUARIA_CSV, "agropecuaria")
+    agropecuaria = cargar_si_existe(AGROPECUARIA_CSV, "agropecuaria")
     if agropecuaria is not None:
         panel = panel.merge(
             agropecuaria[join_cols + ["pct_agropecuario"]],
             on=join_cols, how="left",
         )
 
-    anp_df = _cargar_si_existe(ANP_CSV, "anp")
+    anp_df = cargar_si_existe(ANP_CSV, "anp")
     if anp_df is not None:
         cols_anp = [c for c in ["pct_anp", "tiene_anp"] if c in anp_df.columns]
         panel = panel.merge(
@@ -108,14 +108,14 @@ def integrar_panel(distritos_gdf):
         )
 
     # Variables de respaldo (exploratorias)
-    rios_lagos = _cargar_si_existe(RIOS_LAGOS_CSV, "rios_lagos (respaldo)")
+    rios_lagos = cargar_si_existe(RIOS_LAGOS_CSV, "rios_lagos (respaldo)")
     if rios_lagos is not None:
         panel = panel.merge(
             rios_lagos[join_cols + ["pct_rios_lagos"]],
             on=join_cols, how="left",
         )
 
-    urbano = _cargar_si_existe(URBANO_CSV, "urbano (respaldo)")
+    urbano = cargar_si_existe(URBANO_CSV, "urbano (respaldo)")
     if urbano is not None:
         panel = panel.merge(
             urbano[join_cols + ["pct_urbano"]],
@@ -123,21 +123,21 @@ def integrar_panel(distritos_gdf):
         )
 
     # ── 3. Variables estáticas ──────────────────────────────────────────────
-    carreteras = _cargar_si_existe(CARRETERAS_CSV, "carreteras")
+    carreteras = cargar_si_existe(CARRETERAS_CSV, "carreteras")
     if carreteras is not None:
         cols = [c for c in [
             "geocode", "km_carreteras", "area_utm_km2", "densidad_carreteras_km_km2",
         ] if c in carreteras.columns]
         panel = panel.merge(carreteras[cols], on="geocode", how="left")
 
-    rios = _cargar_si_existe(RIOS_CSV, "rios")
+    rios = cargar_si_existe(RIOS_CSV, "rios")
     if rios is not None:
         cols = [c for c in [
             "geocode", "km_rios", "densidad_rios_km_km2",
         ] if c in rios.columns]
         panel = panel.merge(rios[cols], on="geocode", how="left")
 
-    elevacion = _cargar_si_existe(ELEVACION_CSV, "elevacion")
+    elevacion = cargar_si_existe(ELEVACION_CSV, "elevacion")
     if elevacion is not None:
         cols = [c for c in [
             "geocode", "elev_media_m", "elev_mediana_m", "elev_std_m",
@@ -145,7 +145,7 @@ def integrar_panel(distritos_gdf):
         ] if c in elevacion.columns]
         panel = panel.merge(elevacion[cols], on="geocode", how="left")
 
-    pendiente = _cargar_si_existe(PENDIENTE_CSV, "pendiente")
+    pendiente = cargar_si_existe(PENDIENTE_CSV, "pendiente")
     if pendiente is not None:
         cols = [c for c in [
             "geocode", "pendiente_media_deg", "pendiente_mediana_deg", "pendiente_std_deg",

@@ -30,7 +30,7 @@ from O3.utils import guardar_csv, guardar_metadatos
 logger = logging.getLogger(__name__)
 
 # (ruta, campo_fecha_original, tipo) para las cuatro capas ANP
-_CAPAS_ANP = [
+CAPAS_ANP = [
     (ANP_SHP,     ANP_COL_FECHA,     "Nacional"),
     (ANP_ZR_SHP,  ANP_ZR_COL_FECHA,  "ZonaReservada"),
     (ANP_ACR_SHP, ANP_ACR_COL_FECHA, "ACR"),
@@ -38,7 +38,7 @@ _CAPAS_ANP = [
 ]
 
 
-def _cargar_y_estandarizar_anp():
+def cargar_y_estandarizar_anp():
     """Carga las cuatro capas ANP y devuelve (GeoDataFrame unificado, conteos_por_capa).
 
     Estandariza el campo de fecha a ANP_COL_FECHA_STD ('felec'), agrega una
@@ -47,7 +47,7 @@ def _cargar_y_estandarizar_anp():
     """
     partes = []
     conteos = {}
-    for shp, col_fecha, tipo in _CAPAS_ANP:
+    for shp, col_fecha, tipo in CAPAS_ANP:
         gdf = gpd.read_file(shp)
         gdf[ANP_COL_FECHA_STD] = pd.to_datetime(gdf[col_fecha], errors="coerce")
         gdf["tipo"] = tipo
@@ -88,7 +88,7 @@ def construir_anp(distritos_gdf):
 
     logger.info("Calculando fracción de ANP por distrito y año...")
     logger.info("  Cargando y estandarizando las cuatro capas ANP...")
-    anp_gdf, conteos_por_capa = _cargar_y_estandarizar_anp()
+    anp_gdf, conteos_por_capa = cargar_y_estandarizar_anp()
     logger.info(f"  Total polígonos ANP unificados: {len(anp_gdf)}")
 
     distritos_utm = distritos_gdf.to_crs(CRS_PROYECTADO)
@@ -110,7 +110,7 @@ def construir_anp(distritos_gdf):
         anp_utm[[ANP_COL_FECHA_STD, "tipo", "geometry"]],
         how="intersection",
     )
-    anp_interseccion["anio_est"] = anp_interseccion[ANP_COL_FECHA_STD].dt.year
+    anp_interseccion["anio_est"] = anp_interseccion[ANP_COL_FECHA_STD].dt.year.clip(lower=ANIOS[0])
     logger.info(f"  Fragmentos de intersección: {len(anp_interseccion)}")
 
     # Lookups de metadatos por geocode
@@ -192,7 +192,7 @@ def construir_anp(distritos_gdf):
     guardar_metadatos(
         {
             "variable":                 "anp",
-            "capas":                    str([t for _, _, t in _CAPAS_ANP]),
+            "capas":                    str([t for _, _, t in CAPAS_ANP]),
             "n_poligonos_por_capa":     str(conteos_por_capa),
             "n_poligonos_total":        len(anp_gdf),
             "crs_calculo":              CRS_PROYECTADO,

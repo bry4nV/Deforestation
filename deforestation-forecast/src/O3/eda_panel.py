@@ -15,6 +15,9 @@ Uso:
 import logging
 import os
 
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy import stats as scipy_stats
@@ -66,6 +69,10 @@ UMBRAL_SESGO_FUERTE          = 1.0
 UMBRAL_FRACCION_CEROS_ALTA   = 0.50   # como fracción [0, 1]
 UMBRAL_PCT_DISTRITOS_CONSTANTES_ESTATICA = 0.99  # fracción de distritos con var. intra = 0
 UMBRAL_PCT_VARIANZA_WITHIN_CUASI_ESTATICA = 0.05
+
+# Lags del correlograma cruzado (años hacia el futuro). Alineado con el
+# rango de DL_VENTANAS en O3/r11/config.py (ventanas 3-7) mas un margen.
+LAGS_CORRELOGRAMA = list(range(0, 8))
 
 
 # ============================================================
@@ -195,44 +202,9 @@ def diagnosticar_calidad_datos(
     return pd.DataFrame(registros)
 
 
-def detectar_outliers_iqr(
-    df: pd.DataFrame,
-    columnas: list = None,
-    factor: float = 1.5,
-) -> pd.DataFrame:
-    """Outliers transversales por variable usando el criterio de Tukey (IQR)."""
-    if columnas is None:
-        columnas = [VARIABLE_OBJETIVO] + COLUMNAS_PREDICTORAS
-
-    registros = []
-    for variable in columnas:
-        q1, q3 = df[variable].quantile([0.25, 0.75])
-        iqr = q3 - q1
-        lim_inf, lim_sup = q1 - factor * iqr, q3 + factor * iqr
-        mascara = (df[variable] < lim_inf) | (df[variable] > lim_sup)
-
-        registros.append({
-            "variable": variable,
-            "limite_inferior": round(lim_inf, 6),
-            "limite_superior": round(lim_sup, 6),
-            "n_outliers": int(mascara.sum()),
-            "pct_outliers": round(mascara.mean() * 100, 3),
-        })
-
-    return pd.DataFrame(registros)
-
-
 # ============================================================
 # SECCIÓN 2 — Análisis descriptivo
 # ============================================================
-
-def calcular_estadisticas_descriptivas(df: pd.DataFrame) -> pd.DataFrame:
-    """count, mean, std, min, p25, mediana, p75, max para pct_bosque y predictoras."""
-    columnas = [VARIABLE_OBJETIVO] + COLUMNAS_PREDICTORAS
-    tabla = df[columnas].describe().round(4).T
-    tabla.index.name = "variable"
-    return tabla
-
 
 def calcular_asimetria(
     df: pd.DataFrame,
@@ -514,49 +486,14 @@ def clasificar_variables_dinamicas_estaticas(
 
 
 # ============================================================
-# SECCIÓN 6 — Relación predictiva con el futuro
+# SECCIÓN 6 — Relación predictiva con el futuro (variables estáticas)
+#
+# La parte dinámica de esta sección (var(t) vs pct_bosque(t+1)) se retiró:
+# es un subconjunto de la Sección 9 (correlograma cruzado, lag=1, r_pooled),
+# que además descompone within/between. Para variables ESTATICAS un lead
+# temporal no aporta nada (el valor no cambia en el tiempo), así que siguen
+# evaluándose de forma transversal aquí.
 # ============================================================
-
-def calcular_relacion_futura_dinamicas(
-    df: pd.DataFrame,
-    variables: list,
-    variable_objetivo: str = VARIABLE_OBJETIVO,
-) -> pd.DataFrame:
-    """
-    Para variables dinámicas/cuasi-estáticas: correlación de var(t) con
-    pct_bosque(t+1) y con delta_pct_bosque(t+1), agrupado por distrito.
-    """
-    if not variables:
-        return pd.DataFrame()
-
-    df_ordenado = df.sort_values(["geocode", "anio"]).copy()
-    df_ordenado["_objetivo_lead"] = df_ordenado.groupby("geocode")[variable_objetivo].shift(-1)
-    df_ordenado["_delta_lead"] = df_ordenado["_objetivo_lead"] - df_ordenado[variable_objetivo]
-
-    registros = []
-    for variable in variables:
-        df_valido = df_ordenado.dropna(subset=[variable, "_objetivo_lead", "_delta_lead"])
-
-        r_p_nivel, p_p_nivel = scipy_stats.pearsonr(df_valido[variable], df_valido["_objetivo_lead"])
-        r_s_nivel, p_s_nivel = scipy_stats.spearmanr(df_valido[variable], df_valido["_objetivo_lead"])
-        r_p_delta, p_p_delta = scipy_stats.pearsonr(df_valido[variable], df_valido["_delta_lead"])
-        r_s_delta, p_s_delta = scipy_stats.spearmanr(df_valido[variable], df_valido["_delta_lead"])
-
-        registros.append({
-            "variable": variable,
-            "r_pearson_vs_nivel_t1": round(r_p_nivel, 4),
-            "p_pearson_vs_nivel_t1": float(f"{p_p_nivel:.4e}"),
-            "r_spearman_vs_nivel_t1": round(r_s_nivel, 4),
-            "p_spearman_vs_nivel_t1": float(f"{p_s_nivel:.4e}"),
-            "r_pearson_vs_delta_t1": round(r_p_delta, 4),
-            "p_pearson_vs_delta_t1": float(f"{p_p_delta:.4e}"),
-            "r_spearman_vs_delta_t1": round(r_s_delta, 4),
-            "p_spearman_vs_delta_t1": float(f"{p_s_delta:.4e}"),
-            "interpretacion": _interpretar_correlacion(r_p_delta, p_p_delta) + " sobre delta_pct_bosque(t+1)",
-        })
-
-    return pd.DataFrame(registros)
-
 
 def calcular_relacion_transversal_estaticas(
     df: pd.DataFrame,
@@ -699,29 +636,37 @@ def _decidir_variable(r: dict) -> tuple:
 
 def construir_tabla_decision_final(
     tabla_calidad: pd.DataFrame,
-    tabla_outliers: pd.DataFrame,
     tabla_asimetria: pd.DataFrame,
     tabla_correlacion_objetivo: pd.DataFrame,
     tabla_vif: pd.DataFrame,
     pares_colineales: pd.DataFrame,
     tabla_clasificacion: pd.DataFrame,
-    tabla_futura_dinamicas: pd.DataFrame,
+    tabla_correlograma: pd.DataFrame,
     tabla_transversal_estaticas: pd.DataFrame,
 ) -> pd.DataFrame:
-    """Combina todas las secciones anteriores en una fila de decisión por variable."""
+    """Combina todas las secciones anteriores en una fila de decisión por variable.
+
+    Para variables DINAMICA/CUASI-ESTATICA, r_futuro/sig_futuro se toman de
+    tabla_correlograma (Sección 9) en lag=1, columna r_pooled/p_pooled —
+    equivalente al antiguo r_pearson_vs_nivel_t1 (la comparación adicional
+    contra delta_pct_bosque(t+1) se retiró: en los datos reales nunca superaba
+    a la comparación de nivel, ver justificación al usuario en la sesión que
+    retiró calcular_relacion_futura_dinamicas).
+    """
     calidad_idx = tabla_calidad.set_index("variable")
-    outliers_idx = tabla_outliers.set_index("variable")
     asimetria_idx = tabla_asimetria.set_index("variable")
     corr_idx = tabla_correlacion_objetivo.set_index("variable")
     vif_idx = tabla_vif.set_index("variable")
     clasif_idx = tabla_clasificacion.set_index("variable")
-    futura_idx = tabla_futura_dinamicas.set_index("variable") if len(tabla_futura_dinamicas) else None
+    correlograma_lag1 = (
+        tabla_correlograma[tabla_correlograma["lag"] == 1].set_index("variable")
+        if len(tabla_correlograma) else None
+    )
     transversal_idx = tabla_transversal_estaticas.set_index("variable") if len(tabla_transversal_estaticas) else None
 
     filas = []
     for variable in COLUMNAS_PREDICTORAS:
         calidad = calidad_idx.loc[variable]
-        outliers = outliers_idx.loc[variable]
         asimetria = asimetria_idx.loc[variable]
         corr_obj = corr_idx.loc[variable]
         vif = vif_idx.loc[variable, "vif"]
@@ -738,10 +683,10 @@ def construir_tabla_decision_final(
             redundancia_con, redundancia_r = None, 0.0
 
         es_dinamica_o_cuasi = clasif["clasificacion"] in ("DINAMICA", "CUASI-ESTATICA")
-        if es_dinamica_o_cuasi and futura_idx is not None and variable in futura_idx.index:
-            fut = futura_idx.loc[variable]
-            r_futuro = max(abs(fut["r_pearson_vs_nivel_t1"]), abs(fut["r_pearson_vs_delta_t1"]))
-            p_futuro = min(fut["p_pearson_vs_nivel_t1"], fut["p_pearson_vs_delta_t1"])
+        if es_dinamica_o_cuasi and correlograma_lag1 is not None and variable in correlograma_lag1.index:
+            fut = correlograma_lag1.loc[variable]
+            r_futuro = abs(fut["r_pooled"])
+            p_futuro = fut["p_pooled"]
         else:
             fut = transversal_idx.loc[variable]
             r_futuro = max(abs(fut["r_pearson_vs_pct_bosque_medio"]), abs(fut["r_pearson_vs_tasa_cambio"]))
@@ -754,7 +699,6 @@ def construir_tabla_decision_final(
             "variable": variable,
             "pct_nulos": calidad["pct_nulos"],
             "pct_fuera_de_rango": calidad["pct_fuera_de_rango"],
-            "pct_outliers_iqr": outliers["pct_outliers"],
             "es_constante_global": calidad["es_constante_global"],
             "clasificacion_temporal": clasif["clasificacion"],
             "pct_varianza_within": clasif["pct_varianza_within"],
@@ -774,6 +718,109 @@ def construir_tabla_decision_final(
         filas.append(resumen)
 
     return pd.DataFrame(filas)
+
+
+# ============================================================
+# SECCIÓN 9 — Correlograma cruzado y descomposición within / between
+# ============================================================
+
+def calcular_correlograma_within_between(
+    df: pd.DataFrame,
+    variables: list,
+    lags: list = LAGS_CORRELOGRAMA,
+    variable_objetivo: str = VARIABLE_OBJETIVO,
+) -> pd.DataFrame:
+    """
+    Para cada variable dinámica y cada lag k, correlaciona variable(t) con
+    pct_bosque(t+k) en tres descomposiciones:
+
+      pooled  : correlación sobre todos los pares distrito-año (mezcla
+                variación within y between — es lo que reporta la Sección 6,
+                generalizado aquí a múltiples lags en vez de solo t+1).
+      within  : tras restar la media por distrito de cada serie (calculada
+                sobre la misma muestra usada en ese lag) — aísla la dinámica
+                propia de cada distrito a través del tiempo.
+      between : correlación de las medias por distrito (un punto por
+                distrito, mismo criterio que la Sección 6b) — aísla el
+                patrón estructural/transversal entre distritos.
+
+    La correlación pooled puede ser alta mayormente por 'between' (distritos
+    con más actividad agropecuaria simplemente tienen, de forma estructural,
+    menos bosque) sin que eso implique que el AUMENTO de la variable en un
+    distrito específico anticipe la PÉRDIDA de bosque en ese mismo distrito
+    — que es la señal dinámica que un modelo de panel necesita explotar
+    para pronosticar la trayectoria de un distrito particular.
+
+    NOTA metodológica: los p-valores de 'within' no corrigen por los grados
+    de libertad consumidos en el demeaning por grupo ni por la
+    autocorrelación temporal dentro de cada distrito (el clásico problema de
+    inferencia en datos de panel). Úsense como orientación exploratoria de
+    magnitud, no como test formal de significancia.
+    """
+    if not variables:
+        return pd.DataFrame()
+
+    df_ordenado = df.sort_values(["geocode", "anio"]).copy()
+    registros = []
+
+    for variable in variables:
+        for lag in lags:
+            col_lead = f"_obj_lead_{lag}"
+            datos = df_ordenado.copy()
+            datos[col_lead] = datos.groupby("geocode")[variable_objetivo].shift(-lag)
+            validos = datos.dropna(subset=[variable, col_lead])
+
+            x = validos[variable]
+            y = validos[col_lead]
+            r_pooled, p_pooled = scipy_stats.pearsonr(x, y)
+
+            x_media_i = validos.groupby("geocode")[variable].transform("mean")
+            y_media_i = validos.groupby("geocode")[col_lead].transform("mean")
+            r_within, p_within = scipy_stats.pearsonr(x - x_media_i, y - y_media_i)
+
+            por_distrito = validos.groupby("geocode").agg(
+                x_medio=(variable, "mean"),
+                y_medio=(col_lead, "mean"),
+            )
+            r_between, p_between = scipy_stats.pearsonr(por_distrito["x_medio"], por_distrito["y_medio"])
+
+            registros.append({
+                "variable": variable,
+                "lag": lag,
+                "n_pares": len(validos),
+                "n_distritos": validos["geocode"].nunique(),
+                "r_pooled": round(r_pooled, 4),
+                "p_pooled": float(f"{p_pooled:.4e}"),
+                "r_within": round(r_within, 4),
+                "p_within": float(f"{p_within:.4e}"),
+                "r_between": round(r_between, 4),
+                "p_between": float(f"{p_between:.4e}"),
+            })
+
+    return pd.DataFrame(registros)
+
+
+def graficar_correlograma(df_correlograma: pd.DataFrame, ruta_dir: str) -> None:
+    """Una figura por variable: r_pooled / r_within / r_between vs lag."""
+    for variable in df_correlograma["variable"].unique():
+        sub = df_correlograma[df_correlograma["variable"] == variable].sort_values("lag")
+
+        fig, ax = plt.subplots(figsize=(8, 5))
+        ax.plot(sub["lag"], sub["r_pooled"], marker="o", label="pooled (within + between mezclados)")
+        ax.plot(sub["lag"], sub["r_within"], marker="o", label="within (dinámica intra-distrito)")
+        ax.plot(sub["lag"], sub["r_between"], marker="o", label="between (estructural, transversal)")
+        ax.axhline(0, color="black", linewidth=0.8)
+        ax.set_xlabel("Lag (años hacia el futuro)")
+        ax.set_ylabel(f"r de Pearson con {VARIABLE_OBJETIVO}(t+lag)")
+        ax.set_title(f"Correlograma cruzado — {variable}")
+        ax.set_xticks(sub["lag"])
+        ax.legend(fontsize=9)
+        ax.grid(True, alpha=0.3)
+
+        ruta = os.path.join(ruta_dir, f"09_correlograma_{variable}.png")
+        fig.savefig(ruta, dpi=150, bbox_inches="tight")
+        plt.close(fig)
+        logger.info(f"[OK] {ruta}")
 
 
 # ============================================================
@@ -798,21 +845,14 @@ if __name__ == "__main__":
     logger.info("\n" + tabla_calidad.to_string(index=False))
     tabla_calidad.to_csv(os.path.join(EDA_DIR, "01_calidad_datos.csv"), index=False)
 
-    tabla_outliers = detectar_outliers_iqr(df_train)
-    logger.info("\n  Outliers transversales (IQR):\n" + tabla_outliers.to_string(index=False))
-    tabla_outliers.to_csv(os.path.join(EDA_DIR, "01b_outliers_iqr.csv"), index=False)
     logger.info("[OK] Sección 1 guardada")
 
     # --- Sección 2: Análisis descriptivo ---
     logger.info("=" * 60)
     logger.info("SECCIÓN 2 — Análisis descriptivo")
-    tabla_desc = calcular_estadisticas_descriptivas(df_train)
-    logger.info("\n" + tabla_desc.to_string())
-    tabla_desc.to_csv(os.path.join(EDA_DIR, "02_estadisticas_descriptivas.csv"))
-
     tabla_asimetria = calcular_asimetria(df_train)
     logger.info("\n" + tabla_asimetria.to_string(index=False))
-    tabla_asimetria.to_csv(os.path.join(EDA_DIR, "02b_asimetria_kurtosis.csv"), index=False)
+    tabla_asimetria.to_csv(os.path.join(EDA_DIR, "02_asimetria_kurtosis.csv"), index=False)
     logger.info("[OK] Sección 2 guardada")
 
     # --- Sección 3: Análisis local/territorial ---
@@ -865,9 +905,22 @@ if __name__ == "__main__":
             "  Conclusión: autocorrelación fuerte en lag=1 -> existe estructura temporal "
             "suficiente para justificar modelos de series temporales."
         )
+
+    # La autocorrelación pooled de arriba mezcla within/between igual que las
+    # correlaciones de la Sección 9 — un distrito con mucho bosque en t-1
+    # tiende a tener mucho bosque en t simplemente por persistir como tipo de
+    # distrito (between), no necesariamente porque su fluctuación año a año
+    # sea predecible (within). Se reutiliza la misma descomposición.
+    tabla_autocorr_wb = calcular_correlograma_within_between(
+        df_train, [VARIABLE_OBJETIVO], lags=list(range(1, 6)), variable_objetivo=VARIABLE_OBJETIVO,
+    )
+    logger.info("\n  Descomposición within/between de la autocorrelación:\n" + tabla_autocorr_wb.to_string(index=False))
+    tabla_autocorr_wb.to_csv(os.path.join(EDA_DIR, "05b_autocorrelacion_within_between.csv"), index=False)
     logger.info("[OK] Sección 5 guardada")
 
-    # --- Sección 7 (calculada aquí porque la sección 6 depende de ella) ---
+    # --- Sección 7 (calculada aquí porque las secciones 6 y 9 dependen de ella) ---
+    logger.info("=" * 60)
+    logger.info("SECCIÓN 7 — Clasificación empírica dinámica / estática")
     tabla_clasificacion = clasificar_variables_dinamicas_estaticas(df_train)
     variables_dinamicas = tabla_clasificacion.loc[
         tabla_clasificacion["clasificacion"].isin(["DINAMICA", "CUASI-ESTATICA"]), "variable"
@@ -875,45 +928,44 @@ if __name__ == "__main__":
     variables_estaticas = tabla_clasificacion.loc[
         tabla_clasificacion["clasificacion"] == "ESTATICA", "variable"
     ].tolist()
+    logger.info("\n" + tabla_clasificacion.to_string(index=False))
+    tabla_clasificacion.to_csv(os.path.join(EDA_DIR, "07_clasificacion_dinamica_estatica.csv"), index=False)
+    logger.info("[OK] Sección 7 guardada")
 
-    # --- Sección 6: Relación predictiva con el futuro ---
+    # --- Sección 9: Correlograma cruzado y descomposición within/between (dinámicas) ---
     logger.info("=" * 60)
-    logger.info("SECCIÓN 6 — Relación predictiva con el futuro")
-    logger.info(f"  Dinámicas/cuasi-estáticas (evaluadas con lead temporal): {variables_dinamicas}")
+    logger.info("SECCIÓN 9 — Correlograma cruzado (lags 0-7) y descomposición within/between")
+    logger.info(f"  Dinámicas/cuasi-estáticas: {variables_dinamicas}")
+    tabla_correlograma = calcular_correlograma_within_between(df_train, variables_dinamicas)
+    if len(tabla_correlograma):
+        logger.info("\n" + tabla_correlograma.to_string(index=False))
+        tabla_correlograma.to_csv(os.path.join(EDA_DIR, "09_correlograma_within_between.csv"), index=False)
+        graficar_correlograma(tabla_correlograma, EDA_DIR)
+    logger.info("[OK] Sección 9 guardada")
+
+    # --- Sección 6: Relación predictiva con el futuro (estáticas, transversal) ---
+    logger.info("=" * 60)
+    logger.info("SECCIÓN 6 — Relación predictiva con el futuro (estáticas)")
     logger.info(f"  Estáticas (evaluadas de forma transversal): {variables_estaticas}")
-
-    tabla_futura_dinamicas = calcular_relacion_futura_dinamicas(df_train, variables_dinamicas)
-    if len(tabla_futura_dinamicas):
-        logger.info("\n" + tabla_futura_dinamicas.to_string(index=False))
-        tabla_futura_dinamicas.to_csv(os.path.join(EDA_DIR, "06_relacion_futura_dinamicas.csv"), index=False)
-
     tabla_transversal_estaticas = calcular_relacion_transversal_estaticas(df_train, variables_estaticas)
     if len(tabla_transversal_estaticas):
         logger.info("\n" + tabla_transversal_estaticas.to_string(index=False))
         tabla_transversal_estaticas.to_csv(
-            os.path.join(EDA_DIR, "06b_relacion_transversal_estaticas.csv"), index=False
+            os.path.join(EDA_DIR, "06_relacion_transversal_estaticas.csv"), index=False
         )
     logger.info("[OK] Sección 6 guardada")
-
-    # --- Sección 7: guardar clasificación ya calculada ---
-    logger.info("=" * 60)
-    logger.info("SECCIÓN 7 — Clasificación empírica dinámica / estática")
-    logger.info("\n" + tabla_clasificacion.to_string(index=False))
-    tabla_clasificacion.to_csv(os.path.join(EDA_DIR, "07_clasificacion_dinamica_estatica.csv"), index=False)
-    logger.info("[OK] Sección 7 guardada")
 
     # --- Sección 8: Tabla final de decisión ---
     logger.info("=" * 60)
     logger.info("SECCIÓN 8 — Tabla final de decisión por variable")
     tabla_decision = construir_tabla_decision_final(
         tabla_calidad=tabla_calidad,
-        tabla_outliers=tabla_outliers,
         tabla_asimetria=tabla_asimetria,
         tabla_correlacion_objetivo=tabla_correlacion_objetivo,
         tabla_vif=tabla_vif,
         pares_colineales=pares_colineales,
         tabla_clasificacion=tabla_clasificacion,
-        tabla_futura_dinamicas=tabla_futura_dinamicas,
+        tabla_correlograma=tabla_correlograma,
         tabla_transversal_estaticas=tabla_transversal_estaticas,
     )
     logger.info("\n" + tabla_decision[["variable", "decision_final", "justificacion"]].to_string(index=False))

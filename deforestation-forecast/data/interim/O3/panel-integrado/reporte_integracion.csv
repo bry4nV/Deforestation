@@ -1,7 +1,7 @@
 variable,completitud_pct,n_faltantes,media,en_panel_light
 pct_agropecuario,100.0,0,0.344902,True
-pct_anp,100.0,0,0.028027,True
-tiene_anp,100.0,0,0.186375,False
+pct_anp,100.0,0,0.032892,True
+tiene_anp,100.0,0,0.205,False
 pct_rios_lagos,100.0,0,0.010162,False
 pct_urbano,100.0,0,0.004946,False
 km_carreteras,100.0,0,100.141957,False

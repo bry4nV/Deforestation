@@ -1,7 +1,7 @@
 variable,skewness,kurtosis,forma_sesgo,forma_curtosis,interpretacion
 pct_bosque,-0.07,-0.92,APROX. SIMETRICA,MESOCURTICA (similar a normal),APROX. SIMETRICA / MESOCURTICA (similar a normal)
 pct_agropecuario,0.595,-0.548,MODERADAMENTE SESGADA a la derecha,MESOCURTICA (similar a normal),MODERADAMENTE SESGADA a la derecha / MESOCURTICA (similar a normal)
-pct_anp,4.139,16.9,MUY SESGADA a la derecha,"LEPTOCURTICA (colas pesadas, valores extremos frecuentes)","MUY SESGADA a la derecha / LEPTOCURTICA (colas pesadas, valores extremos frecuentes)"
+pct_anp,5.128,31.251,MUY SESGADA a la derecha,"LEPTOCURTICA (colas pesadas, valores extremos frecuentes)","MUY SESGADA a la derecha / LEPTOCURTICA (colas pesadas, valores extremos frecuentes)"
 densidad_carreteras_km_km2,1.498,2.709,MUY SESGADA a la derecha,"LEPTOCURTICA (colas pesadas, valores extremos frecuentes)","MUY SESGADA a la derecha / LEPTOCURTICA (colas pesadas, valores extremos frecuentes)"
 densidad_rios_km_km2,1.687,4.107,MUY SESGADA a la derecha,"LEPTOCURTICA (colas pesadas, valores extremos frecuentes)","MUY SESGADA a la derecha / LEPTOCURTICA (colas pesadas, valores extremos frecuentes)"
 elev_media_m,0.217,-1.27,APROX. SIMETRICA,PLATICURTICA (distribucion achatada),APROX. SIMETRICA / PLATICURTICA (distribucion achatada)

@@ -32,6 +32,7 @@ from O3.r11.analisis_fase1 import analizar_fase1
 from O3.r11.cargar_panel import cargar_panel
 from O3.r11.construir_dataset import construir_datasets
 from O3.r11.escalador import ajustar_y_escalar
+from O3.r11.transformaciones import aplicar_transformaciones
 from O3.r11.final_configs import FINAL_CONFIG_CNN, FINAL_CONFIG_LSTM, FINAL_CONFIG_MLP
 from O3.r11.pipeline_cnn import entrenar_config_final_cnn, pipeline_cnn
 from O3.r11.pipeline_comparacion import pipeline_comparacion
@@ -74,7 +75,10 @@ def main() -> None:
 
     panel, df_distritos_info = cargar_panel(anio_inicio=1985, anio_fin=2024)
 
-    panel_escalado, escalador = ajustar_y_escalar(panel)
+    logger.info("Aplicando transformaciones (log1p) antes de escalar...")
+    panel_transformado = aplicar_transformaciones(panel)
+
+    panel_escalado, escalador = ajustar_y_escalar(panel_transformado)
 
     anios = list(range(ANIO_INICIO, ANIO_INICIO + panel.shape[1]))
 

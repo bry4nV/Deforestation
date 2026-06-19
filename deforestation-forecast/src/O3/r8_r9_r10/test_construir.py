@@ -333,6 +333,82 @@ def validar_longitud_es_fin_menos_inicio():
             )
         print(SEP)
 
+def validar_geometrias_descartadas_overlay(distritos_gdf):
+    """Cuantifica cuántos km de carretera se pierden por geometrías no-lineales
+    en el overlay final carreteras × distritos (keep_geom_type=False).
+
+    construir_carreteras.py descarta geometrías que el overlay devuelve como
+    Point/MultiPoint (tangencias en el límite del distrito). Este test mide
+    si esa pérdida es despreciable (como asume el comentario "esperado") o
+    si representa una pérdida real de longitud no trivial.
+    """
+    from O3.r8_r9_r10.construir_carreteras import construir_carreteras
+    import geopandas as gpd
+
+    print(f"\n{SEP}\n  GEOMETRÍAS DESCARTADAS: overlay carreteras × distritos\n{SEP}")
+
+    capas = [
+        gpd.read_file(CARRETERAS_NACIONAL_SHP),
+        gpd.read_file(CARRETERAS_DEPARTAMENTAL_SHP),
+        gpd.read_file(CARRETERAS_VECINAL_SHP),
+    ]
+    carreteras_gdf = gpd.GeoDataFrame(
+        pd.concat(capas, ignore_index=True), geometry="geometry", crs=capas[0].crs
+    )
+
+    distritos_utm  = distritos_gdf.to_crs(CRS_PROYECTADO)
+    carreteras_utm = carreteras_gdf.to_crs(CRS_PROYECTADO)
+    carreteras_utm["geometry"] = carreteras_utm.geometry.make_valid()
+    distritos_utm["geometry"]  = distritos_utm.geometry.make_valid()
+
+    wkb_series = carreteras_utm.geometry.apply(lambda g: g.wkb)
+    carreteras_utm = carreteras_utm[~wkb_series.duplicated()].copy()
+
+    from shapely.ops import unary_union as _uu
+    red_unificada = _uu(carreteras_utm.geometry.tolist())
+    carreteras_utm = (
+        gpd.GeoDataFrame(geometry=[red_unificada], crs=CRS_PROYECTADO)
+        .explode(index_parts=False)
+        .reset_index(drop=True)
+    )
+
+    print("  Ejecutando overlay con keep_geom_type=False (puede tardar varios minutos)...")
+    interseccion_raw = gpd.overlay(
+        carreteras_utm[["geometry"]],
+        distritos_utm[[GPKG_COL_GEOCODE, "geometry"]],
+        how="intersection",
+        keep_geom_type=False,
+    )
+
+    es_lineal = interseccion_raw.geometry.geom_type.isin(["LineString", "MultiLineString"])
+    descartadas = interseccion_raw[~es_lineal]
+    n_descartadas = len(descartadas)
+
+    print(f"\n[1] Geometrías totales del overlay: {len(interseccion_raw)}")
+    print(f"    Descartadas (no lineales): {n_descartadas}")
+    print(f"    Tipos descartados: {descartadas.geometry.geom_type.value_counts().to_dict() if n_descartadas else '(ninguno)'}")
+
+    # Las descartadas son puntos/geometrías vacías -> longitud real perdida es 0
+    # por definición geométrica (un Point no tiene length). Lo que SÍ importa es
+    # si algún segmento LineString largo se degradó en Point: para eso comparamos
+    # la longitud total de la red ANTES del overlay vs. la longitud capturada DESPUÉS.
+    km_red_total = carreteras_utm.geometry.length.sum() / 1000
+    km_capturado = interseccion_raw[es_lineal].geometry.length.sum() / 1000
+
+    print(f"\n[2] Longitud total de la red unificada (antes del overlay): {km_red_total:,.2f} km")
+    print(f"    Longitud capturada en intersecciones lineales (después): {km_capturado:,.2f} km")
+    print(f"    Diferencia: {km_red_total - km_capturado:,.4f} km "
+          f"({(km_red_total - km_capturado)/km_red_total*100:.4f}%)")
+
+    print(f"\n[3] Conclusión:")
+    diff_pct = (km_red_total - km_capturado) / km_red_total * 100 if km_red_total > 0 else 0
+    if diff_pct < 0.01:
+        print("    Pérdida despreciable — confirma que las geometrías descartadas son")
+        print("    tangencias puntuales sin longitud asociada, como asume el comentario.")
+    else:
+        print(f"    *** Pérdida de {diff_pct:.4f}% — investigar si hay segmentos largos")
+        print("    degenerados en Point por geometrías inválidas o errores de topología ***")
+    print(SEP)
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Validación: doble conteo por duplicados o solapamiento entre capas viales
@@ -796,6 +872,77 @@ def validar_horn_vs_gdaldem_slope(distritos_gdf):
 
     print(SEP)
 
+def validar_solapamiento_interno_rios():
+    """Detecta si segmentos DISTINTOS dentro de Rios.shp se solapan parcialmente
+    entre sí (no duplicados exactos, sino tramos compartidos). Si existe,
+    construir_rios.py contaría ese tramo dos veces en km_rios.
+    """
+    print(f"\n{SEP}\n  SOLAPAMIENTO INTERNO: capa de ríos (ANA)\n{SEP}")
+
+    gdf = gpd.read_file(RIOS_SHP).to_crs(CRS_PROYECTADO)
+    gdf["geometry"] = gdf.geometry.make_valid()
+
+    km_suma = gdf.geometry.length.sum() / 1000
+
+    from shapely.ops import unary_union as _uu
+    print("  Calculando unary_union de todos los segmentos (puede tardar)...")
+    km_union = _uu(gdf.geometry.tolist()).length / 1000
+
+    ratio = km_union / km_suma if km_suma > 0 else float("nan")
+
+    print(f"\n[1] Suma de longitudes individuales: {km_suma:,.2f} km")
+    print(f"    Longitud de la unión (red única):  {km_union:,.2f} km")
+    print(f"    Ratio unión/suma:                  {ratio:.4f}")
+    print(f"    Solapamiento efectivo:             {(1-ratio)*100:.4f}%")
+
+    print(f"\n[2] Conclusión:")
+    if ratio >= 0.999:
+        print("    Sin solapamiento interno significativo — cada segmento es")
+        print("    geométricamente independiente. km_rios no tiene doble conteo.")
+    elif ratio >= 0.98:
+        print(f"    Solapamiento menor al 2% ({(1-ratio)*100:.2f}%) — impacto despreciable.")
+    else:
+        print(f"    *** Solapamiento de {(1-ratio)*100:.2f}% — algunos segmentos comparten")
+        print("    tramos. construir_rios.py sobreestima km_rios. Investigar.")
+    print(SEP)
+
+def validar_geometrias_descartadas_rios(distritos_gdf):
+    """Cuantifica geometrías no-lineales en el overlay rios × distritos
+    (keep_geom_type=False). Misma lógica que para carreteras, pero sin
+    unary_union previo — rios.shp es fuente única sin solapamiento entre capas.
+    """
+    print(f"\n{SEP}\n  GEOMETRÍAS DESCARTADAS: overlay ríos × distritos\n{SEP}")
+
+    rios_gdf = gpd.read_file(RIOS_SHP)
+    distritos_utm = distritos_gdf.to_crs(CRS_PROYECTADO)
+    rios_utm = rios_gdf.to_crs(CRS_PROYECTADO)
+    rios_utm["geometry"] = rios_utm.geometry.make_valid()
+    distritos_utm["geometry"] = distritos_utm.geometry.make_valid()
+
+    interseccion_raw = gpd.overlay(
+        rios_utm[["geometry"]],
+        distritos_utm[[GPKG_COL_GEOCODE, "geometry"]],
+        how="intersection",
+        keep_geom_type=False,
+    )
+
+    es_lineal = interseccion_raw.geometry.geom_type.isin(["LineString", "MultiLineString"])
+    n_descartadas = int((~es_lineal).sum())
+
+    print(f"[1] Geometrías totales del overlay: {len(interseccion_raw)}")
+    print(f"    Descartadas (no lineales): {n_descartadas}")
+    if n_descartadas:
+        print(f"    Tipos: {interseccion_raw[~es_lineal].geometry.geom_type.value_counts().to_dict()}")
+
+    print(f"\n[2] Conclusión:")
+    if n_descartadas == 0:
+        print("    Sin pérdida — el overlay no degenera ningún segmento a Point.")
+    else:
+        pct = n_descartadas / len(interseccion_raw) * 100
+        print(f"    {n_descartadas} geometrías descartadas ({pct:.4f}% del total) — revisar si")
+        print(f"    representan segmentos largos degenerados o solo tangencias triviales.")
+    print(SEP)
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # BLOQUE PRINCIPAL — activar/desactivar secciones según lo que se quiera probar
@@ -821,13 +968,18 @@ if __name__ == "__main__":
     # ── 3. Validación de doble conteo entre capas viales ─────────────────
     # validar_doble_conteo_carreteras()
 
-    # ── 4. Duplicados internos en capa de ríos ────────────────────────────
+    # ── 4. Geometrías descartadas en overlay final (keep_geom_type=False) ──
+    # validar_geometrias_descartadas_overlay(distritos_gdf)
+
+    # ── 5. Duplicados internos en capa de ríos ────────────────────────────
     # validar_duplicados_rios()
+    validar_geometrias_descartadas_rios(distritos_gdf)
+    validar_solapamiento_interno_rios()
 
-    # ── 5. Void propagation: NaN en dem_utm post-reproyección ─────────────
-    # (Punto 4 del análisis metodológico de pendiente)
-    validar_void_propagacion_dem_utm(distritos_gdf)
+    # ── 6. Void propagation: NaN en dem_utm post-reproyección ─────────────
+    # (Punto 6 del análisis metodológico de pendiente)
+    # validar_void_propagacion_dem_utm(distritos_gdf)
 
-    # ── 6. Horn vs np.gradient vs gdaldem slope (Punto 2) ─────────────────
+    # ── 7. Horn vs np.gradient vs gdaldem slope (Punto 2) ─────────────────
     # Requiere construir_elevacion() ejecutada (necesita elevacion_por_distrito.csv)
-    validar_horn_vs_gdaldem_slope(distritos_gdf)
+    # validar_horn_vs_gdaldem_slope(distritos_gdf)

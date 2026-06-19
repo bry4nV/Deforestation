@@ -1,3 +1,0 @@
-variable,r_pearson_vs_nivel_t1,p_pearson_vs_nivel_t1,r_spearman_vs_nivel_t1,p_spearman_vs_nivel_t1,r_pearson_vs_delta_t1,p_pearson_vs_delta_t1,r_spearman_vs_delta_t1,p_spearman_vs_delta_t1,interpretacion
-pct_agropecuario,-0.7375,0.0,-0.7193,0.0,0.0335,0.0088438,0.0507,7.3593e-05,+NULA (sig.) sobre delta_pct_bosque(t+1)
-pct_anp,0.1792,2.4373e-45,0.2301,2.3541e-74,-0.006,0.6398,-0.0285,0.026023,-NULA (no sig.) sobre delta_pct_bosque(t+1)

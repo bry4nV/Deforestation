@@ -241,6 +241,15 @@ COLUMNAS_PREDICTORAS = [
     "pendiente_media_deg",
 ]
 
+# Canales con distribución cero-inflada/sesgada (ver EDA de O3, sección 8)
+# a los que se aplica log1p ANTES de ajustar_y_escalar(). El resto (skew bajo
+# segun 02_asimetria_kurtosis.csv) se deja sin transformar.
+VARIABLES_LOG1P = [
+    "pct_anp",
+    "densidad_carreteras_km_km2",
+    "densidad_rios_km_km2",
+]
+
 # Rutas de salida R11
 R11_MODELOS_DIR     = os.path.join(O3_INTERIM_DIR, "modelos")
 R11_ESCALADOR_DIR   = os.path.join(R11_MODELOS_DIR, "escalador")
