@@ -1,0 +1,51 @@
+{
+    "pct_bosque": {
+        "media": 0.5272777666790145,
+        "std": 0.21171714522325594,
+        "var": 0.04482414958148524,
+        "min_obs": null,
+        "max_obs": null
+    },
+    "pct_agropecuario": {
+        "media": 0.33500171086248304,
+        "std": 0.19272703860006005,
+        "var": 0.03714371140754904,
+        "min_obs": null,
+        "max_obs": null
+    },
+    "pct_anp": {
+        "media": 0.023611933237621303,
+        "std": 0.08359210468857924,
+        "var": 0.006987639966266391,
+        "min_obs": null,
+        "max_obs": null
+    },
+    "densidad_carreteras_km_km2": {
+        "media": 0.2554650147312916,
+        "std": 0.1647420480253728,
+        "var": 0.027139942387594238,
+        "min_obs": null,
+        "max_obs": null
+    },
+    "densidad_rios_km_km2": {
+        "media": 0.038879471804587715,
+        "std": 0.04200900037395758,
+        "var": 0.0017647561124191679,
+        "min_obs": null,
+        "max_obs": null
+    },
+    "elev_media_m": {
+        "media": 1476.3777114444308,
+        "std": 923.0218161285646,
+        "var": 851969.2730492738,
+        "min_obs": null,
+        "max_obs": null
+    },
+    "pendiente_media_deg": {
+        "media": 17.39502893951204,
+        "std": 7.604495472376575,
+        "var": 57.828351389395834,
+        "min_obs": null,
+        "max_obs": null
+    }
+}

@@ -19,11 +19,15 @@ logger = logging.getLogger(__name__)
 def cargar_panel(
     anio_inicio: int = 1985,
     anio_fin: int = 2024,
+    ruta_csv: str = PANEL_ENTRENAMIENTO_CSV,
 ) -> tuple[np.ndarray, pd.DataFrame]:
     """
-    Lee panel_integrado_entrenamiento.csv, valida columnas y construye la
-    matriz (n_distritos, n_anios, n_canales) con canales en el orden de
-    COLUMNAS_PREDICTORAS definido en config.py.
+    Lee un panel integrado (por defecto, el de entrenamiento), valida
+    columnas y construye la matriz (n_distritos, n_anios, n_canales) con
+    canales en el orden de COLUMNAS_PREDICTORAS definido en config.py.
+
+    ruta_csv permite apuntar a otro panel con el mismo esquema de columnas
+    (p.ej. PANEL_GENERALIZACION_CSV de O4) sin duplicar esta función.
 
     Canal 0 siempre es pct_bosque (variable objetivo).
 
@@ -32,8 +36,8 @@ def cargar_panel(
     panel : np.ndarray de shape (n_distritos, n_anios, n_canales)
     df_distritos_info : DataFrame con columnas geocode, departamento, distrito
     """
-    logger.info(f"Cargando panel: {PANEL_ENTRENAMIENTO_CSV}")
-    marco = pd.read_csv(PANEL_ENTRENAMIENTO_CSV, dtype={"geocode": str})
+    logger.info(f"Cargando panel: {ruta_csv}")
+    marco = pd.read_csv(ruta_csv, dtype={"geocode": str})
 
     # ── Validar columnas requeridas ──────────────────────────────────────────
     columnas_requeridas = {"geocode", "departamento", "distrito", "anio"} | set(COLUMNAS_PREDICTORAS)

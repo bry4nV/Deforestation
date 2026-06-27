@@ -9,6 +9,34 @@
 # Mientras el valor sea None, Fase 2 queda pendiente para ese modelo.
 # =====================================================================
 
-FINAL_CONFIG_MLP  = None
-FINAL_CONFIG_LSTM = None
-FINAL_CONFIG_CNN  = None
+FINAL_CONFIG_MLP = {
+    "window_size":    6,
+    "capas_ocultas":  [64, 32],
+    "activacion":     "leaky_relu",
+    "dropout":        0.0,
+    "epocas":         50,
+    "lr":             0.001,
+    "lote":           16,
+}
+
+FINAL_CONFIG_LSTM = {
+    "window_size":       6,
+    "unidades_ocultas":  16,
+    "num_capas":         2,
+    "dropout":           0.0,
+    "epocas":            50,
+    "lr":                0.001,
+    "lote":              8,
+}
+
+FINAL_CONFIG_CNN = {
+    "window_size":    6,
+    "canales_conv":   [32],
+    "kernel_size":    2,
+    "activacion":     "relu",
+    "dropout":        0.0,
+    "tamanio_denso":  16,
+    "epocas":         50,
+    "lr":             0.001,
+    "lote":           8,
+}

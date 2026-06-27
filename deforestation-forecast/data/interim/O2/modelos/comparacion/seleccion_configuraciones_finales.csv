@@ -1,0 +1,5 @@
+modelo,configuracion,rmse_fase1,mae_fase1,posicion_ranking,total_configuraciones
+ARIMA,"window=32, p=1, d=1, q=0",0.011521,0.008288,1,216
+MLP,"window_size=3, hidden_sizes=[128, 64, 32], activation=leaky_relu, dropout=0.0, epochs=50, lr=0.001, batch_size=16",0.011678,0.007947,1,240
+LSTM,"window_size=6, hidden_size=64, num_layers=1, dropout=0.0, epochs=50, lr=0.001, batch_size=16",0.01173,0.007968,1,240
+CNN,"window_size=5, conv_channels=[16, 32], kernel_size=3, activation=relu, dropout=0.0, dense_size=32, epochs=50, lr=0.001, batch_size=8",0.011656,0.007969,1,960

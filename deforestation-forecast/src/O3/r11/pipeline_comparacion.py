@@ -21,9 +21,11 @@ import pandas as pd
 
 from O3.config import (
     ANIO_INICIO,
+    O2_ARIMA_GLOBAL_CSV,
     O2_CNN_GLOBAL_CSV,
     O2_LSTM_GLOBAL_CSV,
     O2_MLP_GLOBAL_CSV,
+    O2_PERSISTENCIA_GLOBAL_CSV,
     R11_CNN_DIR,
     R11_COMPARACION_DIR,
     R11_LSTM_DIR,
@@ -75,9 +77,16 @@ def cargar_resultados_r11() -> list:
 
 
 def cargar_resultados_o2() -> list:
-    """Carga métricas globales de los 3 modelos base de O2 (sin y_pred)."""
+    """Carga métricas globales de los 5 modelos de O2 (sin y_pred).
+
+    Incluye ARIMA y Persistencia, no solo los 3 que comparten arquitectura
+    con R11 — sin ellos, la comparación nunca incluye al modelo que
+    realmente ganó en O2 (ARIMA).
+    """
     items = []
     for nombre, ruta in [
+        ("persistencia", O2_PERSISTENCIA_GLOBAL_CSV),
+        ("arima", O2_ARIMA_GLOBAL_CSV),
         ("mlp",  O2_MLP_GLOBAL_CSV),
         ("lstm", O2_LSTM_GLOBAL_CSV),
         ("cnn",  O2_CNN_GLOBAL_CSV),

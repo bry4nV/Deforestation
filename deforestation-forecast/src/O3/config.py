@@ -263,7 +263,13 @@ R11_COMPARACION_DIR = os.path.join(R11_MODELOS_DIR, "comparacion")
 R11_ESCALADOR_PKL  = os.path.join(R11_ESCALADOR_DIR, "escalador_standard.pkl")
 R11_ESCALADOR_META = os.path.join(R11_ESCALADOR_DIR, "escalador_metadatos.json")
 
-# Rutas base O2 para comparación (se leen sin re-ejecutar O2)
+# Rutas base O2 para comparación (se leen sin re-ejecutar O2) — los 5 modelos
+# de O2, no solo los 3 que comparten arquitectura con R11. Sin ARIMA y
+# Persistencia, comparacion_base_vs_extendido.csv nunca compara contra el
+# modelo que realmente ganó en O2 (ARIMA, RMSE=0.011537 < MLP/LSTM/CNN).
+O2_PERSISTENCIA_GLOBAL_CSV = os.path.join(
+    DATA_DIR, "interim", "O2", "modelos", "persistencia", "persistencia_resultados_global.csv")
+O2_ARIMA_GLOBAL_CSV = os.path.join(DATA_DIR, "interim", "O2", "modelos", "arima", "arima_final_global.csv")
 O2_MLP_GLOBAL_CSV  = os.path.join(DATA_DIR, "interim", "O2", "modelos", "mlp",  "mlp_final_global.csv")
 O2_LSTM_GLOBAL_CSV = os.path.join(DATA_DIR, "interim", "O2", "modelos", "lstm", "lstm_final_global.csv")
 O2_CNN_GLOBAL_CSV  = os.path.join(DATA_DIR, "interim", "O2", "modelos", "cnn",  "cnn_final_global.csv")

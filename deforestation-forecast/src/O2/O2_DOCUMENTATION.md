@@ -24,7 +24,7 @@
 12. [Modelo CNN 1D](#12-modelo-cnn-1d)
 13. [Modelo TCN](#13-modelo-tcn)
 14. [Utilidades compartidas — utils.py](#14-utilidades-compartidas--utilspy)
-15. [Análisis visual — analisis_fase1.py](#15-análisis-visual--analisis_fase1py)
+15. [Verificación de configuraciones finales — seleccion_fase1.py](#15-verificación-de-configuraciones-finales--seleccion_fase1py)
 16. [Comparación final](#16-comparación-final)
 17. [Referencia de configuración](#17-referencia-de-configuración)
 18. [Inventario de salidas](#18-inventario-de-salidas)
@@ -55,7 +55,7 @@ src/O2/
     ├── final_configs.py          ← Configuraciones finales elegidas por el investigador
     │
     ├── analisis_arima.py         ← Diagnóstico ACF/PACF previo al grid search
-    ├── analisis_fase1.py         ← Visualizaciones de resultados de Fase 1
+    ├── seleccion_fase1.py        ← Verifica la config final contra el grid search de Fase 1
     │
     ├── pipeline_persistencia.py  ← Baseline walk-forward (ŷ = último valor)
     ├── pipeline_arima.py         ← Grid search + evaluación walk-forward ARIMA
@@ -76,7 +76,7 @@ src/O2/
 | `r4_r5/utils.py` | `fijar_semilla`, `calcular_metricas`, `diagnosticar_ajuste`, `obtener_activacion`, `construir_df_predicciones`, `graficar_curva` |
 | `r4_r5/final_configs.py` | Diccionarios con la configuración ganadora de cada modelo (editado manualmente) |
 | `r4_r5/analisis_arima.py` | ACF/PACF sobre tres series representativas: mayor cambio, menor cambio, mediana |
-| `r4_r5/analisis_fase1.py` | Gráfico de barras por ventana + tabla top-5 para cada modelo |
+| `r4_r5/seleccion_fase1.py` | Verifica que la config de `final_configs.py` exista en el grid search y exporta su RMSE/MAE/posición exactos |
 | `r4_r5/pipeline_persistencia.py` | Walk-forward ŷ = history[-1]; genera todos los artefactos finales directamente |
 | `r4_r5/pipeline_arima.py` | Grid search con walk-forward completo por configuración; Fase 2 re-genera artefactos |
 | `r4_r5/pipeline_mlp.py` | Grid search sobre ventanas DL (evaluación directa); Fase 2 con walk-forward geográfico |
@@ -111,9 +111,8 @@ O1/series-temporales/entrenamiento/distritos_entrenamiento.csv
   │
   ├─ [revisión manual → final_configs.py]
   │
-  ├─ analisis_arima     ──► arima/analisis_arima/
-  ├─ analizar_fase1()   ──► <modelo>/<modelo>_analisis_ventanas.png
-  │                         <modelo>/<modelo>_analisis_top5_w<N>.png
+  ├─ analisis_arima            ──► arima/analisis_arima/
+  ├─ generar_seleccion_final() ──► comparacion/seleccion_configuraciones_finales.csv
   │
   └─ pipeline_comparacion ──► comparacion/comparacion_modelos.csv
                               comparacion/mejores_01–05_*.png
@@ -607,16 +606,18 @@ FINAL_CONFIG_TCN = None   # pendiente de revisión de Fase 1
 
 ---
 
-## 15. Análisis visual — analisis_fase1.py
+## 15. Verificación de configuraciones finales — seleccion_fase1.py
 
-`analizar_fase1()` se llama desde `main.py` tras completar todos los grid searches. Por cada modelo genera dos salidas en su propio directorio:
+`generar_seleccion_final()` se llama desde `main.py` tras completar todos los grid searches. No decide la configuración final de ningún modelo — esa decisión sigue siendo manual e interpretativa (RMSE como criterio principal, MAE y complejidad de arquitectura como respaldo cuando las diferencias son marginales) y se registra a mano en `final_configs.py`.
 
-| Gráfico | Descripción |
-|---------|-------------|
-| `<modelo>_analisis_ventanas.png` | Barras: RMSE de la mejor configuración por ventana. La barra de la mejor ventana se marca en naranja |
-| `<modelo>_analisis_top5_w<N>.png` | Tabla visual: top-5 configuraciones de la mejor ventana con RMSE y MAE |
+Lo que hace este módulo es exclusivamente de verificación/trazabilidad:
 
-Los CSV de Fase 1 de cada modelo se normalizan a columnas comunes (`window_tag`, `rmse_eval`, `mae_eval`) antes de graficar, usando cargadores específicos `_cargar_arima` / `_cargar_dl`. Los modelos cuyo CSV no existe se omiten con `[SKIP]` sin detener la ejecución.
+1. Toma la configuración ya elegida en `final_configs.py` para cada modelo.
+2. La busca por coincidencia exacta de hiperparámetros en el `_resultados.csv` de Fase 1 de ese modelo.
+3. Recupera su RMSE/MAE oficial (sin volver a transcribirlo a mano) y su posición en el ranking por RMSE dentro de esa Fase 1.
+4. Exporta todo en `comparacion/seleccion_configuraciones_finales.csv` — la fuente directa para la tabla de configuraciones finales del Anexo E.
+
+Si la configuración elegida no es la posición 1 del ranking, se imprime un aviso (`[INFO]`) para recordar que esa desviación del mínimo absoluto debe quedar justificada en el texto del anexo, no para bloquear la ejecución. Si la configuración de `final_configs.py` no aparece en el CSV de Fase 1 (p. ej. por un valor mal copiado), se imprime un `[WARN]` explícito — este es el caso que reemplazó al antiguo gráfico de barras por ventana, que no detectaba este tipo de desincronización.
 
 ---
 
@@ -714,8 +715,6 @@ data/interim/O2/modelos/
 │   ├── arima_top5_configuraciones.csv
 │   ├── arima_mejores_por_ventana.csv
 │   ├── arima_boxplot_ventanas.png
-│   ├── arima_analisis_ventanas.png       ← analisis_fase1
-│   ├── arima_analisis_top5_w<N>.png
 │   ├── arima_final_config.json           ← Fase 2
 │   ├── arima_final_global.csv
 │   ├── arima_final_distrito.csv
@@ -727,8 +726,6 @@ data/interim/O2/modelos/
 │   ├── mlp_resultados.csv
 │   ├── mlp_top5_configuraciones.csv
 │   ├── mlp_mejores_por_ventana.csv
-│   ├── mlp_analisis_ventanas.png
-│   ├── mlp_analisis_top5_w<N>.png
 │   ├── mlp_final_model.pth               ← pesos del modelo
 │   ├── mlp_final_curva.png
 │   ├── mlp_final_config.json
@@ -744,6 +741,7 @@ data/interim/O2/modelos/
 │
 └── comparacion/
     ├── comparacion_modelos.csv
+    ├── seleccion_configuraciones_finales.csv   ← seleccion_fase1
     ├── mejores_01_<geocode>.png … mejores_05_<geocode>.png
     └── peores_01_<geocode>.png  … peores_05_<geocode>.png
 ```
@@ -784,3 +782,4 @@ data/interim/O2/modelos/
 | Idempotencia asimétrica en Fase 2: verificaba `_npy` pero leía `_gbl` sin verificar | `if exists(npy) and exists(gbl)` en los 6 modelos | `main.py` |
 | `pd.read_csv(...).iloc[0]` sin validación en skip de Fase 2 | Añadido `if df_gbl.empty: raise RuntimeError(...)` | `main.py` |
 | Documentación incompleta: faltaban TCN, utils, analisis_fase1, árbol, config ref | Creado `O2_DOCUMENTATION.md`; eliminado `documentacion_tecnica.md` | este archivo |
+| `analisis_fase1.py` graficaba "mejor ventana" sin relación con la selección final real, y no detectaba si `final_configs.py` se desincronizaba del grid search (pasó con ARIMA: ventana 30 en el config vs. ventana 32 real) | Reemplazado por `seleccion_fase1.py`: verifica la config final contra el CSV de Fase 1 y exporta sus métricas exactas para el Anexo E | `seleccion_fase1.py`, `main.py` (idéntico en O3/r11) |

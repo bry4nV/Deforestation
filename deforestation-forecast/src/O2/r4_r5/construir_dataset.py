@@ -13,7 +13,7 @@ def cargar_series(ruta_series):
 
     print("[INFO] Cargando series...")
 
-    df = pd.read_csv(ruta_series)
+    df = pd.read_csv(ruta_series, dtype={"geocode": str})
 
     df = df[["geocode", "departamento", "distrito", "anio", "pct_bosque"]].copy()
 

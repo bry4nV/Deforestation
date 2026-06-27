@@ -6,7 +6,7 @@ import pandas as pd
 from O1.config import SERIES_ENTRENAMIENTO_DIR
 
 from O2.config import (
-    PERSISTENCIA_DIR, ARIMA_DIR, ANALISIS_ARIMA_DIR, MLP_DIR, LSTM_DIR, CNN_DIR, TCN_DIR, COMPARACION_DIR,
+    PERSISTENCIA_DIR, ARIMA_DIR, ANALISIS_ARIMA_DIR, MLP_DIR, LSTM_DIR, CNN_DIR, COMPARACION_DIR,
     ANIO_INICIO, TAMANIO_ENTRENAMIENTO, HORIZONTE,
     ARIMA_P_VALUES, ARIMA_D_VALUES, ARIMA_Q_VALUES, ARIMA_WINDOW_VALUES,
     MLP_HIDDEN_SIZES_VALUES, MLP_DROPOUT_VALUES, MLP_ACTIVATION_VALUES,
@@ -16,22 +16,21 @@ from O2.config import (
     CNN_CONV_CHANNELS_VALUES, CNN_KERNEL_SIZE_VALUES, CNN_DROPOUT_VALUES,
     CNN_ACTIVATION_VALUES, CNN_DENSE_SIZE_VALUES,
     CNN_EPOCHS_VALUES, CNN_LR_VALUES, CNN_BATCH_SIZE_VALUES,
-    TCN_NUM_CHANNELS_VALUES, TCN_KERNEL_SIZE_VALUES, TCN_DROPOUT_VALUES,
-    TCN_ACTIVATION_VALUES, TCN_EPOCHS_VALUES, TCN_LR_VALUES, TCN_BATCH_SIZE_VALUES,
     DL_WINDOW_VALUES,
 )
 
-from O2.r4_r5.final_configs import FINAL_CONFIG_ARIMA, FINAL_CONFIG_MLP, FINAL_CONFIG_LSTM, FINAL_CONFIG_CNN, FINAL_CONFIG_TCN
+from O2.r4_r5.final_configs import FINAL_CONFIG_ARIMA, FINAL_CONFIG_MLP, FINAL_CONFIG_LSTM, FINAL_CONFIG_CNN
 from O2.r4_r5.analisis_arima import generar_analisis_arima
-from O2.r4_r5.analisis_fase1 import analizar_fase1
+from O2.r4_r5.seleccion_fase1 import generar_seleccion_final
 from O2.r4_r5.construir_dataset import cargar_series, construir_dataset_estadistico, construir_dataset_dl
 from O2.r4_r5.pipeline_persistencia import pipeline_persistencia
 from O2.r4_r5.pipeline_arima import pipeline_arima, evaluar_config_final_arima
 from O2.r4_r5.pipeline_mlp import pipeline_mlp, entrenar_config_final_mlp
 from O2.r4_r5.pipeline_lstm import pipeline_lstm, entrenar_config_final_lstm
 from O2.r4_r5.pipeline_cnn import pipeline_cnn, entrenar_config_final_cnn
-from O2.r4_r5.pipeline_tcn import pipeline_tcn, entrenar_config_final_tcn
 from O2.r4_r5.pipeline_comparacion import pipeline_comparacion
+from O2.r4_r5.verificacion_deforestacion import verificar_identidad_deforestacion
+from O2.r4_r5.pronostico_r7 import generar_pronostico_2025
 
 
 def main():
@@ -269,60 +268,21 @@ def main():
     else:
         print("\n[PENDIENTE] CNN Fase 2 — configura FINAL_CONFIG_CNN en final_configs.py.")
 
-    # — TCN
-    ruta_tcn       = os.path.join(TCN_DIR, "tcn.csv")
-    ruta_tcn_fase1 = ruta_tcn.replace(".csv", "_resultados.csv")
-    ruta_tcn_gbl   = ruta_tcn.replace(".csv", "_final_global.csv")
-    ruta_tcn_npy   = ruta_tcn.replace(".csv", "_final_ypred.npy")
-
-    res_tcn = None
-
-    if not os.path.exists(ruta_tcn_fase1):
-        print("\n[INFO] TCN — Fase 1: búsqueda exploratoria...")
-        pipeline_tcn(
-            dataset_dl, ruta_tcn,
-            epochs_values=TCN_EPOCHS_VALUES,
-            lr_values=TCN_LR_VALUES,
-            batch_size_values=TCN_BATCH_SIZE_VALUES,
-            num_channels_values=TCN_NUM_CHANNELS_VALUES,
-            kernel_size_values=TCN_KERNEL_SIZE_VALUES,
-            dropout_values=TCN_DROPOUT_VALUES,
-            activation_values=TCN_ACTIVATION_VALUES,
-        )
-    else:
-        print("\n[SKIP] TCN Fase 1 — ya existe. Revisar tcn_resultados.csv.")
-
-    if FINAL_CONFIG_TCN is not None:
-        if os.path.exists(ruta_tcn_npy) and os.path.exists(ruta_tcn_gbl):
-            print("\n[SKIP] TCN Fase 2 — cargando resultados existentes.")
-            df_gbl = pd.read_csv(ruta_tcn_gbl)
-            if df_gbl.empty:
-                raise RuntimeError(f"Archivo vacío: {ruta_tcn_gbl}")
-            row = df_gbl.iloc[0]
-            res_tcn = {
-                "modelo": row["modelo"],
-                "rmse":   float(row["rmse"]),
-                "mae":    float(row["mae"]),
-                "y_pred": np.load(ruta_tcn_npy),
-            }
-        else:
-            print("\n[INFO] TCN — Fase 2: entrenamiento final...")
-            res_tcn = entrenar_config_final_tcn(
-                dataset_dl, FINAL_CONFIG_TCN, ruta_tcn,
-                series, df_distritos_info, TAMANIO_ENTRENAMIENTO, anios=anios,
-            )
-        resultados.append(res_tcn)
-    else:
-        print("\n[PENDIENTE] TCN Fase 2 — configura FINAL_CONFIG_TCN en final_configs.py.")
-
     # =====================================================================
-    # ANÁLISIS FASE 1: gráficos de ventanas e hiperparámetros
+    # VERIFICACIÓN: la config de final_configs.py existe en el grid search
     # =====================================================================
 
     print("\n" + "=" * 70)
-    print(" ANÁLISIS VISUAL — FASE 1 ")
+    print(" VERIFICACIÓN DE CONFIGURACIONES FINALES ")
     print("=" * 70)
-    analizar_fase1()
+    generar_seleccion_final(
+        dirs={"arima": ARIMA_DIR, "mlp": MLP_DIR, "lstm": LSTM_DIR, "cnn": CNN_DIR},
+        final_configs={
+            "arima": FINAL_CONFIG_ARIMA, "mlp": FINAL_CONFIG_MLP,
+            "lstm": FINAL_CONFIG_LSTM, "cnn": FINAL_CONFIG_CNN,
+        },
+        ruta_salida=os.path.join(COMPARACION_DIR, "seleccion_configuraciones_finales.csv"),
+    )
 
     # =====================================================================
     # PASO 4: COMPARACIÓN FINAL
@@ -330,7 +290,7 @@ def main():
 
     pendientes = [
         nombre for nombre, res in [
-            ("ARIMA", res_arima), ("MLP", res_mlp), ("LSTM", res_lstm), ("CNN", res_cnn), ("TCN", res_tcn)
+            ("ARIMA", res_arima), ("MLP", res_mlp), ("LSTM", res_lstm), ("CNN", res_cnn)
         ]
         if res is None
     ]
@@ -339,10 +299,49 @@ def main():
         print(f"\n[PENDIENTE] Comparación — faltan Fase 2 de: {', '.join(pendientes)}")
         print("            Completa las configs en final_configs.py y vuelve a ejecutar.")
     else:
+        rutas_departamento = {
+            "ARIMA":        os.path.join(ARIMA_DIR, "arima_final_departamento.csv"),
+            "MLP":          os.path.join(MLP_DIR, "mlp_final_departamento.csv"),
+            "LSTM":         os.path.join(LSTM_DIR, "lstm_final_departamento.csv"),
+            "CNN1D":        os.path.join(CNN_DIR, "cnn_final_departamento.csv"),
+            "Persistencia": os.path.join(PERSISTENCIA_DIR, "persistencia_resultados_departamento.csv"),
+        }
         pipeline_comparacion(
             resultados, series, df_distritos_info, TAMANIO_ENTRENAMIENTO,
-            COMPARACION_DIR, anio_inicio=ANIO_INICIO,
+            COMPARACION_DIR, rutas_departamento=rutas_departamento, anio_inicio=ANIO_INICIO,
         )
+
+        # =================================================================
+        # PASO 5: VERIFICACIÓN — error de nivel == error de deforestación
+        # =================================================================
+
+        print("\n" + "=" * 70)
+        print(" VERIFICACIÓN: NIVEL pct_bosque vs. DEFORESTACIÓN DERIVADA ")
+        print("=" * 70)
+        verificar_identidad_deforestacion(ruta_series)
+
+        # =================================================================
+        # PASO 6 (R7): PRONÓSTICO DEL AÑO SIGUIENTE
+        # =================================================================
+
+        ruta_pronostico_2025 = os.path.join(COMPARACION_DIR, "pronostico_2025.csv")
+        if os.path.exists(ruta_pronostico_2025):
+            print(f"\n[SKIP] Pronóstico 2025 — ya existe {ruta_pronostico_2025}.")
+        else:
+            print("\n" + "=" * 70)
+            print(" R7: PRONÓSTICO 2025 (sin reentrenamiento, ancla = pct_bosque_real_2024) ")
+            print("=" * 70)
+            rutas_modelo_r7 = {
+                "MLP":   os.path.join(MLP_DIR, "mlp_final_model.pth"),
+                "LSTM":  os.path.join(LSTM_DIR, "lstm_final_model.pth"),
+                "CNN1D": os.path.join(CNN_DIR, "cnn_final_model.pth"),
+            }
+            df_pronostico_2025 = generar_pronostico_2025(
+                series, df_distritos_info, rutas_modelo_r7, anio_anchor=anios[-1],
+            )
+            df_pronostico_2025.to_csv(ruta_pronostico_2025, index=False)
+            print(f"[OK] {ruta_pronostico_2025}")
+            print(df_pronostico_2025.head().to_string(index=False))
 
 
 if __name__ == "__main__":

@@ -24,11 +24,12 @@ from O3.config import (
     ANIO_INICIO,
     DL_VENTANAS,
     R11_CNN_DIR,
+    R11_COMPARACION_DIR,
     R11_LSTM_DIR,
     R11_MLP_DIR,
     TAMANIO_ENTRENAMIENTO,
 )
-from O3.r11.analisis_fase1 import analizar_fase1
+from O3.r11.seleccion_fase1 import generar_seleccion_final
 from O3.r11.cargar_panel import cargar_panel
 from O3.r11.construir_dataset import construir_datasets
 from O3.r11.escalador import ajustar_y_escalar
@@ -178,7 +179,7 @@ def main() -> None:
             res_lstm["etiqueta"] = "R11_LSTM"
     else:
         logger.info("[PENDIENTE] LSTM Fase 2 — configura FINAL_CONFIG_LSTM en final_configs.py.")
-
+    
     # =========================================================================
     # PASO 5: CNN
     # =========================================================================
@@ -227,13 +228,16 @@ def main() -> None:
         logger.info("[PENDIENTE] CNN Fase 2 — configura FINAL_CONFIG_CNN en final_configs.py.")
 
     # =========================================================================
-    # PASO 6: Análisis visual Fase 1
+    # PASO 6: Verificación de configuraciones finales
     # =========================================================================
 
     logger.info("=" * 70)
-    logger.info("ANÁLISIS VISUAL — FASE 1")
+    logger.info("VERIFICACIÓN DE CONFIGURACIONES FINALES")
     logger.info("=" * 70)
-    analizar_fase1()
+    generar_seleccion_final(
+        final_configs={"mlp": FINAL_CONFIG_MLP, "lstm": FINAL_CONFIG_LSTM, "cnn": FINAL_CONFIG_CNN},
+        ruta_salida=os.path.join(R11_COMPARACION_DIR, "seleccion_configuraciones_finales.csv"),
+    )
 
     # =========================================================================
     # PASO 7: Comparación O2 vs R11

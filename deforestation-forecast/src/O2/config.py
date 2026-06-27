@@ -35,7 +35,7 @@ HORIZONTE = 5
 ARIMA_P_VALUES = [0, 1, 2]
 ARIMA_D_VALUES = [1]
 ARIMA_Q_VALUES = [0, 1, 2]
-ARIMA_WINDOW_VALUES = [3, 4, 5, 6, 7, 10, 15, 20, 25, 30, 35, None]
+ARIMA_WINDOW_VALUES = [3, 4, 5, 6, 7, 10, 15, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, None]
 
 # =============================
 # Reproducibilidad
@@ -83,15 +83,3 @@ CNN_BATCH_SIZE_VALUES    = [8, 16]
 # =============================
 
 DL_WINDOW_VALUES = [3, 4, 5, 6, 7]
-
-# =============================
-# Hiperparámetros TCN
-# =============================
-
-TCN_NUM_CHANNELS_VALUES = [[16], [32], [16, 32]]
-TCN_KERNEL_SIZE_VALUES  = [2, 3]
-TCN_DROPOUT_VALUES      = [0.0, 0.1]
-TCN_ACTIVATION_VALUES   = ["relu", "leaky_relu"]
-TCN_EPOCHS_VALUES       = [50]
-TCN_LR_VALUES           = [0.001, 0.0005]
-TCN_BATCH_SIZE_VALUES   = [8, 16]

@@ -3,6 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.patches import Patch
 
 
 def exportar_comparacion(resultados, ruta_csv):
@@ -135,78 +136,256 @@ def graficar_predicciones(
             print(f"[OK] {nombre_png}")
 
 
-def exportar_comparacion_departamentos(resultados, series, df_distritos_info,
-                                       tamanio_entrenamiento, comparacion_dir):
+def graficar_mejora_relativa(df_comp, comparacion_dir):
     """
-    Para cada departamento calcula RMSE y MAE de forma exacta:
-    aplana todos los pares (distrito, paso) del departamento en un solo vector
-    antes de calcular la métrica — sin promediar RMSEs individuales.
-
-    Exporta:
-      - comparacion_departamentos.csv  (métricas por departamento y modelo)
-      - comparacion_departamentos_rmse.png  (barras agrupadas por modelo)
+    Gráfico de barras horizontales: mejora relativa de RMSE frente a Persistencia.
+    ARIMA se muestra como referencia estadística clásica y MLP, LSTM y CNN1D
+    como modelos de aprendizaje profundo.
     """
-    modelos_con_pred = [r for r in resultados if r.get("y_pred") is not None]
-    if not modelos_con_pred:
-        return
 
-    y_true_test = series[:, tamanio_entrenamiento:]   # (n_dist, horizonte)
+    # =========================
+    # 1. Obtener RMSE base
+    # =========================
+    df_persist = df_comp[df_comp["modelo"].str.contains("Persistencia", case=False, na=False)]
 
-    departamentos = df_distritos_info["departamento"].values
-    registros = []
-    for dep in sorted(np.unique(departamentos)):
-        mask       = departamentos == dep
-        n_dist_dep = int(mask.sum())
-        y_true_dep = y_true_test[mask].ravel()   # (n_dist_dep * horizonte,)
-        fila = {"departamento": dep, "n_distritos": n_dist_dep}
-        for r in modelos_con_pred:
-            y_pred_dep = np.asarray(r["y_pred"])[mask].ravel()
-            nombre     = r["modelo"].split("_")[0]
-            fila[f"rmse_{nombre}"] = round(
-                float(np.sqrt(np.mean((y_true_dep - y_pred_dep) ** 2))), 6
+    if df_persist.empty:
+        raise ValueError("No se encontró un modelo de Persistencia en df_comp.")
+
+    rmse_persistencia = df_persist["rmse"].iloc[0]
+
+    # =========================
+    # 2. Calcular mejora relativa
+    # =========================
+    df_mejora = df_comp[
+        ~df_comp["modelo"].str.contains("Persistencia", case=False, na=False)
+    ].copy()
+
+    df_mejora["mejora_pct"] = (
+        (rmse_persistencia - df_mejora["rmse"]) / rmse_persistencia
+    ) * 100
+
+    # Nombre corto del modelo
+    df_mejora["modelo_corto"] = df_mejora["modelo"].apply(lambda x: x.split("_")[0])
+
+    # Ordenar de menor a mayor para que el mejor quede arriba en barh
+    df_mejora = df_mejora.sort_values("mejora_pct", ascending=True)
+
+    # =========================
+    # 3. Colores por familia
+    # =========================
+    color_arima = "#E69F00"   # naranja
+    color_dl = "#4C78A8"      # azul
+    color_negativo = "#B0B0B0"
+
+    colores = []
+    for _, row in df_mejora.iterrows():
+        if row["mejora_pct"] < 0:
+            colores.append(color_negativo)
+        elif row["modelo_corto"] == "ARIMA":
+            colores.append(color_arima)
+        else:
+            colores.append(color_dl)
+
+    # =========================
+    # 4. Crear gráfico
+    # =========================
+    fig, ax = plt.subplots(figsize=(9, 5.5))
+
+    barras = ax.barh(
+        df_mejora["modelo_corto"],
+        df_mejora["mejora_pct"],
+        color=colores,
+        edgecolor="white",
+        linewidth=1.0,
+        height=0.58,
+        zorder=3
+    )
+
+    # Línea base de Persistencia
+    ax.axvline(
+        0,
+        color="black",
+        linewidth=1.1,
+        linestyle="--",
+        zorder=2
+    )
+
+    # Etiquetas de porcentaje
+    max_abs = max(abs(df_mejora["mejora_pct"].min()), abs(df_mejora["mejora_pct"].max()))
+    desplazamiento = max_abs * 0.025 if max_abs > 0 else 0.1
+
+    for barra, valor in zip(barras, df_mejora["mejora_pct"]):
+        x = barra.get_width()
+        y = barra.get_y() + barra.get_height() / 2
+
+        if valor >= 0:
+            ax.text(
+                x + desplazamiento,
+                y,
+                f"{valor:.2f}%",
+                va="center",
+                ha="left",
+                fontsize=10,
+                fontweight="bold"
             )
-            fila[f"mae_{nombre}"] = round(
-                float(np.mean(np.abs(y_true_dep - y_pred_dep))), 6
+        else:
+            ax.text(
+                x - desplazamiento,
+                y,
+                f"{valor:.2f}%",
+                va="center",
+                ha="right",
+                fontsize=10,
+                fontweight="bold"
             )
-        registros.append(fila)
 
-    df_dep = pd.DataFrame(registros)
-    ruta_csv = os.path.join(comparacion_dir, "comparacion_departamentos.csv")
-    df_dep.to_csv(ruta_csv, index=False)
-    print(f"[OK] {ruta_csv}")
-    print(df_dep.to_string(index=False))
+    # =========================
+    # 5. Estética del gráfico
+    # =========================
+    ax.set_xlabel(
+        "Mejora relativa del RMSE (%)",
+        fontsize=11
+    )
 
-    # — Gráfico de barras agrupadas (RMSE por departamento, coloreado por modelo)
-    rmse_cols   = [c for c in df_dep.columns if c.startswith("rmse_")]
-    nombres_mod = [c.replace("rmse_", "") for c in rmse_cols]
-    x     = np.arange(len(df_dep))
-    width = 0.8 / len(rmse_cols)
-    colores = ["#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00"]
+    ax.set_ylabel("Modelo", fontsize=11)
 
-    fig, ax = plt.subplots(figsize=(max(10, len(df_dep) * 1.2), 5))
-    for k, (col, nom) in enumerate(zip(rmse_cols, nombres_mod)):
-        offset = (k - len(rmse_cols) / 2 + 0.5) * width
-        bars = ax.bar(x + offset, df_dep[col], width,
-                      label=nom, color=colores[k % len(colores)], alpha=0.85)
+    ax.grid(
+        axis="x",
+        linestyle="--",
+        alpha=0.35,
+        zorder=0
+    )
 
-    ax.set_xticks(x)
-    ax.set_xticklabels(df_dep["departamento"], rotation=30, ha="right", fontsize=8)
-    ax.set_ylabel("RMSE")
-    ax.set_title("RMSE por departamento — todos los modelos")
-    ax.legend(fontsize=9)
-    ax.grid(axis="y", alpha=0.3)
-    fig.tight_layout()
-    ruta_png = os.path.join(comparacion_dir, "comparacion_departamentos_rmse.png")
-    fig.savefig(ruta_png, dpi=150, bbox_inches="tight")
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    ax.spines["left"].set_visible(False)
+
+    ax.tick_params(axis="y", length=0)
+
+    # Límites dinámicos
+    xmin = df_mejora["mejora_pct"].min()
+    xmax = df_mejora["mejora_pct"].max()
+
+    margen_derecho = max_abs * 0.10 if max_abs > 0 else 1
+
+    if xmin >= 0:
+        ax.set_xlim(0, xmax + margen_derecho)
+    else:
+        margen_izquierdo = max_abs * 0.10 if max_abs > 0 else 1
+        ax.set_xlim(xmin - margen_izquierdo, xmax + margen_derecho)
+
+    # Leyenda arriba, fuera del gráfico
+    ax.legend(
+        handles=[
+            Patch(facecolor=color_arima, label="ARIMA: referencia estadística clásica"),
+            Patch(facecolor=color_dl, label="MLP, LSTM y CNN1D: aprendizaje profundo"),
+        ],
+        loc="lower center",
+        bbox_to_anchor=(0.5, 1.02),
+        ncol=2,
+        fontsize=8.5,
+        frameon=True,
+        framealpha=0.9
+    )
+
+    fig.tight_layout(rect=[0, 0, 1, 0.90])
+
+    # =========================
+    # 6. Guardar imagen
+    # =========================
+    ruta = os.path.join(comparacion_dir, "mejora_relativa_persistencia.png")
+    fig.savefig(ruta, dpi=300, bbox_inches="tight")
     plt.close(fig)
-    print(f"[OK] {ruta_png}")
 
-    return df_dep
+    print(f"[OK] {ruta}")
+
+
+def comparar_departamentos(rutas_departamento, df_distritos_info, comparacion_dir):
+    """
+    Construye la comparación por departamento entre todos los modelos (no solo
+    el ganador): matriz completa de RMSE, tabla de mejor modelo por departamento
+    (con conteo de distritos para poder juzgar qué tan robusto es ese resultado)
+    y un heatmap donde se resalta en negrita el mejor modelo de cada fila.
+
+    rutas_departamento: dict {nombre_modelo: ruta_csv}, en el orden en que se
+    quiere que aparezcan en el heatmap.
+    """
+    dfs = []
+    for nombre, ruta in rutas_departamento.items():
+        if not os.path.exists(ruta):
+            print(f"[SKIP] {nombre}: no existe {ruta}")
+            continue
+        df = pd.read_csv(ruta)[["departamento", "rmse", "mae"]].copy()
+        df["modelo"] = nombre
+        dfs.append(df)
+
+    if not dfs:
+        print("[WARN] comparar_departamentos: no hay archivos disponibles, se omite.")
+        return None, None
+
+    todos = pd.concat(dfs, ignore_index=True)
+    n_distritos = df_distritos_info.groupby("departamento").size().rename("n_distritos")
+
+    # — Matriz completa de RMSE (departamento x modelo)
+    orden_modelos = [n for n in rutas_departamento if n in todos["modelo"].unique()]
+    pivot_rmse = todos.pivot_table(index="departamento", columns="modelo", values="rmse")[orden_modelos]
+
+    ruta_matriz = os.path.join(comparacion_dir, "comparacion_departamentos.csv")
+    pivot_rmse.to_csv(ruta_matriz)
+    print(f"[OK] {ruta_matriz}")
+
+    # — Mejor modelo por departamento, con n.º de distritos para juzgar robustez
+    mejor = (
+        todos.sort_values("rmse")
+        .groupby("departamento")
+        .first()
+        .join(n_distritos)
+        .reset_index()[["departamento", "n_distritos", "modelo", "rmse", "mae"]]
+        .rename(columns={"modelo": "mejor_modelo"})
+        .sort_values("departamento")
+        .reset_index(drop=True)
+    )
+
+    ruta_mejor = os.path.join(comparacion_dir, "mejor_modelo_departamento.csv")
+    mejor.to_csv(ruta_mejor, index=False)
+    print(f"[OK] {ruta_mejor}")
+
+    # — Heatmap: filas=departamentos, columnas=modelos, color=RMSE, negrita=mejor de la fila
+    fig, ax = plt.subplots(figsize=(1.4 * len(orden_modelos) + 2, 0.45 * len(pivot_rmse) + 2))
+    im = ax.imshow(pivot_rmse.values, cmap="YlOrRd", aspect="auto")
+
+    ax.set_xticks(range(len(pivot_rmse.columns)))
+    ax.set_xticklabels(pivot_rmse.columns, rotation=45, ha="right")
+    ax.set_yticks(range(len(pivot_rmse.index)))
+    ax.set_yticklabels(pivot_rmse.index)
+
+    for i in range(pivot_rmse.shape[0]):
+        fila = pivot_rmse.values[i]
+        for j in range(pivot_rmse.shape[1]):
+            valor = fila[j]
+            es_mejor = valor == np.nanmin(fila)
+            ax.text(
+                j, i, f"{valor:.4f}",
+                ha="center", va="center", fontsize=7.5,
+                fontweight="bold" if es_mejor else "normal",
+                color="black",
+            )
+
+    fig.colorbar(im, ax=ax, label="RMSE")
+    ax.set_title("RMSE por departamento y modelo")
+    fig.tight_layout()
+
+    ruta_heatmap = os.path.join(comparacion_dir, "heatmap_departamentos.png")
+    fig.savefig(ruta_heatmap, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"[OK] {ruta_heatmap}")
+
+    return pivot_rmse, mejor
 
 
 def pipeline_comparacion(
     resultados, series, df_distritos_info, tamanio_entrenamiento,
-    comparacion_dir, anio_inicio=1985,
+    comparacion_dir, rutas_departamento=None, anio_inicio=1985,
 ):
     print("\n" + "=" * 60)
     print(" COMPARACIÓN DE MODELOS ")
@@ -215,17 +394,20 @@ def pipeline_comparacion(
     ruta_csv = os.path.join(comparacion_dir, "comparacion_modelos.csv")
     df_comp  = exportar_comparacion(resultados, ruta_csv)
 
+    print("\n[INFO] Generando gráfico de mejora relativa frente a Persistencia...")
+    graficar_mejora_relativa(df_comp, comparacion_dir)
+
     print("\n[INFO] Generando gráficos (mejor + peor distrito)...")
     graficar_predicciones(
         resultados, series, df_distritos_info, tamanio_entrenamiento,
         comparacion_dir, n=1, anio_inicio=anio_inicio,
     )
 
-    print("\n[INFO] Generando métricas y gráficos por departamento...")
-    exportar_comparacion_departamentos(
-        resultados, series, df_distritos_info, tamanio_entrenamiento,
-        comparacion_dir,
-    )
+    if rutas_departamento:
+        print("\n[INFO] Generando comparación por departamento...")
+        comparar_departamentos(rutas_departamento, df_distritos_info, comparacion_dir)
+    else:
+        print("\n[SKIP] Comparación por departamento — rutas_departamento no provisto.")
 
     mejor = df_comp.iloc[0]
     print(f"\n[GANADOR] {mejor['modelo']}  RMSE={mejor['rmse']:.4f}  MAE={mejor['mae']:.4f}")
