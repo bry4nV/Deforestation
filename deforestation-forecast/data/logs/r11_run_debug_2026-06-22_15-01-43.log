@@ -1,0 +1,95 @@
+15:01:43 [INFO] [OK] Log de esta corrida: /home/bvaldiviezo/tesis/Deforestation/deforestation-forecast/data/logs/r11_run_debug_2026-06-22_15-01-43.log
+15:01:43 [INFO] ======================================================================
+15:01:43 [INFO] R11 — PIPELINE DE MODELOS MULTIVARIABLES
+15:01:43 [INFO] ======================================================================
+15:01:43 [INFO] Cargando panel: /home/bvaldiviezo/tesis/Deforestation/deforestation-forecast/data/interim/O3/panel-integrado/panel_integrado_entrenamiento.csv
+15:01:43 [INFO] Panel: 180 distritos × 40 años (1985–2024) × 7 canales
+15:01:43 [INFO] Panel construido: shape=(180, 40, 7), dtype=float32
+15:01:43 [INFO] Aplicando transformaciones (log1p) antes de escalar...
+15:01:43 [INFO]   log1p aplicado a canal 2 (pct_anp)
+15:01:43 [INFO]   log1p aplicado a canal 3 (densidad_carreteras_km_km2)
+15:01:43 [INFO]   log1p aplicado a canal 4 (densidad_rios_km_km2)
+15:01:43 [INFO] [SKIP] Escalador ya existe — cargando desde disco.
+15:01:43 [INFO] [OK] Escalador cargado: /home/bvaldiviezo/tesis/Deforestation/deforestation-forecast/data/interim/O3/modelos/escalador/escalador_standard.pkl
+15:01:43 [INFO] Panel escalado: shape=(180, 40, 7)
+15:01:43 [INFO] Construyendo datasets de ventanas deslizantes multivariables...
+15:01:43 [INFO] w=3 | X_train=(5760, 3, 7) y_train=(5760, 1) X_test=(900, 3, 7) y_test=(900, 1)
+15:01:43 [INFO] w=4 | X_train=(5580, 4, 7) y_train=(5580, 1) X_test=(900, 4, 7) y_test=(900, 1)
+15:01:43 [INFO] w=5 | X_train=(5400, 5, 7) y_train=(5400, 1) X_test=(900, 5, 7) y_test=(900, 1)
+15:01:43 [INFO] w=6 | X_train=(5220, 6, 7) y_train=(5220, 1) X_test=(900, 6, 7) y_test=(900, 1)
+15:01:43 [INFO] w=7 | X_train=(5040, 7, 7) y_train=(5040, 1) X_test=(900, 7, 7) y_test=(900, 1)
+15:01:43 [INFO] [SKIP] MLP Fase 1 — ya existe. Revisar mlp_resultados.csv.
+15:01:43 [INFO] MLP R11 — Fase 2: entrenamiento final...
+15:01:43 [INFO] ======================================================================
+15:01:43 [INFO] MLP R11 — Fase 2: entrenamiento final
+15:01:43 [INFO] Device: cuda
+15:01:46 [INFO]     Época 10/50 | Loss=0.003465
+15:01:49 [INFO]     Época 20/50 | Loss=0.003008
+15:01:51 [INFO]     Época 30/50 | Loss=0.002602
+15:01:54 [INFO]     Época 40/50 | Loss=0.002596
+15:01:56 [INFO]     Época 50/50 | Loss=0.002549
+15:01:56 [INFO] [OK] Curva guardada: /home/bvaldiviezo/tesis/Deforestation/deforestation-forecast/data/interim/O3/modelos/mlp/mlp_final_curva.png
+15:01:56 [INFO] [OK] MLP FINAL — RMSE_wf=0.011750  MAE_wf=0.008719
+15:01:56 [INFO] [SKIP] LSTM Fase 1 — ya existe. Revisar lstm_resultados.csv.
+15:01:56 [INFO] LSTM R11 — Fase 2: entrenamiento final...
+15:01:56 [INFO] ======================================================================
+15:01:56 [INFO] LSTM R11 — Fase 2: entrenamiento final
+15:01:56 [INFO] Device: cuda
+15:02:04 [INFO]     Época 10/50 | Loss=0.002441
+15:02:12 [INFO]     Época 20/50 | Loss=0.002238
+15:02:19 [INFO]     Época 30/50 | Loss=0.002103
+15:02:26 [INFO]     Época 40/50 | Loss=0.002122
+15:02:34 [INFO]     Época 50/50 | Loss=0.002101
+15:02:34 [INFO] [OK] Curva guardada: /home/bvaldiviezo/tesis/Deforestation/deforestation-forecast/data/interim/O3/modelos/lstm/lstm_final_curva.png
+15:02:34 [INFO] [OK] LSTM FINAL — RMSE_wf=0.011067  MAE_wf=0.007788
+15:02:34 [INFO] [SKIP] CNN Fase 1 — ya existe. Revisar cnn_resultados.csv.
+15:02:34 [INFO] CNN R11 — Fase 2: entrenamiento final...
+15:02:34 [INFO] ======================================================================
+15:02:34 [INFO] CNN R11 — Fase 2: entrenamiento final
+15:02:34 [INFO] Device: cuda
+15:02:40 [INFO]     Época 10/50 | Loss=0.003244
+15:02:46 [INFO]     Época 20/50 | Loss=0.002492
+15:02:52 [INFO]     Época 30/50 | Loss=0.002269
+15:02:57 [INFO]     Época 40/50 | Loss=0.002224
+15:03:03 [INFO]     Época 50/50 | Loss=0.002150
+15:03:04 [INFO] [OK] Curva guardada: /home/bvaldiviezo/tesis/Deforestation/deforestation-forecast/data/interim/O3/modelos/cnn/cnn_final_curva.png
+15:03:04 [INFO] [OK] CNN FINAL — RMSE_wf=0.010912  MAE_wf=0.007740
+15:03:04 [INFO] ======================================================================
+15:03:04 [INFO] ANÁLISIS VISUAL — FASE 1
+15:03:04 [INFO] ======================================================================
+15:03:04 [INFO] Analizando MLP R11...
+15:03:04 [INFO] [OK] /home/bvaldiviezo/tesis/Deforestation/deforestation-forecast/data/interim/O3/modelos/mlp/mlp_analisis_ventanas.png
+15:03:04 [INFO] [OK] /home/bvaldiviezo/tesis/Deforestation/deforestation-forecast/data/interim/O3/modelos/mlp/mlp_analisis_top5_w6.png
+15:03:04 [INFO]   Mejor ventana: 6
+15:03:04 [INFO] Analizando LSTM R11...
+15:03:04 [INFO] [OK] /home/bvaldiviezo/tesis/Deforestation/deforestation-forecast/data/interim/O3/modelos/lstm/lstm_analisis_ventanas.png
+15:03:04 [INFO] [OK] /home/bvaldiviezo/tesis/Deforestation/deforestation-forecast/data/interim/O3/modelos/lstm/lstm_analisis_top5_w6.png
+15:03:04 [INFO]   Mejor ventana: 6
+15:03:04 [INFO] Analizando CNN R11...
+15:03:04 [INFO] [OK] /home/bvaldiviezo/tesis/Deforestation/deforestation-forecast/data/interim/O3/modelos/cnn/cnn_analisis_ventanas.png
+15:03:04 [INFO] [OK] /home/bvaldiviezo/tesis/Deforestation/deforestation-forecast/data/interim/O3/modelos/cnn/cnn_analisis_top5_w6.png
+15:03:04 [INFO]   Mejor ventana: 6
+15:03:04 [INFO] ============================================================
+15:03:04 [INFO] COMPARACIÓN O2 (base) vs R11 (extendido)
+15:03:04 [INFO] ============================================================
+15:03:04 [INFO] [OK] Tabla de comparación guardada: /home/bvaldiviezo/tesis/Deforestation/deforestation-forecast/data/interim/O3/modelos/comparacion/comparacion_base_vs_extendido.csv
+15:03:04 [INFO] 
+etiqueta     rmse      mae      conjunto
+ R11_CNN 0.010912 0.007740 extendido_R11
+R11_LSTM 0.011067 0.007788 extendido_R11
+  O2_MLP 0.011695 0.007993       base_O2
+ O2_LSTM 0.011730 0.007968       base_O2
+ R11_MLP 0.011750 0.008719 extendido_R11
+  O2_CNN 0.011925 0.008169       base_O2
+15:03:04 [INFO] Generando gráficos de predicciones por distrito (R11)...
+15:03:04 [INFO] [OK] mejores_01_120303.png
+15:03:05 [INFO] [OK] mejores_02_220909.png
+15:03:05 [INFO] [OK] mejores_03_010602.png
+15:03:05 [INFO] [OK] mejores_04_010520.png
+15:03:05 [INFO] [OK] mejores_05_220101.png
+15:03:05 [INFO] [OK] peores_01_060901.png
+15:03:05 [INFO] [OK] peores_02_060810.png
+15:03:05 [INFO] [OK] peores_03_060904.png
+15:03:06 [INFO] [OK] peores_04_060902.png
+15:03:06 [INFO] [OK] peores_05_160101.png
+15:03:06 [INFO] [GANADOR] R11_CNN  RMSE=0.0109  MAE=0.0077
