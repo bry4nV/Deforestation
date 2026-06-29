@@ -1,0 +1,19 @@
+{
+    "modelo": "MLP_FINAL_w6_h64x32_actleaky_relu_d0.0_e50_lr0.001_b16",
+    "window_size": 6,
+    "capas_ocultas": "[64, 32]",
+    "activacion": "leaky_relu",
+    "dropout": 0.0,
+    "epocas": 50,
+    "lr": 0.001,
+    "lote": 16,
+    "semilla": 42,
+    "rmse_train": 0.010861,
+    "mae_train": 0.008479,
+    "rmse_test": 0.01175,
+    "mae_test": 0.008719,
+    "gap_rmse": 0.000888,
+    "gap_mae": 0.000239,
+    "ratio_rmse": 1.081761,
+    "ratio_mae": 1.028229
+}

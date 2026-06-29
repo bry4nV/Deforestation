@@ -1,0 +1,181 @@
+geocode,departamento,distrito,rmse,mae
+010112,Amazonas,Magdalena,0.0257,0.024764
+060810,Cajamarca,San Felipe,0.030148,0.024543
+060904,Cajamarca,La Coipa,0.03014,0.024364
+060901,Cajamarca,San Ignacio,0.033831,0.023991
+010109,Amazonas,La Jalca,0.021735,0.021241
+060803,Cajamarca,Chontali,0.021799,0.018622
+060811,Cajamarca,San Jose Del Alto,0.022597,0.018256
+060902,Cajamarca,Chirinos,0.029581,0.018158
+120209,Junin,Mariscal Castilla,0.018977,0.016365
+250106,Ucayali,Nueva Requena,0.01689,0.015823
+220502,San Martin,Alonso De Alvarado,0.016549,0.014881
+060804,Cajamarca,Colasay,0.016244,0.014847
+160101,Loreto,Iquitos,0.021256,0.014798
+100804,Huanuco,Umari,0.018537,0.014474
+120304,Junin,San Luis De Shuaro,0.017244,0.014319
+010706,Amazonas,Lonya Grande,0.015473,0.014266
+100505,Huanuco,Jircan,0.017187,0.014233
+010119,Amazonas,San Isidro De Maino,0.016192,0.014129
+220507,San Martin,Rumisapa,0.015314,0.013818
+060907,Cajamarca,Tabaconas,0.019713,0.013804
+220706,San Martin,San Cristobal,0.016883,0.013688
+010307,Amazonas,Jazan,0.016307,0.01362
+220807,San Martin,San Fernando,0.014938,0.013578
+080905,Cusco,Ocobamba,0.014398,0.013214
+250102,Ucayali,Campoverde,0.014839,0.013166
+160112,Loreto,Belen,0.014912,0.012906
+250305,Ucayali,Alexander Von Humboldt,0.013364,0.012553
+080408,Cusco,Yanatile,0.013472,0.012456
+010611,Amazonas,Totora,0.014805,0.012299
+010204,Amazonas,El Parco,0.013392,0.012149
+010305,Amazonas,Cuispes,0.013901,0.011971
+250105,Ucayali,Yarinacocha,0.017986,0.011883
+010115,Amazonas,Montevideo,0.021074,0.011778
+010303,Amazonas,Churuja,0.014843,0.011658
+220705,San Martin,Pucacaca,0.013105,0.011533
+220806,San Martin,Posic,0.013064,0.011452
+200307,Piura,Sondor,0.012373,0.011396
+220601,San Martin,Juanjui,0.012579,0.011387
+010610,Amazonas,Santa Rosa,0.014683,0.01118
+220302,San Martin,Agua Blanca,0.013757,0.011074
+010705,Amazonas,Jamalca,0.014859,0.011071
+010512,Amazonas,Ocalli,0.012625,0.010978
+220912,San Martin,San Antonio,0.011136,0.010796
+010304,Amazonas,Corosha,0.011716,0.010766
+010603,Amazonas,Cochamal,0.01103,0.010733
+010515,Amazonas,Providencia,0.011929,0.010725
+250304,Ucayali,Neshuya,0.011342,0.010562
+220902,San Martin,Alberto Leveau,0.014108,0.010476
+100113,Huanuco,San Pablo De Pillao,0.01836,0.010434
+010701,Amazonas,Bagua Grande,0.01409,0.010372
+220204,San Martin,Huallaga,0.011732,0.010348
+010518,Amazonas,San Jeronimo,0.010752,0.010225
+120602,Junin,Coviriali,0.011272,0.010222
+080903,Cusco,Huayopata,0.010587,0.010185
+010605,Amazonas,Limabamba,0.01027,0.010161
+220106,San Martin,Yantalo,0.011223,0.010132
+220708,San Martin,Shamboyacu,0.011346,0.010012
+010510,Amazonas,Luya Viejo,0.013431,0.009965
+220301,San Martin,San Jose De Sisa,0.010941,0.009959
+200303,Piura,El Carmen De La Frontera,0.013548,0.009919
+220201,San Martin,Bellavista,0.011897,0.009894
+100903,Huanuco,Honoria,0.013754,0.0098
+220510,San Martin,Tabalosos,0.01084,0.009682
+220405,San Martin,Sacanche,0.010569,0.009653
+010604,Amazonas,Huambo,0.012123,0.009557
+120607,Junin,Rio Negro,0.009728,0.009551
+010523,Amazonas,Trita,0.01144,0.009417
+220908,San Martin,Juan Guerra,0.01161,0.009324
+220707,San Martin,San Hilarion,0.010212,0.009208
+010514,Amazonas,Pisuquia,0.010824,0.009178
+010608,Amazonas,Milpuc,0.01009,0.009117
+220605,San Martin,Pajarillo,0.010593,0.009004
+120604,Junin,Mazamari,0.010358,0.008878
+100103,Huanuco,Chinchao,0.00943,0.008843
+060807,Cajamarca,Pomahuaca,0.011834,0.008827
+100608,Huanuco,Castillo Grande,0.011022,0.008801
+220506,San Martin,Pinto Recodo,0.009874,0.008748
+010517,Amazonas,San Francisco Del Yeso,0.009155,0.008739
+170102,Madre De Dios,Inambari,0.009578,0.008736
+080901,Cusco,Santa Ana,0.009752,0.008665
+220501,San Martin,Lamas,0.010576,0.008658
+050502,Ayacucho,Anco,0.00948,0.00865
+010302,Amazonas,Chisquilla,0.008937,0.008482
+060801,Cajamarca,Jaen,0.009573,0.008425
+010508,Amazonas,Lonya Chico,0.009782,0.008407
+120603,Junin,Llaylla,0.009599,0.008393
+160603,Loreto,Padre Marquez,0.009143,0.008294
+220102,San Martin,Calzada,0.013925,0.008238
+220304,San Martin,Santa Rosa,0.010989,0.008192
+010308,Amazonas,Recta,0.010553,0.008156
+220303,San Martin,San Martin,0.009264,0.008121
+010301,Amazonas,Jumbilla,0.009493,0.008032
+010306,Amazonas,Florida,0.010024,0.007916
+220702,San Martin,Buenos Aires,0.008689,0.007901
+010310,Amazonas,Shipasbamba,0.009724,0.007888
+220704,San Martin,Pilluana,0.008691,0.007857
+010104,Amazonas,Cheto,0.008064,0.007736
+010507,Amazonas,Longuita,0.008452,0.007622
+010707,Amazonas,Yamon,0.007864,0.007614
+170204,Madre De Dios,Huepetuhe,0.009673,0.00745
+220305,San Martin,Shatoja,0.011171,0.007442
+220203,San Martin,Bajo Biavo,0.008602,0.007383
+100904,Huanuco,Tournavista,0.00798,0.007376
+010203,Amazonas,Copallin,0.009328,0.007303
+100606,Huanuco,Mariano Damaso Beraun,0.00809,0.007266
+120609,Junin,Vizcatán Del Ene,0.008292,0.007186
+050507,Ayacucho,Santa Rosa,0.007791,0.007142
+220803,San Martin,Elias Soplin Vargas,0.009005,0.007091
+220808,San Martin,Yorongos,0.008049,0.007039
+050512,Ayacucho,Union Progreso,0.010759,0.00703
+220914,San Martin,Shapaja,0.008216,0.006964
+010601,Amazonas,San Nicolas,0.007311,0.006638
+050408,Ayacucho,Llochegua,0.007028,0.006612
+010503,Amazonas,Cocabamba,0.010037,0.006573
+220403,San Martin,El Eslabon,0.007592,0.006572
+010522,Amazonas,Tingo,0.007461,0.006537
+010111,Amazonas,Levanto,0.008034,0.006484
+120601,Junin,Satipo,0.00775,0.006483
+100605,Huanuco,Luyando,0.008143,0.006468
+220505,San Martin,Cuñumbuqui,0.007773,0.006453
+010202,Amazonas,Aramango,0.00744,0.00644
+010513,Amazonas,Ocumal,0.008194,0.006378
+220503,San Martin,Barranquita,0.009004,0.006311
+220701,San Martin,Picota,0.007457,0.006276
+211205,Puno,Phara,0.007808,0.00624
+250302,Ucayali,Irazola,0.006748,0.006206
+220205,San Martin,San Pablo,0.007857,0.006126
+010519,Amazonas,San Juan De Lopecancha,0.007457,0.006035
+100609,Huanuco,Pueblo Nuevo,0.007402,0.005932
+160503,Loreto,Capelo,0.006871,0.005863
+220913,San Martin,Sauce,0.006422,0.005727
+010105,Amazonas,Chiliquin,0.007962,0.005654
+100507,Huanuco,Monzon,0.006115,0.005648
+220906,San Martin,El Porvenir,0.006391,0.005627
+220802,San Martin,Awajun,0.007304,0.005609
+250306,Ucayali,Huipoca,0.006938,0.005604
+060809,Cajamarca,Sallique,0.005934,0.005495
+220504,San Martin,Caynarachi,0.006037,0.00546
+010521,Amazonas,Santo Tomas,0.005776,0.005348
+010609,Amazonas,Omia,0.005729,0.005327
+010516,Amazonas,San Cristobal,0.005505,0.005304
+220404,San Martin,Piscoyacu,0.005578,0.005299
+010114,Amazonas,Molinopampa,0.005625,0.005225
+010102,Amazonas,Asuncion,0.007104,0.00519
+060903,Cajamarca,Huarango,0.005941,0.005141
+220511,San Martin,Zapatero,0.006555,0.005004
+010117,Amazonas,Quinjalca,0.005373,0.004943
+080904,Cusco,Maranura,0.005383,0.004938
+100601,Huanuco,Rupa-Rupa,0.005841,0.0049
+160211,Loreto,Teniente Cesar Lopez Rojas,0.005807,0.004896
+010511,Amazonas,Maria,0.006142,0.004872
+080918,Cusco,Union Ashaninka,0.005611,0.004854
+081304,Cusco,Machupicchu,0.005755,0.004717
+010502,Amazonas,Camporredondo,0.005666,0.004694
+120302,Junin,Perene,0.005009,0.004536
+220101,San Martin,Moyobamba,0.004929,0.004482
+221001,San Martin,Tocache,0.005063,0.004478
+010120,Amazonas,Soloco,0.005756,0.004442
+060812,Cajamarca,Santa Rosa,0.005526,0.004425
+010606,Amazonas,Longar,0.005129,0.004412
+010206,Amazonas,La Peca,0.005103,0.004371
+010703,Amazonas,Cumba,0.00586,0.004325
+221005,San Martin,Uchiza,0.004994,0.004263
+100902,Huanuco,Codo Del Pozuzo,0.00487,0.004251
+010520,Amazonas,Santa Catalina,0.004589,0.003978
+100905,Huanuco,Yuyapichis,0.004459,0.003922
+220809,San Martin,Yuracyacu,0.005185,0.003921
+220401,San Martin,Saposoa,0.004381,0.003912
+010311,Amazonas,Valera,0.004489,0.003743
+080906,Cusco,Quellouno,0.004279,0.003735
+220804,San Martin,Nueva Cajamarca,0.004004,0.003423
+220710,San Martin,Tres Unidos,0.004719,0.003396
+050409,Ayacucho,Canayre,0.004075,0.003372
+221006,San Martin,Santa Lucia,0.003669,0.003194
+220910,San Martin,Morales,0.003319,0.002875
+221002,San Martin,Nuevo Progreso,0.00363,0.002722
+100901,Huanuco,Puerto Inca,0.003313,0.002557
+120303,Junin,Pichanaqui,0.002959,0.002451
+220909,San Martin,La Banda De Shilcayo,0.002699,0.002287
+010602,Amazonas,Chirimoto,0.002692,0.002238

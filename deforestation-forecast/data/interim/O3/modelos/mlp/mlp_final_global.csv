@@ -1,0 +1,2 @@
+modelo,rmse,mae,rmse_train,mae_train,rmse_test_directo,mae_test_directo,gap_rmse,gap_mae,ratio_rmse,ratio_mae
+MLP_FINAL_w6_h64x32_actleaky_relu_d0.0_e50_lr0.001_b16,0.01175,0.008719,0.010861,0.008479,0.01175,0.008719,0.000888,0.000239,1.081761,1.028229

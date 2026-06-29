@@ -1,0 +1,2 @@
+modelo,rmse,mae,rmse_train,mae_train,rmse_test_directo,mae_test_directo,gap_rmse,gap_mae,ratio_rmse,ratio_mae
+LSTM_FINAL_w6_h16_l2_d0.0_e50_lr0.001_b8,0.011067,0.007788,0.00956,0.007177,0.011067,0.007788,0.001507,0.00061,1.15766,1.085037

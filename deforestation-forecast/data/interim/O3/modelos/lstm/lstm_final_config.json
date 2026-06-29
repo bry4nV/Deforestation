@@ -1,0 +1,19 @@
+{
+    "modelo": "LSTM_FINAL_w6_h16_l2_d0.0_e50_lr0.001_b8",
+    "window_size": 6,
+    "unidades_ocultas": 16,
+    "num_capas": 2,
+    "dropout": 0.0,
+    "epocas": 50,
+    "lr": 0.001,
+    "lote": 8,
+    "semilla": 42,
+    "rmse_train": 0.00956,
+    "mae_train": 0.007177,
+    "rmse_test": 0.011067,
+    "mae_test": 0.007788,
+    "gap_rmse": 0.001507,
+    "gap_mae": 0.00061,
+    "ratio_rmse": 1.15766,
+    "ratio_mae": 1.085037
+}

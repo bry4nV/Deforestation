@@ -1,0 +1,6 @@
+window_size,modelo,canales_conv,kernel_size,activacion,dropout,tamanio_denso,epocas,lr,lote,rmse_train,mae_train,rmse_test,mae_test,gap_rmse,gap_mae,ratio_rmse,ratio_mae
+3,CNN_w3_c32_k3_actleaky_relu_d0.0_dense16_e50_lr0.001_b8,[32],3,leaky_relu,0.0,16,50,0.001,8,0.010047,0.007309,0.012279,0.009257,0.002232,0.001948,1.222127,1.266547
+4,CNN_w4_c32_k3_actleaky_relu_d0.1_dense16_e50_lr0.001_b16,[32],3,leaky_relu,0.1,16,50,0.001,16,0.012136,0.009339,0.013074,0.009658,0.000938,0.000319,1.077272,1.034148
+5,CNN_w5_c16_k2_actrelu_d0.0_dense16_e50_lr0.0005_b16,[16],2,relu,0.0,16,50,0.0005,16,0.009545,0.007039,0.011835,0.008603,0.002291,0.001564,1.239979,1.222122
+6,CNN_w6_c32_k2_actrelu_d0.0_dense16_e50_lr0.001_b8,[32],2,relu,0.0,16,50,0.001,8,0.010301,0.007999,0.010912,0.00774,0.00061,-0.000259,1.059263,0.967589
+7,CNN_w7_c32_k2_actleaky_relu_d0.0_dense16_e50_lr0.001_b16,[32],2,leaky_relu,0.0,16,50,0.001,16,0.009365,0.006838,0.012495,0.009191,0.00313,0.002354,1.334268,1.34424
