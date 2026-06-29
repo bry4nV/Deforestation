@@ -136,6 +136,17 @@ VAR_URBANO_DIR       = os.path.join(O3_INTERIM_DIR, "variables-respaldo", "urban
 # Panel integrado
 PANEL_DIR = os.path.join(O3_INTERIM_DIR, "panel-integrado")
 
+# Metadata de fuentes RAW (PASO 0 — antes de construir cualquier variable).
+# La metadata cruda de cada fuente se reparte en la carpeta de la variable
+# que la consume (ver metadata_fuentes.py); "distritos_alto_cambio" es la
+# única fuente sin carpeta de variable propia (los 8 construir_*.py la
+# reciben por igual vía distritos_gdf), así que tiene su propia carpeta,
+# nombrada igual que la de O1 (distritos-alto-cambio/) en vez de un archivo
+# suelto en O3_INTERIM_DIR -- ningún otro archivo de O3 vive fuera de una
+# carpeta de variable.
+DISTRITOS_METADATA_RAW_DIR = os.path.join(O3_INTERIM_DIR, "distritos-alto-cambio")
+DISTRITOS_METADATA_RAW_CSV = os.path.join(DISTRITOS_METADATA_RAW_DIR, "distritos_alto_cambio_metadatos_raw.csv")
+
 # Archivos de salida — agropecuaria
 AGROPECUARIA_CSV  = os.path.join(VAR_AGROPECUARIA_DIR, "agropecuaria_por_distrito.csv")
 AGROPECUARIA_META = os.path.join(VAR_AGROPECUARIA_DIR, "agropecuaria_metadatos.csv")
@@ -172,11 +183,15 @@ URBANO_CSV        = os.path.join(VAR_URBANO_DIR, "urbano_por_distrito.csv")
 URBANO_META       = os.path.join(VAR_URBANO_DIR, "urbano_metadatos.csv")
 
 # Archivos de salida — panel integrado
-PANEL_CSV                = os.path.join(PANEL_DIR, "panel_integrado.csv")
-PANEL_LIGHT_CSV          = os.path.join(PANEL_DIR, "panel_integrado_light.csv")
+PANEL_COMPLETO_CSV       = os.path.join(PANEL_DIR, "panel_integrado_completo.csv")
+PANEL_MODELO_CSV         = os.path.join(PANEL_DIR, "panel_integrado_modelo.csv")
 PANEL_ENTRENAMIENTO_CSV  = os.path.join(PANEL_DIR, "panel_integrado_entrenamiento.csv")
 PANEL_GENERALIZACION_CSV = os.path.join(PANEL_DIR, "panel_integrado_generalizacion.csv")
 PANEL_REPORTE_CSV        = os.path.join(PANEL_DIR, "reporte_integracion.csv")
+# Desagregación anual de completitud para pct_agropecuario/pct_anp (ver R10/§9.11)
+PANEL_REPORTE_ANUAL_CSV  = os.path.join(PANEL_DIR, "reporte_completitud_anual.csv")
+# Metadata de la corrida completa de main.py (Pasos 0-4) — evidencia para el IOV de R9
+PANEL_REPORTE_EJECUCION_CSV = os.path.join(PANEL_DIR, "reporte_ejecucion.csv")
 
 # ============================================================
 # CONSTANTES — CLASES MAPBIOMAS C3
@@ -225,6 +240,7 @@ for _dir in [
     VAR_RIOS_LAGOS_DIR,
     VAR_URBANO_DIR,
     PANEL_DIR,
+    DISTRITOS_METADATA_RAW_DIR,
 ]:
     os.makedirs(_dir, exist_ok=True)
 
@@ -317,3 +333,18 @@ for _dir in [
     R11_COMPARACION_DIR,
 ]:
     os.makedirs(_dir, exist_ok=True)
+
+# ============================================================
+# Nombres de departamento para presentación (figuras, anexos)
+# ============================================================
+# Los datos internos usan nombres sin tildes (convención de O1); este mapeo
+# es solo para texto mostrado al lector, no se aplica a los datos en disco.
+# Duplicado de O2.config.NOMBRES_DEPARTAMENTO_DISPLAY -- R11 es deliberadamente
+# autónomo respecto a O2 (ver O3/r11/utils.py), por eso no se importa de ahí.
+
+NOMBRES_DEPARTAMENTO_DISPLAY = {
+    "Huanuco": "Huánuco",
+    "Junin": "Junín",
+    "Madre De Dios": "Madre de Dios",
+    "San Martin": "San Martín",
+}

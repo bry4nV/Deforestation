@@ -5,9 +5,12 @@ Lee los CSVs de O2 ya existentes sin re-ejecutar O2.
 Lee los CSVs de R11 desde los directorios de salida configurados en config.py.
 
 Genera:
-  comparacion_base_vs_extendido.csv   — 6 filas: 3 O2 + 3 R11
-  mejores_01–05_<geocode>.png         — 5 distritos con mejor RMSE en R11
-  peores_01–05_<geocode>.png          — 5 distritos con peor RMSE en R11
+  comparacion_base_vs_extendido.csv   — hasta 8 filas: 5 O2 + 3 R11
+  mejores_01–03_<geocode>.png         — 3 distritos con mejor RMSE en R11
+  peores_01–03_<geocode>.png          — 3 distritos con peor RMSE en R11
+  comparacion_departamentos.csv       — RMSE/MAE de los 3 modelos R11 por departamento
+  heatmap_departamentos.png           — heatmap de la tabla anterior
+  boxplot_rmse_distrital_3candidatos.png — distribución de RMSE distrital de los 3 modelos R11
 """
 
 import logging
@@ -18,6 +21,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.lines import Line2D
 
 from O3.config import (
     ANIO_INICIO,
@@ -224,6 +228,157 @@ def graficar_predicciones_por_distrito(
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# Comparación por departamento (3 modelos propios de R11)
+# ─────────────────────────────────────────────────────────────────────────────
+
+def comparar_departamentos(
+    rutas_departamento: dict, df_distritos_info: pd.DataFrame, comparacion_dir: str,
+) -> pd.DataFrame | None:
+    """
+    Tabla consolidada de RMSE/MAE por departamento para los modelos R11 en
+    rutas_departamento (típicamente MLP/LSTM/CNN), número de distritos por
+    departamento (para juzgar robustez) y mejor modelo por RMSE y por MAE.
+    También genera el heatmap de RMSE, resaltando en negrita el mejor modelo
+    de cada fila. Idéntico en diseño a O2/r4_r5/pipeline_comparacion.py.
+
+    rutas_departamento: dict {nombre_modelo: ruta_csv}, en el orden en que se
+    quiere que aparezcan en las columnas.
+    """
+    dfs = []
+    for nombre, ruta in rutas_departamento.items():
+        if not os.path.exists(ruta):
+            logger.info(f"[SKIP] {nombre}: no existe {ruta}")
+            continue
+        df = pd.read_csv(ruta)[["departamento", "rmse", "mae"]].copy()
+        df["modelo"] = nombre
+        dfs.append(df)
+
+    if not dfs:
+        logger.warning("[WARN] comparar_departamentos: no hay archivos disponibles, se omite.")
+        return None
+
+    todos = pd.concat(dfs, ignore_index=True)
+    n_distritos = df_distritos_info.groupby("departamento").size().rename("n_distritos")
+    orden_modelos = [n for n in rutas_departamento if n in todos["modelo"].unique()]
+
+    pivot_rmse = todos.pivot_table(index="departamento", columns="modelo", values="rmse")[orden_modelos]
+    pivot_mae = todos.pivot_table(index="departamento", columns="modelo", values="mae")[orden_modelos]
+
+    consolidado = pd.DataFrame(index=pivot_rmse.index)
+    consolidado["n_distritos"] = n_distritos
+    for m in orden_modelos:
+        consolidado[f"rmse_{m.lower()}"] = pivot_rmse[m]
+    for m in orden_modelos:
+        consolidado[f"mae_{m.lower()}"] = pivot_mae[m]
+    consolidado["mejor_modelo_rmse"] = pivot_rmse.idxmin(axis=1)
+    consolidado["mejor_modelo_mae"] = pivot_mae.idxmin(axis=1)
+    consolidado = consolidado.reset_index().sort_values("departamento").reset_index(drop=True)
+
+    ruta_consolidado = os.path.join(comparacion_dir, "comparacion_departamentos.csv")
+    consolidado.to_csv(ruta_consolidado, index=False)
+    logger.info(f"[OK] {ruta_consolidado}")
+
+    fig, ax = plt.subplots(figsize=(1.4 * len(orden_modelos) + 2, 0.45 * len(pivot_rmse) + 2))
+    im = ax.imshow(pivot_rmse.values, cmap="YlOrRd", aspect="auto")
+
+    ax.set_xticks(range(len(pivot_rmse.columns)))
+    ax.set_xticklabels(pivot_rmse.columns, rotation=45, ha="right")
+    ax.set_yticks(range(len(pivot_rmse.index)))
+    ax.set_yticklabels(pivot_rmse.index)
+
+    for i in range(pivot_rmse.shape[0]):
+        fila = pivot_rmse.values[i]
+        for j in range(pivot_rmse.shape[1]):
+            valor = fila[j]
+            es_mejor = valor == np.nanmin(fila)
+            ax.text(
+                j, i, f"{valor:.4f}",
+                ha="center", va="center", fontsize=7.5,
+                fontweight="bold" if es_mejor else "normal",
+                color="black",
+            )
+
+    fig.colorbar(im, ax=ax, label="RMSE")
+    fig.tight_layout()
+
+    ruta_heatmap = os.path.join(comparacion_dir, "heatmap_departamentos.png")
+    fig.savefig(ruta_heatmap, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    logger.info(f"[OK] {ruta_heatmap}")
+
+    return consolidado
+
+
+def graficar_boxplot_validacion_distrital(
+    rutas_distrito_dl: dict, comparacion_dir: str, top_n: int = 10,
+) -> str:
+    """
+    Boxplot del RMSE distrital de validación (walk-forward 2020-2024) para
+    los 3 modelos R11 (MLP/LSTM/CNN). Resalta en rojo los distritos que
+    aparecen, simultáneamente, en el top_n de mayor RMSE de los tres modelos
+    (intersección) -- los demás valores por encima del bigote superior de
+    cada caja quedan en gris. Idéntico en diseño a O2/r4_r5/pipeline_comparacion.py.
+    """
+    rmse_por_modelo = {}
+    top_n_por_modelo = {}
+
+    for nombre, ruta in rutas_distrito_dl.items():
+        df = pd.read_csv(ruta, dtype={"geocode": str})
+        df["geocode"] = df["geocode"].str.zfill(6)
+        serie_rmse = df.set_index("geocode")["rmse"]
+        rmse_por_modelo[nombre] = serie_rmse
+        top_n_por_modelo[nombre] = set(serie_rmse.sort_values(ascending=False).head(top_n).index)
+
+    interseccion = set.intersection(*top_n_por_modelo.values())
+
+    nombres = list(rutas_distrito_dl.keys())
+    valores = [rmse_por_modelo[n].values for n in nombres]
+
+    fig, ax = plt.subplots(figsize=(7, 5.5))
+    ax.boxplot(valores, labels=nombres, showfliers=False, widths=0.5, patch_artist=True,
+               boxprops=dict(facecolor="#a6c8e0"))
+
+    rng = np.random.default_rng(42)
+    for j, nombre in enumerate(nombres, start=1):
+        serie = rmse_por_modelo[nombre]
+        q1, q3 = np.percentile(serie.values, [25, 75])
+        bigote_superior = q3 + 1.5 * (q3 - q1)
+        atipicos = serie[serie > bigote_superior]
+
+        x_jitter = j + rng.uniform(-0.06, 0.06, size=len(atipicos))
+        colores_punto = ["crimson" if geo in interseccion else "gray" for geo in atipicos.index]
+        ax.scatter(x_jitter, atipicos.values, c=colores_punto, s=24, zorder=3,
+                   edgecolor="white", linewidth=0.6)
+
+    ax.set_ylabel("RMSE distrital de validación (2020-2024)")
+    ax.grid(axis="y", linestyle="--", alpha=0.4)
+
+    leyenda = [
+        Line2D([0], [0], marker="o", linestyle="", color="crimson",
+               label=f"Coincide en los top-{top_n} de mayor error de los 3 modelos"),
+        Line2D([0], [0], marker="o", linestyle="", color="gray",
+               label="Atípico solo en este modelo"),
+    ]
+    ax.legend(
+        handles=leyenda,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 1.02),
+        ncol=2,
+        fontsize=8,
+        frameon=True,
+    )
+
+    fig.tight_layout()
+
+    ruta_fig = os.path.join(comparacion_dir, "boxplot_rmse_distrital_3candidatos.png")
+    fig.savefig(ruta_fig, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    logger.info(f"[OK] {ruta_fig}")
+
+    return ruta_fig
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # Orquestador
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -233,6 +388,8 @@ def pipeline_comparacion(
     tamanio_entrenamiento: int = TAMANIO_ENTRENAMIENTO,
     anio_inicio: int = ANIO_INICIO,
     comparacion_dir: str = R11_COMPARACION_DIR,
+    rutas_departamento: dict = None,
+    rutas_distrito_dl: dict = None,
 ) -> pd.DataFrame:
     logger.info("=" * 60)
     logger.info("COMPARACIÓN O2 (base) vs R11 (extendido)")
@@ -252,8 +409,20 @@ def pipeline_comparacion(
     graficar_predicciones_por_distrito(
         resultados_r11, panel_original, df_distritos_info,
         tamanio_entrenamiento, comparacion_dir,
-        n=5, anio_inicio=anio_inicio,
+        n=3, anio_inicio=anio_inicio,
     )
+
+    if rutas_departamento:
+        logger.info("Generando comparación por departamento (modelos R11)...")
+        comparar_departamentos(rutas_departamento, df_distritos_info, comparacion_dir)
+    else:
+        logger.info("[SKIP] Comparación por departamento — rutas_departamento no provisto.")
+
+    if rutas_distrito_dl:
+        logger.info("Generando boxplot de RMSE distrital (modelos R11)...")
+        graficar_boxplot_validacion_distrital(rutas_distrito_dl, comparacion_dir)
+    else:
+        logger.info("[SKIP] Boxplot distrital R11 — rutas_distrito_dl no provisto.")
 
     if df_comp.empty:
         return df_comp

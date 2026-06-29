@@ -306,9 +306,15 @@ def main():
             "CNN1D":        os.path.join(CNN_DIR, "cnn_final_departamento.csv"),
             "Persistencia": os.path.join(PERSISTENCIA_DIR, "persistencia_resultados_departamento.csv"),
         }
+        rutas_distrito_dl = {
+            "MLP":   os.path.join(MLP_DIR, "mlp_final_distrito.csv"),
+            "LSTM":  os.path.join(LSTM_DIR, "lstm_final_distrito.csv"),
+            "CNN1D": os.path.join(CNN_DIR, "cnn_final_distrito.csv"),
+        }
         pipeline_comparacion(
             resultados, series, df_distritos_info, TAMANIO_ENTRENAMIENTO,
-            COMPARACION_DIR, rutas_departamento=rutas_departamento, anio_inicio=ANIO_INICIO,
+            COMPARACION_DIR, rutas_departamento=rutas_departamento,
+            rutas_distrito_dl=rutas_distrito_dl, anio_inicio=ANIO_INICIO,
         )
 
         # =================================================================

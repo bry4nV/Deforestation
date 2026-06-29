@@ -8,7 +8,8 @@ Protocolo de ejecución:
   4. Fase 1 (grid search) para MLP, LSTM, CNN — idempotente por modelo
   5. Análisis visual de Fase 1
   6. Fase 2 (config final) para MLP, LSTM, CNN — solo cuando FINAL_CONFIG_* ≠ None
-  7. Comparación base (O2) vs extendido (R11)
+  7. Comparación base (O2) vs extendido (R11), por departamento y boxplot distrital
+  8. Pronóstico 2025 (sin reentrenamiento, ancla = pct_bosque_real_2024)
 
 Uso:
     python -m O3.r11.main
@@ -33,6 +34,7 @@ from O3.r11.seleccion_fase1 import generar_seleccion_final
 from O3.r11.cargar_panel import cargar_panel
 from O3.r11.construir_dataset import construir_datasets
 from O3.r11.escalador import ajustar_y_escalar
+from O3.r11.pronostico_2025 import generar_pronostico_2025
 from O3.r11.transformaciones import aplicar_transformaciones
 from O3.utils import iniciar_log_archivo
 from O3.r11.final_configs import FINAL_CONFIG_CNN, FINAL_CONFIG_LSTM, FINAL_CONFIG_MLP
@@ -253,12 +255,48 @@ def main() -> None:
             "            Completa las configs en final_configs.py y vuelve a ejecutar."
         )
     else:
+        rutas_departamento = {
+            "MLP":  os.path.join(R11_MLP_DIR,  "mlp_final_departamento.csv"),
+            "LSTM": os.path.join(R11_LSTM_DIR, "lstm_final_departamento.csv"),
+            "CNN":  os.path.join(R11_CNN_DIR,  "cnn_final_departamento.csv"),
+        }
+        rutas_distrito_dl = {
+            "MLP":  os.path.join(R11_MLP_DIR,  "mlp_final_distrito.csv"),
+            "LSTM": os.path.join(R11_LSTM_DIR, "lstm_final_distrito.csv"),
+            "CNN":  os.path.join(R11_CNN_DIR,  "cnn_final_distrito.csv"),
+        }
         pipeline_comparacion(
             panel_original=panel,
             df_distritos_info=df_distritos_info,
             tamanio_entrenamiento=TAMANIO_ENTRENAMIENTO,
             anio_inicio=ANIO_INICIO,
+            rutas_departamento=rutas_departamento,
+            rutas_distrito_dl=rutas_distrito_dl,
         )
+
+        # =====================================================================
+        # PASO 8: PRONÓSTICO 2025 (sin reentrenamiento, ancla = pct_bosque_real_2024)
+        # =====================================================================
+
+        ruta_pronostico_2025 = os.path.join(R11_COMPARACION_DIR, "pronostico_2025.csv")
+        if os.path.exists(ruta_pronostico_2025):
+            logger.info(f"[SKIP] Pronóstico 2025 — ya existe {ruta_pronostico_2025}.")
+        else:
+            logger.info("=" * 70)
+            logger.info("PRONÓSTICO 2025 — MLP/LSTM/CNN multivariables")
+            logger.info("=" * 70)
+            rutas_modelo_2025 = {
+                "mlp":  os.path.join(R11_MLP_DIR,  "mlp_final_model.pth"),
+                "lstm": os.path.join(R11_LSTM_DIR, "lstm_final_model.pth"),
+                "cnn":  os.path.join(R11_CNN_DIR,  "cnn_final_model.pth"),
+            }
+            df_pronostico_2025 = generar_pronostico_2025(
+                panel_escalado, panel, df_distritos_info, rutas_modelo_2025, escalador,
+                anio_anchor=anios[-1],
+            )
+            df_pronostico_2025.to_csv(ruta_pronostico_2025, index=False)
+            logger.info(f"[OK] {ruta_pronostico_2025}")
+            logger.info("\n" + df_pronostico_2025.head().to_string(index=False))
 
 
 if __name__ == "__main__":

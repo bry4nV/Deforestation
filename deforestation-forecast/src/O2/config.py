@@ -83,3 +83,14 @@ CNN_BATCH_SIZE_VALUES    = [8, 16]
 # =============================
 
 DL_WINDOW_VALUES = [3, 4, 5, 6, 7]
+
+# ============================================================
+# Nombres de departamento para presentación (figuras, anexos)
+# ==========================================================
+
+NOMBRES_DEPARTAMENTO_DISPLAY = {
+    "Huanuco": "Huánuco",
+    "Junin": "Junín",
+    "Madre De Dios": "Madre de Dios",
+    "San Martin": "San Martín",
+}

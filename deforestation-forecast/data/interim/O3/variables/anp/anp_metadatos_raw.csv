@@ -1,0 +1,5 @@
+categoria,tipo_fuente,archivo,ruta,crs,geom_type,n_features,bbox_minx,bbox_miny,bbox_maxx,bbox_maxy,file_size_mb
+anp_nacional,vectorial,ANPNacionalDefinitivas.shp,D:\VisualCode\Tesis\deforestation-forecast\data\raw\variables-locales\anp\ANP Nacional Definitivas\ANPNacionalDefinitivas.shp,EPSG:4326,Polygon,103.0,-81.325429,-17.748185,-68.712295,-0.076513,3.71
+anp_zona_reservada,vectorial,ZonasReservadas.shp,D:\VisualCode\Tesis\deforestation-forecast\data\raw\variables-locales\anp\Zonas Reservadas\ZonasReservadas.shp,EPSG:4326,Polygon,8.0,-78.965683,-16.439561,-69.047393,-2.954984,0.14
+anp_acr,vectorial,AreasdeConservacionRegional.shp,D:\VisualCode\Tesis\deforestation-forecast\data\raw\variables-locales\anp\Áreas de Conservación Regional\AreasdeConservacionRegional.shp,EPSG:4326,Polygon,48.0,-80.405787,-17.582348,-69.672764,-2.356754,1.1
+anp_acp,vectorial,AreasdeConservacionPrivada.shp,D:\VisualCode\Tesis\deforestation-forecast\data\raw\variables-locales\anp\Áreas de Conservación Privada\AreasdeConservacionPrivada.shp,EPSG:4326,"MultiPolygon, Polygon",227.0,-80.61719,-16.888761,-68.703926,-2.889699,0.67

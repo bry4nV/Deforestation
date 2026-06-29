@@ -3,6 +3,7 @@ import os
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 
 
@@ -302,13 +303,15 @@ def graficar_mejora_relativa(df_comp, comparacion_dir):
 
 def comparar_departamentos(rutas_departamento, df_distritos_info, comparacion_dir):
     """
-    Construye la comparación por departamento entre todos los modelos (no solo
-    el ganador): matriz completa de RMSE, tabla de mejor modelo por departamento
-    (con conteo de distritos para poder juzgar qué tan robusto es ese resultado)
-    y un heatmap donde se resalta en negrita el mejor modelo de cada fila.
+    Construye una única tabla de comparación departamental para todos los
+    modelos en rutas_departamento: RMSE y MAE de cada modelo por departamento,
+    número de distritos (para juzgar qué tan robusto es cada resultado), y el
+    mejor modelo por RMSE y por MAE. También genera el heatmap de RMSE a
+    partir de esa misma tabla, resaltando en negrita el mejor modelo de cada
+    fila.
 
     rutas_departamento: dict {nombre_modelo: ruta_csv}, en el orden en que se
-    quiere que aparezcan en el heatmap.
+    quiere que aparezcan en las columnas.
     """
     dfs = []
     for nombre, ruta in rutas_departamento.items():
@@ -321,34 +324,28 @@ def comparar_departamentos(rutas_departamento, df_distritos_info, comparacion_di
 
     if not dfs:
         print("[WARN] comparar_departamentos: no hay archivos disponibles, se omite.")
-        return None, None
+        return None
 
     todos = pd.concat(dfs, ignore_index=True)
     n_distritos = df_distritos_info.groupby("departamento").size().rename("n_distritos")
-
-    # — Matriz completa de RMSE (departamento x modelo)
     orden_modelos = [n for n in rutas_departamento if n in todos["modelo"].unique()]
+
     pivot_rmse = todos.pivot_table(index="departamento", columns="modelo", values="rmse")[orden_modelos]
+    pivot_mae = todos.pivot_table(index="departamento", columns="modelo", values="mae")[orden_modelos]
 
-    ruta_matriz = os.path.join(comparacion_dir, "comparacion_departamentos.csv")
-    pivot_rmse.to_csv(ruta_matriz)
-    print(f"[OK] {ruta_matriz}")
+    consolidado = pd.DataFrame(index=pivot_rmse.index)
+    consolidado["n_distritos"] = n_distritos
+    for m in orden_modelos:
+        consolidado[f"rmse_{m.lower()}"] = pivot_rmse[m]
+    for m in orden_modelos:
+        consolidado[f"mae_{m.lower()}"] = pivot_mae[m]
+    consolidado["mejor_modelo_rmse"] = pivot_rmse.idxmin(axis=1)
+    consolidado["mejor_modelo_mae"] = pivot_mae.idxmin(axis=1)
+    consolidado = consolidado.reset_index().sort_values("departamento").reset_index(drop=True)
 
-    # — Mejor modelo por departamento, con n.º de distritos para juzgar robustez
-    mejor = (
-        todos.sort_values("rmse")
-        .groupby("departamento")
-        .first()
-        .join(n_distritos)
-        .reset_index()[["departamento", "n_distritos", "modelo", "rmse", "mae"]]
-        .rename(columns={"modelo": "mejor_modelo"})
-        .sort_values("departamento")
-        .reset_index(drop=True)
-    )
-
-    ruta_mejor = os.path.join(comparacion_dir, "mejor_modelo_departamento.csv")
-    mejor.to_csv(ruta_mejor, index=False)
-    print(f"[OK] {ruta_mejor}")
+    ruta_consolidado = os.path.join(comparacion_dir, "comparacion_departamentos.csv")
+    consolidado.to_csv(ruta_consolidado, index=False)
+    print(f"[OK] {ruta_consolidado}")
 
     # — Heatmap: filas=departamentos, columnas=modelos, color=RMSE, negrita=mejor de la fila
     fig, ax = plt.subplots(figsize=(1.4 * len(orden_modelos) + 2, 0.45 * len(pivot_rmse) + 2))
@@ -372,7 +369,6 @@ def comparar_departamentos(rutas_departamento, df_distritos_info, comparacion_di
             )
 
     fig.colorbar(im, ax=ax, label="RMSE")
-    ax.set_title("RMSE por departamento y modelo")
     fig.tight_layout()
 
     ruta_heatmap = os.path.join(comparacion_dir, "heatmap_departamentos.png")
@@ -380,12 +376,80 @@ def comparar_departamentos(rutas_departamento, df_distritos_info, comparacion_di
     plt.close(fig)
     print(f"[OK] {ruta_heatmap}")
 
-    return pivot_rmse, mejor
+    return consolidado
+
+
+def graficar_boxplot_validacion_distrital(rutas_distrito_dl, comparacion_dir, top_n=10):
+    """
+    Boxplot del RMSE distrital de validación (walk-forward 2020-2024) para los
+    candidatos de aprendizaje profundo (MLP, LSTM, CNN1D), para el anexo de R7.
+
+    Se resaltan en rojo los distritos que aparecen, simultáneamente, en el
+    top_n de mayor RMSE de los tres modelos (intersección) -- los demás
+    valores por encima del bigote superior de cada caja quedan en gris.
+    """
+    rmse_por_modelo = {}
+    top_n_por_modelo = {}
+
+    for nombre, ruta in rutas_distrito_dl.items():
+        df = pd.read_csv(ruta, dtype={"geocode": str})
+        df["geocode"] = df["geocode"].str.zfill(6)
+        serie_rmse = df.set_index("geocode")["rmse"]
+        rmse_por_modelo[nombre] = serie_rmse
+        top_n_por_modelo[nombre] = set(serie_rmse.sort_values(ascending=False).head(top_n).index)
+
+    interseccion = set.intersection(*top_n_por_modelo.values())
+
+    nombres = list(rutas_distrito_dl.keys())
+    valores = [rmse_por_modelo[n].values for n in nombres]
+
+    fig, ax = plt.subplots(figsize=(7, 5.5))
+    ax.boxplot(valores, labels=nombres, showfliers=False, widths=0.5, patch_artist=True,
+               boxprops=dict(facecolor="#a6c8e0"))
+
+    rng = np.random.default_rng(42)
+    for j, nombre in enumerate(nombres, start=1):
+        serie = rmse_por_modelo[nombre]
+        q1, q3 = np.percentile(serie.values, [25, 75])
+        bigote_superior = q3 + 1.5 * (q3 - q1)
+        atipicos = serie[serie > bigote_superior]
+
+        x_jitter = j + rng.uniform(-0.06, 0.06, size=len(atipicos))
+        colores_punto = ["crimson" if geo in interseccion else "gray" for geo in atipicos.index]
+        ax.scatter(x_jitter, atipicos.values, c=colores_punto, s=24, zorder=3,
+                   edgecolor="white", linewidth=0.6)
+
+    ax.set_ylabel("RMSE distrital de validación (2020-2024)")
+    ax.grid(axis="y", linestyle="--", alpha=0.4)
+
+    leyenda = [
+        Line2D([0], [0], marker="o", linestyle="", color="crimson",
+               label=f"Coincide en los top-{top_n} de mayor error de los 3 modelos"),
+        Line2D([0], [0], marker="o", linestyle="", color="gray",
+               label="Atípico solo en este modelo"),
+    ]
+    ax.legend(
+        handles=leyenda,
+        loc="lower center",
+        bbox_to_anchor=(0.5, 1.02),
+        ncol=2,
+        fontsize=8,
+        frameon=True,
+    )
+
+    fig.tight_layout()
+
+    ruta_fig = os.path.join(comparacion_dir, "boxplot_rmse_distrital_3candidatos.png")
+    fig.savefig(ruta_fig, dpi=150, bbox_inches="tight")
+    plt.close(fig)
+    print(f"[OK] {ruta_fig}")
+
+    return ruta_fig
 
 
 def pipeline_comparacion(
     resultados, series, df_distritos_info, tamanio_entrenamiento,
-    comparacion_dir, rutas_departamento=None, anio_inicio=1985,
+    comparacion_dir, rutas_departamento=None, rutas_distrito_dl=None, anio_inicio=1985,
 ):
     print("\n" + "=" * 60)
     print(" COMPARACIÓN DE MODELOS ")
@@ -397,10 +461,10 @@ def pipeline_comparacion(
     print("\n[INFO] Generando gráfico de mejora relativa frente a Persistencia...")
     graficar_mejora_relativa(df_comp, comparacion_dir)
 
-    print("\n[INFO] Generando gráficos (mejor + peor distrito)...")
+    print("\n[INFO] Generando gráficos (3 mejores + 3 peores distritos)...")
     graficar_predicciones(
         resultados, series, df_distritos_info, tamanio_entrenamiento,
-        comparacion_dir, n=1, anio_inicio=anio_inicio,
+        comparacion_dir, n=3, anio_inicio=anio_inicio,
     )
 
     if rutas_departamento:
@@ -408,6 +472,12 @@ def pipeline_comparacion(
         comparar_departamentos(rutas_departamento, df_distritos_info, comparacion_dir)
     else:
         print("\n[SKIP] Comparación por departamento — rutas_departamento no provisto.")
+
+    if rutas_distrito_dl:
+        print("\n[INFO] Generando boxplot de RMSE distrital (candidatos DL, anexo R7)...")
+        graficar_boxplot_validacion_distrital(rutas_distrito_dl, comparacion_dir)
+    else:
+        print("\n[SKIP] Boxplot distrital DL — rutas_distrito_dl no provisto.")
 
     mejor = df_comp.iloc[0]
     print(f"\n[GANADOR] {mejor['modelo']}  RMSE={mejor['rmse']:.4f}  MAE={mejor['mae']:.4f}")

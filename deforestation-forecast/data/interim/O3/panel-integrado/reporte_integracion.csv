@@ -1,23 +1,23 @@
-variable,completitud_pct,n_faltantes,media,en_panel_light
-pct_agropecuario,100.0,0,0.344902,True
-pct_anp,100.0,0,0.032892,True
-tiene_anp,100.0,0,0.205,False
-pct_rios_lagos,100.0,0,0.010162,False
-pct_urbano,100.0,0,0.004946,False
-km_carreteras,100.0,0,100.141957,False
-area_utm_km2,100.0,0,480.518263,False
-densidad_carreteras_km_km2,100.0,0,0.32202,True
-km_rios,100.0,0,18.698588,False
-densidad_rios_km_km2,100.0,0,0.039727,True
-elev_media_m,100.0,0,1466.356503,True
-elev_mediana_m,100.0,0,1432.28,False
-elev_std_m,100.0,0,374.147434,False
-elev_min_m,100.0,0,749.195,False
-elev_max_m,100.0,0,2567.265,False
-elev_count_px,100.0,0,511427.24,False
-pendiente_media_deg,100.0,0,17.163811,True
-pendiente_mediana_deg,100.0,0,16.26521,False
-pendiente_std_deg,100.0,0,8.797812,False
-pendiente_min_deg,100.0,0,0.034976,False
-pendiente_max_deg,100.0,0,65.358804,False
-pendiente_count_px,100.0,0,511625.305,False
+variable,tipo_variable,base_calculo,n_base,completitud_pct,n_faltantes,n_distritos_con_dato,n_distritos_total,pct_distritos_con_dato,media,en_panel_modelo,metadatos_raw_csv
+pct_agropecuario,temporal,panel completo: 200 distritos x 40 anios = 8000 filas,8000,100.0,0,200,200,100.0,0.344902,True,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\agropecuaria\agropecuaria_metadatos_raw.csv
+pct_anp,temporal,panel completo: 200 distritos x 40 anios = 8000 filas,8000,100.0,0,200,200,100.0,0.032892,True,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\anp\anp_metadatos_raw.csv
+tiene_anp,temporal,panel completo: 200 distritos x 40 anios = 8000 filas,8000,100.0,0,200,200,100.0,0.205,False,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\anp\anp_metadatos_raw.csv
+pct_rios_lagos,temporal,panel completo: 200 distritos x 40 anios = 8000 filas,8000,100.0,0,200,200,100.0,0.010162,False,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables-respaldo\rios_lagos\rios_lagos_metadatos_raw.csv
+pct_urbano,temporal,panel completo: 200 distritos x 40 anios = 8000 filas,8000,100.0,0,200,200,100.0,0.004946,False,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables-respaldo\urbano\urbano_metadatos_raw.csv
+km_carreteras,estatica,"200 distritos (valor estatico, replicado en las 40 filas anuales de cada distrito)",200,100.0,0,200,200,100.0,100.141957,False,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\carreteras\carreteras_metadatos_raw.csv
+area_utm_km2,estatica,"200 distritos (valor estatico, replicado en las 40 filas anuales de cada distrito)",200,100.0,0,200,200,100.0,480.518263,False,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\carreteras\carreteras_metadatos_raw.csv
+densidad_carreteras_km_km2,estatica,"200 distritos (valor estatico, replicado en las 40 filas anuales de cada distrito)",200,100.0,0,200,200,100.0,0.32202,True,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\carreteras\carreteras_metadatos_raw.csv
+km_rios,estatica,"200 distritos (valor estatico, replicado en las 40 filas anuales de cada distrito)",200,100.0,0,200,200,100.0,18.698588,False,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\rios\rios_metadatos_raw.csv
+densidad_rios_km_km2,estatica,"200 distritos (valor estatico, replicado en las 40 filas anuales de cada distrito)",200,100.0,0,200,200,100.0,0.039727,True,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\rios\rios_metadatos_raw.csv
+elev_media_m,estatica,"200 distritos (valor estatico, replicado en las 40 filas anuales de cada distrito)",200,100.0,0,200,200,100.0,1466.356503,True,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\elevacion\elevacion_metadatos_raw.csv
+elev_mediana_m,estatica,"200 distritos (valor estatico, replicado en las 40 filas anuales de cada distrito)",200,100.0,0,200,200,100.0,1432.28,False,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\elevacion\elevacion_metadatos_raw.csv
+elev_std_m,estatica,"200 distritos (valor estatico, replicado en las 40 filas anuales de cada distrito)",200,100.0,0,200,200,100.0,374.147434,False,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\elevacion\elevacion_metadatos_raw.csv
+elev_min_m,estatica,"200 distritos (valor estatico, replicado en las 40 filas anuales de cada distrito)",200,100.0,0,200,200,100.0,749.195,False,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\elevacion\elevacion_metadatos_raw.csv
+elev_max_m,estatica,"200 distritos (valor estatico, replicado en las 40 filas anuales de cada distrito)",200,100.0,0,200,200,100.0,2567.265,False,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\elevacion\elevacion_metadatos_raw.csv
+elev_count_px,estatica,"200 distritos (valor estatico, replicado en las 40 filas anuales de cada distrito)",200,100.0,0,200,200,100.0,511427.24,False,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\elevacion\elevacion_metadatos_raw.csv
+pendiente_media_deg,estatica,"200 distritos (valor estatico, replicado en las 40 filas anuales de cada distrito)",200,100.0,0,200,200,100.0,17.163811,True,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\pendiente\pendiente_metadatos_raw.csv
+pendiente_mediana_deg,estatica,"200 distritos (valor estatico, replicado en las 40 filas anuales de cada distrito)",200,100.0,0,200,200,100.0,16.26521,False,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\pendiente\pendiente_metadatos_raw.csv
+pendiente_std_deg,estatica,"200 distritos (valor estatico, replicado en las 40 filas anuales de cada distrito)",200,100.0,0,200,200,100.0,8.797812,False,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\pendiente\pendiente_metadatos_raw.csv
+pendiente_min_deg,estatica,"200 distritos (valor estatico, replicado en las 40 filas anuales de cada distrito)",200,100.0,0,200,200,100.0,0.034976,False,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\pendiente\pendiente_metadatos_raw.csv
+pendiente_max_deg,estatica,"200 distritos (valor estatico, replicado en las 40 filas anuales de cada distrito)",200,100.0,0,200,200,100.0,65.358804,False,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\pendiente\pendiente_metadatos_raw.csv
+pendiente_count_px,estatica,"200 distritos (valor estatico, replicado en las 40 filas anuales de cada distrito)",200,100.0,0,200,200,100.0,511625.305,False,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\variables\pendiente\pendiente_metadatos_raw.csv

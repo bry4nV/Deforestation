@@ -22,20 +22,21 @@
 10. [Modelo MLP](#10-modelo-mlp)
 11. [Modelo LSTM](#11-modelo-lstm)
 12. [Modelo CNN 1D](#12-modelo-cnn-1d)
-13. [Modelo TCN](#13-modelo-tcn)
-14. [Utilidades compartidas — utils.py](#14-utilidades-compartidas--utilspy)
-15. [Verificación de configuraciones finales — seleccion_fase1.py](#15-verificación-de-configuraciones-finales--seleccion_fase1py)
-16. [Comparación final](#16-comparación-final)
-17. [Referencia de configuración](#17-referencia-de-configuración)
-18. [Inventario de salidas](#18-inventario-de-salidas)
-19. [Decisiones de diseño](#19-decisiones-de-diseño)
-20. [Mejoras aplicadas](#20-mejoras-aplicadas)
+13. [Utilidades compartidas — utils.py](#13-utilidades-compartidas--utilspy)
+14. [Verificación de configuraciones finales — seleccion_fase1.py](#14-verificación-de-configuraciones-finales--seleccion_fase1py)
+15. [Comparación final](#15-comparación-final)
+16. [Verificación nivel vs. deforestación derivada](#16-verificación-nivel-vs-deforestación-derivada)
+17. [R7 — Pronóstico 2025](#17-r7--pronóstico-2025)
+18. [Referencia de configuración](#18-referencia-de-configuración)
+19. [Inventario de salidas](#19-inventario-de-salidas)
+20. [Decisiones de diseño](#20-decisiones-de-diseño)
+21. [Mejoras aplicadas](#21-mejoras-aplicadas)
 
 ---
 
 ## 1. Propósito del módulo
 
-O2 toma como entrada el panel de series temporales de cobertura boscosa producido por O1 (180 distritos × 40 años) y entrena, evalúa y compara seis modelos de pronóstico: un baseline de persistencia, ARIMA, y cuatro arquitecturas de aprendizaje profundo (MLP, LSTM, CNN 1D, TCN).
+O2 toma como entrada el panel de series temporales de cobertura boscosa producido por O1 (180 distritos × 40 años) y entrena, evalúa y compara cinco modelos de pronóstico: un baseline de persistencia, ARIMA, y tres arquitecturas de aprendizaje profundo (MLP, LSTM, CNN 1D).
 
 El módulo implementa un **protocolo de evaluación homogéneo** para garantizar que los resultados de todos los modelos sean comparables entre sí, y una **arquitectura de pipeline en dos fases** que intercala la revisión humana del investigador entre el grid search y el entrenamiento final.
 
@@ -45,7 +46,7 @@ El módulo implementa un **protocolo de evaluación homogéneo** para garantizar
 
 ```
 src/O2/
-├── config.py                     ← Constantes centralizadas: rutas y grids de hiperparámetros
+├── config.py                     ← Constantes centralizadas: rutas, grids de hiperparámetros, nombres de display
 ├── O2_DOCUMENTATION.md           ← Documentación única del módulo
 │
 └── r4_r5/
@@ -62,16 +63,17 @@ src/O2/
     ├── pipeline_mlp.py           ← Grid search + entrenamiento final MLP
     ├── pipeline_lstm.py          ← Grid search + entrenamiento final LSTM
     ├── pipeline_cnn.py           ← Grid search + entrenamiento final CNN 1D
-    ├── pipeline_tcn.py           ← Grid search + entrenamiento final TCN
-    └── pipeline_comparacion.py   ← Ranking global y gráficos de mejores/peores distritos
+    ├── pipeline_comparacion.py   ← Ranking global, comparación por departamento y gráficos de mejores/peores distritos
+    ├── verificacion_deforestacion.py  ← Confirma que el error de nivel == error de deforestación derivada
+    └── pronostico_r7.py          ← R7: pronóstico 2025 (sin reentrenamiento) para MLP/LSTM/CNN1D
 ```
 
 ### 2.1 Responsabilidad por archivo
 
 | Archivo | Rol |
 |---------|-----|
-| `config.py` | Rutas de salida, listas de hiperparámetros para grid search, `SEMILLA` |
-| `r4_r5/main.py` | Orquesta todos los pasos: carga → modelos estadísticos → DL → comparación |
+| `config.py` | Rutas de salida, listas de hiperparámetros para grid search, `SEMILLA`, `NOMBRES_DEPARTAMENTO_DISPLAY` |
+| `r4_r5/main.py` | Orquesta todos los pasos: carga → modelos estadísticos → DL → comparación → verificación → pronóstico R7 |
 | `r4_r5/construir_dataset.py` | `cargar_series`, `construir_dataset_estadistico`, `construir_dataset_dl` |
 | `r4_r5/utils.py` | `fijar_semilla`, `calcular_metricas`, `diagnosticar_ajuste`, `obtener_activacion`, `construir_df_predicciones`, `graficar_curva` |
 | `r4_r5/final_configs.py` | Diccionarios con la configuración ganadora de cada modelo (editado manualmente) |
@@ -82,8 +84,9 @@ src/O2/
 | `r4_r5/pipeline_mlp.py` | Grid search sobre ventanas DL (evaluación directa); Fase 2 con walk-forward geográfico |
 | `r4_r5/pipeline_lstm.py` | Igual que MLP pero arquitectura LSTM (sin `obtener_activacion`) |
 | `r4_r5/pipeline_cnn.py` | Igual que MLP pero arquitectura CNN 1D |
-| `r4_r5/pipeline_tcn.py` | Igual que CNN pero arquitectura TCN con dilatación causal exponencial |
-| `r4_r5/pipeline_comparacion.py` | Ranking CSV + gráficos de panel (histórico + pronóstico) para 5 mejores y 5 peores distritos |
+| `r4_r5/pipeline_comparacion.py` | Ranking CSV, comparación por departamento (heatmap), boxplot distrital de candidatos DL, y gráficos de panel (histórico + pronóstico) para 3 mejores y 3 peores distritos |
+| `r4_r5/verificacion_deforestacion.py` | Verifica fila por fila que RMSE/MAE de nivel y de deforestación derivada coinciden, para los 5 modelos |
+| `r4_r5/pronostico_r7.py` | Pronóstico 2025 con MLP/LSTM/CNN1D ya entrenados; helpers de deforestación en km² y gráficos de anexo (uso manual, no orquestados por `main.py`) |
 
 ---
 
@@ -106,17 +109,22 @@ O1/series-temporales/entrenamiento/distritos_entrenamiento.csv
   │               │
   │               ├── pipeline_mlp   ──► mlp/
   │               ├── pipeline_lstm  ──► lstm/
-  │               ├── pipeline_cnn   ──► cnn/
-  │               └── pipeline_tcn   ──► tcn/
+  │               └── pipeline_cnn   ──► cnn/
   │
   ├─ [revisión manual → final_configs.py]
   │
   ├─ analisis_arima            ──► arima/analisis_arima/
   ├─ generar_seleccion_final() ──► comparacion/seleccion_configuraciones_finales.csv
   │
-  └─ pipeline_comparacion ──► comparacion/comparacion_modelos.csv
-                              comparacion/mejores_01–05_*.png
-                              comparacion/peores_01–05_*.png
+  ├─ pipeline_comparacion ──► comparacion/comparacion_modelos.csv
+  │                          comparacion/mejora_relativa_persistencia.png
+  │                          comparacion/mejores_01–03_*.png / peores_01–03_*.png
+  │                          comparacion/comparacion_departamentos.csv + heatmap_departamentos.png
+  │                          comparacion/boxplot_rmse_distrital_3candidatos.png
+  │
+  ├─ verificar_identidad_deforestacion ──► comparacion/verificacion_deforestacion.csv
+  │
+  └─ generar_pronostico_2025 (R7) ──► comparacion/pronostico_2025.csv
 ```
 
 **Punto de entrada:** `python -m O2.r4_r5.main`  
@@ -128,7 +136,7 @@ O1/series-temporales/entrenamiento/distritos_entrenamiento.csv
 
 El pronóstico de deforestación se plantea como **predicción de series temporales univariadas**: dado el histórico de `pct_bosque` de un distrito, predecir los 5 años siguientes. Cada distrito se trata como una serie independiente; los modelos no explotan correlaciones espaciales entre distritos vecinos.
 
-Se evalúan seis modelos con complejidad creciente:
+Se evalúan cinco modelos con complejidad creciente:
 
 | Modelo | Tipo | Supuesto principal |
 |--------|------|--------------------|
@@ -137,7 +145,6 @@ Se evalúan seis modelos con complejidad creciente:
 | MLP | Red neuronal feed-forward | Patrones no lineales en una ventana plana |
 | LSTM | Red neuronal recurrente | Dependencias secuenciales con memoria explícita |
 | CNN 1D | Red convolucional | Patrones locales repetibles en la secuencia temporal |
-| TCN | Red convolucional causal | Dependencias de largo alcance mediante dilatación exponencial |
 
 El criterio de selección del mejor modelo en cada familia es el **RMSE global walk-forward** sobre el período 2020–2024.
 
@@ -209,13 +216,13 @@ Ventanas < 3 no capturan tendencias; ventanas > 7 reducen las muestras de entren
 
 ## 6. Arquitectura de pipeline en dos fases
 
-Todos los modelos con hiperparámetros (ARIMA, MLP, LSTM, CNN, TCN) siguen una arquitectura de dos fases que intercala la revisión humana entre la búsqueda y la evaluación final.
+Todos los modelos con hiperparámetros (ARIMA, MLP, LSTM, CNN) siguen una arquitectura de dos fases que intercala la revisión humana entre la búsqueda y la evaluación final.
 
 ### 6.1 Fase 1 — Grid search exploratorio
 
 El pipeline ejecuta un grid search sobre el espacio de hiperparámetros y guarda solo métricas agregadas en CSV. No guarda modelos entrenados ni predicciones individuales.
 
-**Evaluación en Fase 1 para modelos DL (MLP, LSTM, CNN, TCN):** Se evalúa directamente sobre los pares `(X_test, y_true)` del dataset de ventanas. Esto no es el walk-forward geográfico: se mide el error sobre las ventanas cuyo objetivo cae en 2020–2024, sin actualización oracle entre pasos. Esta simplificación hace tractable el grid search para cientos de configuraciones.
+**Evaluación en Fase 1 para modelos DL (MLP, LSTM, CNN):** Se evalúa directamente sobre los pares `(X_test, y_true)` del dataset de ventanas. Esto no es el walk-forward geográfico: se mide el error sobre las ventanas cuyo objetivo cae en 2020–2024, sin actualización oracle entre pasos. Esta simplificación hace tractable el grid search para cientos de configuraciones.
 
 **Evaluación en Fase 1 para ARIMA:** por su naturaleza de ajuste continuo, ya realiza el walk-forward completo en Fase 1 (ver §9.3).
 
@@ -238,7 +245,6 @@ FINAL_CONFIG_ARIMA = {...}   # configuración elegida — ver §9.5
 FINAL_CONFIG_MLP   = {...}   # configuración elegida — ver §10.4
 FINAL_CONFIG_LSTM  = {...}   # configuración elegida — ver §11.5
 FINAL_CONFIG_CNN   = {...}   # configuración elegida — ver §12.5
-FINAL_CONFIG_TCN   = None    # pendiente de revisión
 ```
 
 Mientras un valor sea `None`, `main.py` imprime `[PENDIENTE]` para ese modelo y la comparación final queda bloqueada.
@@ -263,7 +269,7 @@ _final_predicciones.csv    ← predicciones en formato largo (ver §6.4)
 _final_ypred.npy           ← array (n_distritos, horizonte) de predicciones
 ```
 
-MLP, LSTM, CNN y TCN guardan adicionalmente `_final_model.pth` y `_final_curva.png`. ARIMA no tiene objeto de modelo persistible.
+MLP, LSTM y CNN guardan adicionalmente `_final_model.pth` y `_final_curva.png`. ARIMA no tiene objeto de modelo persistible.
 
 ### 6.4 Formato de predicciones largas
 
@@ -447,7 +453,7 @@ preparar_X_lstm: ya tiene forma (n, window_size, 1) → devuelve float32
 
 ### 11.2 Activaciones internas — no son hiperparámetros
 
-Las celdas LSTM tienen activaciones fijas por definición: sigmoid en las puertas; tanh en el candidato de celda y en la salida del estado oculto. Modificarlas produciría una arquitectura diferente (GRU, MGU). Por ello `activation` no aparece en el grid search de LSTM, a diferencia de MLP, CNN y TCN.
+Las celdas LSTM tienen activaciones fijas por definición: sigmoid en las puertas; tanh en el candidato de celda y en la salida del estado oculto. Modificarlas produciría una arquitectura diferente (GRU, MGU). Por ello `activation` no aparece en el grid search de LSTM, a diferencia de MLP y CNN.
 
 ### 11.3 Dropout en arquitecturas multicapa
 
@@ -527,73 +533,9 @@ FINAL_CONFIG_CNN = {"window_size": 5, "conv_channels": [16, 32], "kernel_size": 
 
 ---
 
-## 13. Modelo TCN
+## 13. Utilidades compartidas — utils.py
 
-### 13.1 Arquitectura
-
-El TCN (Temporal Convolutional Network, Bai et al. 2018) apila bloques residuales con convoluciones **causales dilatadas**. La dilatación crece exponencialmente con la profundidad: el bloque `i` usa `dilation = 2^i`.
-
-```
-Input(1, window_size) → [TCNBlock(dil=2^0)] → [TCNBlock(dil=2^1)] → ...
-                      → out[:, :, -1]         ← último paso temporal
-                      → Linear(1)
-```
-
-Cada `TCNBlock` contiene:
-- Dos convoluciones causales dilatadas (`padding = (kernel_size − 1) × dilation` solo por la izquierda)
-- `_chomp`: recorta los elementos finales añadidos por el padding para mantener la longitud temporal
-- Conexión residual con proyección 1×1 si los canales de entrada y salida difieren
-- Activaciones configurables y dropout
-
-### 13.2 Campo receptivo efectivo
-
-Para `L` bloques y kernel de tamaño `k`:
-
-```
-RF = (k − 1) × (2^L − 1) + 1
-```
-
-Ejemplos: L=1, k=3 → RF=3; L=2, k=3 → RF=7; L=2, k=2 → RF=4.
-
-Con ventanas de 3–7 años y bloques de dilatación doble, el TCN puede cubrir el histórico completo de la ventana desde el bloque 2 o 3.
-
-### 13.3 Representación de la entrada (`preparar_X_tcn`)
-
-```
-preparar_X_tcn: (n, window_size, 1) → permute(0, 2, 1) → (n, 1, window_size)
-```
-
-Idéntico a `preparar_X_cnn`. La diferencia arquitectónica es interna (convoluciones causales vs. `padding="same"`).
-
-### 13.4 Ventaja sobre CNN 1D
-
-La CNN 1D usa `padding="same"` sin restricción causal — en principio podría acceder a información "futura" dentro de la ventana. El TCN usa padding estrictamente causal, garantizando que la predicción en el paso `t` solo accede a `[t-w, t-1]`. En el contexto de evaluación walk-forward con ventanas de observaciones pasadas, la distinción causal no tiene impacto práctico, pero hace al TCN más correcto desde el punto de vista de la teoría de series temporales.
-
-### 13.5 Grid search
-
-```python
-TCN_NUM_CHANNELS_VALUES = [[16], [32], [16, 32]]
-TCN_KERNEL_SIZE_VALUES  = [2, 3]
-TCN_DROPOUT_VALUES      = [0.0, 0.1]
-TCN_ACTIVATION_VALUES   = ["relu", "leaky_relu"]
-TCN_EPOCHS_VALUES       = [50]
-TCN_LR_VALUES           = [0.001, 0.0005]
-TCN_BATCH_SIZE_VALUES   = [8, 16]
-```
-
-Combinaciones por ventana: 3 × 2 × 2 × 2 × 1 × 2 × 2 = **96**; con 5 ventanas: **480 configuraciones**.
-
-### 13.6 Configuración final
-
-```python
-FINAL_CONFIG_TCN = None   # pendiente de revisión de Fase 1
-```
-
----
-
-## 14. Utilidades compartidas — utils.py
-
-`r4_r5/utils.py` centraliza las funciones que eran idénticas en los cuatro pipelines DL. Todos importan de este módulo; las pipelines no definen estas funciones localmente.
+`r4_r5/utils.py` centraliza las funciones que eran idénticas en los tres pipelines DL. Todos importan de este módulo; las pipelines no definen estas funciones localmente.
 
 | Función | Firma | Descripción |
 |---------|-------|-------------|
@@ -606,7 +548,7 @@ FINAL_CONFIG_TCN = None   # pendiente de revisión de Fase 1
 
 ---
 
-## 15. Verificación de configuraciones finales — seleccion_fase1.py
+## 14. Verificación de configuraciones finales — seleccion_fase1.py
 
 `generar_seleccion_final()` se llama desde `main.py` tras completar todos los grid searches. No decide la configuración final de ningún modelo — esa decisión sigue siendo manual e interpretativa (RMSE como criterio principal, MAE y complejidad de arquitectura como respaldo cuando las diferencias son marginales) y se registra a mano en `final_configs.py`.
 
@@ -621,28 +563,32 @@ Si la configuración elegida no es la posición 1 del ranking, se imprime un avi
 
 ---
 
-## 16. Comparación final
+## 15. Comparación final
 
-### 16.1 Ranking global (`exportar_comparacion`)
+### 15.1 Ranking global (`exportar_comparacion`)
 
-Los seis modelos se ordenan por RMSE walk-forward global sobre 2020–2024:
+Los cinco modelos se ordenan por RMSE walk-forward global sobre 2020–2024:
 
 ```
-comparacion_modelos.csv: modelo | rmse | mae   (6 filas, ordenadas por rmse asc)
+comparacion_modelos.csv: modelo | rmse | mae   (5 filas, ordenadas por rmse asc)
 ```
 
-### 16.2 Criterio de selección de distritos para visualización
+### 15.2 Mejora relativa frente a Persistencia (`graficar_mejora_relativa`)
 
-Se identifican los 5 mejores y 5 peores distritos usando un criterio de **consenso entre modelos**:
+Gráfico de barras horizontales con la mejora porcentual de RMSE de cada modelo (ARIMA, MLP, LSTM, CNN1D) respecto al baseline de Persistencia, coloreando ARIMA distinto de los tres modelos DL. Salida: `comparacion/mejora_relativa_persistencia.png`.
+
+### 15.3 Criterio de selección de distritos para visualización
+
+Se identifican los 3 mejores y 3 peores distritos usando un criterio de **consenso entre modelos**:
 
 - **Mejores:** distritos donde `max(RMSE_modelo)` sobre todos los modelos es mínimo — todos los modelos aciertan. Representan series con patrón predecible.
 - **Peores:** distritos donde `min(RMSE_modelo)` sobre todos los modelos es máximo — incluso el mejor modelo falla. Representan dinámicas que escapan a todos los enfoques evaluados.
 
 Este criterio evita sesgar la selección hacia los casos donde un modelo en particular sobresale.
 
-### 16.3 Visualización por distrito
+### 15.4 Visualización por distrito
 
-Para cada uno de los 10 distritos se genera un gráfico de panel doble:
+Para cada uno de los 6 distritos (3 mejores + 3 peores) se genera un gráfico de panel doble:
 
 ```
 Panel izquierdo (2:1) │ Panel derecho (1:1)
@@ -652,11 +598,65 @@ serie histórica       │ y_true + ŷ de cada modelo superpuestos
 
 El panel comienza en 2000 (no 1985) para mostrar el contexto reciente más relevante sin comprimir el período de pronóstico.
 
+### 15.5 Comparación por departamento (`comparar_departamentos`)
+
+Tabla consolidada con RMSE y MAE de los 5 modelos por departamento, número de distritos por departamento (para juzgar la robustez de cada resultado) y el mejor modelo por RMSE y por MAE. Genera además un heatmap de RMSE (filas=departamentos, columnas=modelos) que resalta en negrita el mejor modelo de cada fila.
+
+Salidas: `comparacion/comparacion_departamentos.csv`, `comparacion/heatmap_departamentos.png`.
+
+### 15.6 Boxplot distrital de candidatos DL (`graficar_boxplot_validacion_distrital`)
+
+Boxplot del RMSE distrital de validación (walk-forward 2020–2024) restringido a los tres candidatos de aprendizaje profundo (MLP, LSTM, CNN1D), pensado para el anexo de R7. Resalta en rojo los distritos que caen simultáneamente en el top-10 de mayor RMSE de los tres modelos (intersección); los demás atípicos por encima del bigote superior de cada caja quedan en gris.
+
+Salida: `comparacion/boxplot_rmse_distrital_3candidatos.png`.
+
 ---
 
-## 17. Referencia de configuración
+## 16. Verificación nivel vs. deforestación derivada
 
-### 17.1 Constantes globales (`config.py`)
+`verificacion_deforestacion.py` confirma empíricamente que el error de pronóstico sobre el **nivel** de `pct_bosque` (el que reportan `comparacion_modelos.csv` y las tablas de tesis) es idéntico al error sobre la **deforestación derivada** (la variación interanual), para los 5 modelos.
+
+Esta identidad se cumple porque cada predicción usa como ancla el valor **real** del año anterior, nunca una predicción encadenada del propio modelo:
+
+```
+Δ_pred(t) = pct_real(t-1) - pct_pred(t)
+Δ_real(t) = pct_real(t-1) - pct_real(t)
+Δ_pred(t) - Δ_real(t) = pct_real(t) - pct_pred(t) = -error_nivel(t)
+```
+
+Esa cancelación del ancla es lo que hace que RMSE/MAE coincidan entre nivel y deforestación, y depende de que los 5 pipelines (`pipeline_persistencia.py`, `pipeline_arima.py`, `pipeline_mlp.py`, `pipeline_lstm.py`, `pipeline_cnn.py`) usen siempre `history.append(valor_real)`, nunca `history.append(predicción)`.
+
+`verificar_identidad_deforestacion()` no reentrena ni recalcula nada: lee las predicciones ya guardadas de Fase 2 (`*_final_predicciones.csv`) y confirma la identidad fila por fila con `np.allclose`. Si la identidad no se cumple para algún modelo, lanza `AssertionError` — señal de que algún walk-forward dejó de alimentarse con el valor real en algún paso.
+
+Salida: `comparacion/verificacion_deforestacion.csv` (rmse/mae de nivel y de deforestación por modelo, y la bandera `identidad_confirmada`).
+
+---
+
+## 17. R7 — Pronóstico 2025
+
+`pronostico_r7.py` genera el pronóstico 2025 con los tres candidatos de aprendizaje profundo (MLP, LSTM, CNN1D) ya entrenados y validados en R6/R7, sin reentrenar.
+
+### 17.1 `generar_pronostico_2025` (orquestado por `main.py`)
+
+Carga el checkpoint `.pth` de cada modelo (`CARGADORES` reconstruye la arquitectura desde la config guardada en el propio checkpoint), toma como entrada los últimos `window_size` valores **reales** de la serie (cuyo último elemento es siempre `pct_bosque_real_2024`, nunca una predicción propia) y predice 2025. No hay tasa de error para 2025 porque no existe valor observado de ese año.
+
+Salida: `comparacion/pronostico_2025.csv` (`geocode`, `departamento`, `distrito`, `pct_bosque_real_2024`, `mlp_pred_2025`, `lstm_pred_2025`, `cnn1d_pred_2025`).
+
+### 17.2 Deforestación en km² y gráficos de anexo (uso manual)
+
+`calcular_deforestacion_km2`, `graficar_deforestacion_departamento_km2` y `graficar_correlacion_rmse_divergencia_2025` están definidas en el mismo archivo pero **no se invocan desde `main.py`** — se ejecutan manualmente (p. ej. desde una sesión interactiva) para producir figuras puntuales del anexo:
+
+- `calcular_deforestacion_km2`: convierte una fracción de deforestación 2025 por modelo (`deforestacion_2025_{mlp,lstm,cnn1d}`, calculada fuera de este pipeline) a km², usando `pix_total` de 2024 del panel de O1 (misma fuente que ya usó O1 para `pct_bosque`) y `PIXEL_AREA_KM2` de `O1/config.py`.
+- `graficar_deforestacion_departamento_km2`: barras horizontales agrupadas por departamento y modelo, resaltando un departamento de interés (`Cajamarca` por defecto) — usa `NOMBRES_DEPARTAMENTO_DISPLAY` de `O2/config.py` para los nombres con tildes en el eje.
+- `graficar_correlacion_rmse_divergencia_2025`: dispersión por distrito entre el RMSE promedio de validación de los 3 candidatos y la divergencia entre ellos en el pronóstico 2025 (desviación estándar de las 3 fracciones), con correlación de Pearson y Spearman impresas en consola.
+
+Estas tres funciones esperan `deforestacion_2025.csv` como insumo (con las columnas de fracción ya calculadas); ese archivo no es generado por ningún script de este repositorio.
+
+---
+
+## 18. Referencia de configuración
+
+### 18.1 Constantes globales (`config.py`)
 
 | Constante | Valor | Descripción |
 |-----------|-------|-------------|
@@ -665,8 +665,9 @@ El panel comienza en 2000 (no 1985) para mostrar el contexto reciente más relev
 | `HORIZONTE` | `5` | Años de pronóstico (2020–2024) |
 | `SEMILLA` | `42` | Semilla global de reproducibilidad |
 | `DL_WINDOW_VALUES` | `[3,4,5,6,7]` | Tamaños de ventana explorados en DL |
+| `NOMBRES_DEPARTAMENTO_DISPLAY` | dict | Nombres de departamento con tildes, solo para texto/figuras (no se aplica a los datos en disco) |
 
-### 17.2 Grid search por modelo
+### 18.2 Grid search por modelo
 
 | Modelo | Espacio | Total configs |
 |--------|---------|---------------|
@@ -674,9 +675,8 @@ El panel comienza en 2000 (no 1985) para mostrar el contexto reciente más relev
 | MLP | 3×2×2×1×2×2 por ventana | 240 configs |
 | LSTM | 3×2×2×1×2×2 por ventana | 240 configs |
 | CNN | 3×2×2×2×2×1×2×2 por ventana (filtrado kernel) | ≤960 configs |
-| TCN | 3×2×2×2×1×2×2 por ventana | 480 configs |
 
-### 17.3 Rutas de salida (`config.py`)
+### 18.3 Rutas de salida (`config.py`)
 
 | Variable | Ruta |
 |----------|------|
@@ -688,12 +688,11 @@ El panel comienza en 2000 (no 1985) para mostrar el contexto reciente más relev
 | `MLP_DIR` | `…/modelos/mlp/` |
 | `LSTM_DIR` | `…/modelos/lstm/` |
 | `CNN_DIR` | `…/modelos/cnn/` |
-| `TCN_DIR` | `…/modelos/tcn/` |
 | `COMPARACION_DIR` | `…/modelos/comparacion/` |
 
 ---
 
-## 18. Inventario de salidas
+## 19. Inventario de salidas
 
 ```
 data/interim/O2/modelos/
@@ -737,18 +736,27 @@ data/interim/O2/modelos/
 │
 ├── lstm/                                 ← misma estructura que mlp/
 ├── cnn/                                  ← misma estructura que mlp/
-├── tcn/                                  ← misma estructura que mlp/
 │
 └── comparacion/
     ├── comparacion_modelos.csv
     ├── seleccion_configuraciones_finales.csv   ← seleccion_fase1
-    ├── mejores_01_<geocode>.png … mejores_05_<geocode>.png
-    └── peores_01_<geocode>.png  … peores_05_<geocode>.png
+    ├── mejora_relativa_persistencia.png
+    ├── mejores_01_<geocode>.png … mejores_03_<geocode>.png
+    ├── peores_01_<geocode>.png  … peores_03_<geocode>.png
+    ├── comparacion_departamentos.csv
+    ├── heatmap_departamentos.png
+    ├── boxplot_rmse_distrital_3candidatos.png
+    ├── verificacion_deforestacion.csv            ← verificacion_deforestacion
+    └── pronostico_2025.csv                       ← pronostico_r7 (R7)
 ```
+
+> `deforestacion_2025.csv` y las figuras `deforestacion_2025_departamento_km2.png` /
+> `dispersion_rmse_divergencia_2025.png` (helpers de `pronostico_r7.py`, ver §17.2)
+> se generan manualmente, no por `main.py` — no forman parte de este inventario automático.
 
 ---
 
-## 19. Decisiones de diseño
+## 20. Decisiones de diseño
 
 **Sin normalización de datos.** `pct_bosque ∈ [0, 1]` es adecuado para todas las arquitecturas sin normalización adicional. Los gradientes de MSELoss son naturalmente pequeños y Adam converge establemente en este rango.
 
@@ -768,18 +776,20 @@ data/interim/O2/modelos/
 
 **Formato largo homogéneo para predicciones.** El esquema idéntico de `_final_predicciones.csv` en todos los modelos es la columna vertebral de la sección de comparación.
 
-**TCN con dilatación causal vs. CNN con `padding="same"`.** La CNN usa padding bidireccional que en principio permite acceder a valores "futuros" de la ventana. El TCN es estrictamente causal. En el protocolo walk-forward sobre observaciones pasadas no hay diferencia práctica, pero el TCN es más correcto teóricamente.
-
 ---
 
-## 20. Mejoras aplicadas
+## 21. Mejoras aplicadas
 
 | Problema | Solución | Archivos |
 |----------|----------|----------|
-| 6 funciones duplicadas en 4 pipelines DL | Creado `utils.py`; pipelines importan en lugar de definir | `utils.py`, `pipeline_mlp/lstm/cnn/tcn.py` |
+| 6 funciones duplicadas en los pipelines DL | Creado `utils.py`; pipelines importan en lugar de definir | `utils.py`, `pipeline_mlp/lstm/cnn.py` |
 | `calcular_metricas` duplicada también en ARIMA y Persistencia | Ambos importan desde `utils.py` | `pipeline_arima.py`, `pipeline_persistencia.py` |
-| Imports huérfanos (`random`, `matplotlib`, `sklearn`) tras extracción | Eliminados de los 4 pipelines DL | `pipeline_mlp/lstm/cnn/tcn.py` |
-| Idempotencia asimétrica en Fase 2: verificaba `_npy` pero leía `_gbl` sin verificar | `if exists(npy) and exists(gbl)` en los 6 modelos | `main.py` |
+| Imports huérfanos (`random`, `matplotlib`, `sklearn`) tras extracción | Eliminados de los pipelines DL | `pipeline_mlp/lstm/cnn.py` |
+| Idempotencia asimétrica en Fase 2: verificaba `_npy` pero leía `_gbl` sin verificar | `if exists(npy) and exists(gbl)` en los 5 modelos | `main.py` |
 | `pd.read_csv(...).iloc[0]` sin validación en skip de Fase 2 | Añadido `if df_gbl.empty: raise RuntimeError(...)` | `main.py` |
-| Documentación incompleta: faltaban TCN, utils, analisis_fase1, árbol, config ref | Creado `O2_DOCUMENTATION.md`; eliminado `documentacion_tecnica.md` | este archivo |
+| Documentación incompleta: faltaban utils, analisis_fase1, árbol, config ref | Creado `O2_DOCUMENTATION.md`; eliminado `documentacion_tecnica.md` | este archivo |
 | `analisis_fase1.py` graficaba "mejor ventana" sin relación con la selección final real, y no detectaba si `final_configs.py` se desincronizaba del grid search (pasó con ARIMA: ventana 30 en el config vs. ventana 32 real) | Reemplazado por `seleccion_fase1.py`: verifica la config final contra el CSV de Fase 1 y exporta sus métricas exactas para el Anexo E | `seleccion_fase1.py`, `main.py` (idéntico en O3/r11) |
+| `pipeline_tcn.py` se implementó pero nunca llegó a tener resultados en disco ni configuración final | Eliminado del repositorio; doc actualizada para reflejar 5 modelos (no 6) | `O2_DOCUMENTATION.md` |
+| `comparar_departamentos` solo exportaba la matriz de RMSE y el "mejor modelo" por fila, sin MAE ni conteo de distritos en la misma tabla | Tabla consolidada única con RMSE, MAE, n_distritos y mejor modelo por RMSE/MAE | `pipeline_comparacion.py` (idéntico en O3/r11) |
+| Sin vista de la dispersión de RMSE distrital entre los 3 candidatos DL para el anexo de R7 | Agregado `graficar_boxplot_validacion_distrital` | `pipeline_comparacion.py` (idéntico en O3/r11) |
+| Visualización de mejores/peores distritos fijada en 5+5 sin relación con el nivel de detalle final del anexo | Reducida a 3+3 (`graficar_predicciones(..., n=3)`) | `pipeline_comparacion.py` (idéntico en O3/r11) |

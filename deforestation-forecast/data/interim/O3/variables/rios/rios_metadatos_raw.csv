@@ -1,0 +1,2 @@
+categoria,tipo_fuente,archivo,ruta,crs,geom_type,n_features,bbox_minx,bbox_miny,bbox_maxx,bbox_maxy,file_size_mb
+rios,vectorial,Rios.shp,D:\VisualCode\Tesis\deforestation-forecast\data\raw\variables-locales\rios\Rios.shp,EPSG:4326,"LineString, MultiLineString",1224.0,-81.287351,-18.334644,-68.656137,-0.038747,12.3

@@ -1,15 +1,23 @@
 """
-R7: pronóstico 2025 para los tres candidatos de R6 (MLP, LSTM, CNN1D).
+Pronóstico 2025 para los tres modelos multivariables de R11 (MLP, LSTM, CNN).
 
-No reentrena: reutiliza los pesos ya validados en R6, para que la tasa de
+No reentrena: reutiliza los pesos ya validados en Fase 2, para que la tasa de
 error reportada siga correspondiendo al modelo que genera el pronóstico.
-El ancla de cada predicción es siempre pct_bosque_real_2024 (nunca una
-predicción propia), igual que en la evaluación walk-forward de R6. No hay
-tasa de error para 2025 porque no existe valor observado de ese año.
+El ancla de cada predicción es siempre pct_bosque_real_2024 en escala
+ORIGINAL (nunca una predicción propia), igual que en la evaluación
+walk-forward de Fase 2 (`_evaluar_geografico`). No hay tasa de error para
+2025 porque no existe valor observado de ese año.
+
+Análogo multivariable de O2/r4_r5/pronostico_r7.py — ver ese módulo para el
+mismo diseño aplicado al caso univariable.
 """
 
+import ast
+import logging
 import os
 
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -18,70 +26,98 @@ from scipy import stats
 
 from O1.config import PIXEL_AREA_KM2
 
-from O2.config import NOMBRES_DEPARTAMENTO_DISPLAY
-from O2.r4_r5.pipeline_cnn import CNN1D, parse_conv_channels, preparar_X_cnn
-from O2.r4_r5.pipeline_lstm import LSTM, preparar_X_lstm
-from O2.r4_r5.pipeline_mlp import MLP, parse_hidden_sizes, preparar_X_mlp
+from O3.config import COLUMNAS_PREDICTORAS, NOMBRES_DEPARTAMENTO_DISPLAY, PANEL_ENTRENAMIENTO_CSV
+from O3.r11.pipeline_cnn import CNN1D
+from O3.r11.pipeline_lstm import LSTM
+from O3.r11.pipeline_mlp import MLP
+from O3.r11.utils import DEVICE, inversa_pct_bosque
 
-MODELOS_CANDIDATOS = ("mlp", "lstm", "cnn1d")
+logger = logging.getLogger(__name__)
 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+MODELOS_CANDIDATOS = ("mlp", "lstm", "cnn")
+N_CANALES = len(COLUMNAS_PREDICTORAS)
 
 
-def cargar_mlp(checkpoint):
+def _parsear_lista(valor):
+    return ast.literal_eval(valor) if isinstance(valor, str) else list(valor)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Carga de modelos finales
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _cargar_mlp(checkpoint):
     config = checkpoint["config"]
+    window_size = int(config["window_size"])
     modelo = MLP(
-        input_size=int(config["window_size"]),
-        hidden_sizes=parse_hidden_sizes(config["hidden_sizes"]),
+        input_size=window_size * N_CANALES,
+        capas_ocultas=_parsear_lista(config["capas_ocultas"]),
         dropout=float(config["dropout"]),
-        activation=config["activation"],
+        activacion=config["activacion"],
     )
     modelo.load_state_dict(checkpoint["model_state_dict"])
-    return modelo.to(DEVICE).eval(), int(config["window_size"]), preparar_X_mlp
+    preparar_fn = lambda x: x.reshape(x.shape[0], -1).float()
+    return modelo.to(DEVICE).eval(), window_size, preparar_fn
 
 
-def cargar_lstm(checkpoint):
+def _cargar_lstm(checkpoint):
     config = checkpoint["config"]
     modelo = LSTM(
-        input_size=1,
-        hidden_size=int(config["hidden_size"]),
-        num_layers=int(config["num_layers"]),
+        input_size=N_CANALES,
+        unidades_ocultas=int(config["unidades_ocultas"]),
+        num_capas=int(config["num_capas"]),
         dropout=float(config["dropout"]),
     )
     modelo.load_state_dict(checkpoint["model_state_dict"])
-    return modelo.to(DEVICE).eval(), int(config["window_size"]), preparar_X_lstm
+    preparar_fn = lambda x: x.float()
+    return modelo.to(DEVICE).eval(), int(config["window_size"]), preparar_fn
 
 
-def cargar_cnn(checkpoint):
+def _cargar_cnn(checkpoint):
     config = checkpoint["config"]
     modelo = CNN1D(
-        input_channels=1,
+        canales_entrada=N_CANALES,
         window_size=int(config["window_size"]),
-        conv_channels=parse_conv_channels(config["conv_channels"]),
+        canales_conv=_parsear_lista(config["canales_conv"]),
         kernel_size=int(config["kernel_size"]),
         dropout=float(config["dropout"]),
-        activation=config["activation"],
-        dense_size=int(config["dense_size"]),
+        activacion=config["activacion"],
+        tamanio_denso=int(config["tamanio_denso"]),
     )
     modelo.load_state_dict(checkpoint["model_state_dict"])
-    return modelo.to(DEVICE).eval(), int(config["window_size"]), preparar_X_cnn
+    preparar_fn = lambda x: x.permute(0, 2, 1).float()
+    return modelo.to(DEVICE).eval(), int(config["window_size"]), preparar_fn
 
 
 CARGADORES = {
-    "MLP": cargar_mlp,
-    "LSTM": cargar_lstm,
-    "CNN1D": cargar_cnn,
+    "mlp": _cargar_mlp,
+    "lstm": _cargar_lstm,
+    "cnn": _cargar_cnn,
 }
 
 
-def generar_pronostico_2025(series, df_distritos_info, rutas_modelo, anio_anchor=2024):
+# ─────────────────────────────────────────────────────────────────────────────
+# Pronóstico 2025
+# ─────────────────────────────────────────────────────────────────────────────
+
+def generar_pronostico_2025(
+    panel_escalado: np.ndarray,
+    panel_original: np.ndarray,
+    df_distritos_info: pd.DataFrame,
+    rutas_modelo: dict,
+    escalador,
+    anio_anchor: int = 2024,
+) -> pd.DataFrame:
     """
-    Genera el pronóstico 2025 de cada modelo en `rutas_modelo` (dict
-    {"MLP": ruta_pth, ...}) a partir del histórico real `series`. Devuelve
-    un DataFrame con el ancla pct_bosque_real_2024 y <modelo>_pred_2025
-    por distrito.
+    panel_escalado: (n_distritos, n_anios, n_canales) — transformado (log1p) y escalado.
+    panel_original: (n_distritos, n_anios, n_canales) — escala original, canal 0 = pct_bosque.
+    rutas_modelo: dict {"mlp": ruta_pth, "lstm": ruta_pth, "cnn": ruta_pth}.
+
+    Devuelve un DataFrame con geocode, departamento, distrito,
+    pct_bosque_real_2024 (ancla explícita, trazable) y <modelo>_pred_2025
+    para cada arquitectura.
     """
-    pct_bosque_real_2024 = series[:, -1].copy()
+    pct_bosque_real_2024 = panel_original[:, -1, 0].copy()
 
     df_pronostico = pd.DataFrame({
         "geocode": df_distritos_info["geocode"].values,
@@ -91,39 +127,50 @@ def generar_pronostico_2025(series, df_distritos_info, rutas_modelo, anio_anchor
     })
 
     for nombre, ruta in rutas_modelo.items():
-        print(f"[INFO] Pronóstico 2025 -- {nombre}: cargando {ruta}")
+        logger.info(f"Pronóstico 2025 — {nombre.upper()}: cargando {ruta}")
         checkpoint = torch.load(ruta, map_location=DEVICE)
         modelo, window_size, preparar_fn = CARGADORES[nombre](checkpoint)
 
-        ventana = series[:, -window_size:]
+        ventana = panel_escalado[:, -window_size:, :]  # (n_distritos, window_size, n_canales)
         x = torch.tensor(ventana, dtype=torch.float32)
         x = preparar_fn(x).to(DEVICE)
 
         with torch.no_grad():
-            preds = modelo(x).cpu().numpy().reshape(-1)
+            preds_escaladas = modelo(x).cpu().numpy().reshape(-1)
 
-        df_pronostico[f"{nombre.lower()}_pred_{anio_anchor + 1}"] = preds
-        print(f"[OK] {nombre}: pronóstico generado para {len(preds)} distritos (window_size={window_size})")
+        preds = inversa_pct_bosque(preds_escaladas, escalador)
+        df_pronostico[f"{nombre}_pred_{anio_anchor + 1}"] = preds
+        logger.info(f"[OK] {nombre.upper()}: pronóstico generado para {len(preds)} distritos (window_size={window_size})")
 
     return df_pronostico
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# Deforestación en km² (uso manual/anexo — no se invoca desde main.py)
+# ─────────────────────────────────────────────────────────────────────────────
+
 def calcular_deforestacion_km2(
-    ruta_deforestacion_2025, ruta_series_origen, pixel_area_km2=PIXEL_AREA_KM2,
-):
+    ruta_deforestacion_2025: str,
+    ruta_panel_origen: str = PANEL_ENTRENAMIENTO_CSV,
+    pixel_area_km2: float = PIXEL_AREA_KM2,
+) -> pd.DataFrame:
     """
     Agrega a deforestacion_2025.csv el área de cada distrito en km² y la
     deforestación estimada 2025 en km² por modelo (sobrescribe si ya existen).
 
-    Usa pix_total de 2024, no el shapefile, para que el área sea consistente
-    con la misma fuente que ya usó O1 para calcular pct_bosque (zonal_stats
-    sobre el raster MapBiomas C3, 30 m x 30 m -- PIXEL_AREA_KM2 en O1/config.py).
+    Espera que deforestacion_2025.csv ya tenga las columnas
+    deforestacion_2025_{mlp,lstm,cnn} (fracción) -- igual que en
+    O2/r4_r5/pronostico_r7.py, esa tabla de fracciones es un insumo externo
+    al pipeline, no generado por ningún script de este repositorio.
+
+    Usa pix_total de 2024 del panel de O3 (misma fuente que ya usó O1 para
+    calcular pct_bosque), no el shapefile.
     """
     df = pd.read_csv(ruta_deforestacion_2025, dtype={"geocode": str})
 
-    series_origen = pd.read_csv(ruta_series_origen, dtype={"geocode": str})
+    panel_origen = pd.read_csv(ruta_panel_origen, dtype={"geocode": str})
     pix_2024 = (
-        series_origen[series_origen["anio"] == 2024][["geocode", "pix_total"]]
+        panel_origen[panel_origen["anio"] == 2024][["geocode", "pix_total"]]
         .rename(columns={"pix_total": "pix_total_2024"})
     )
 
@@ -142,22 +189,21 @@ def calcular_deforestacion_km2(
 
     df = df.drop(columns=["pix_total_2024"])
     df.to_csv(ruta_deforestacion_2025, index=False)
-    print(f"[OK] {ruta_deforestacion_2025} actualizado con columnas de área y deforestación en km²")
+    logger.info(f"[OK] {ruta_deforestacion_2025} actualizado con columnas de área y deforestación en km²")
 
     return df
 
 
 def graficar_deforestacion_departamento_km2(
-    df_deforestacion_km2, comparacion_dir, departamento_resaltado="Cajamarca",
-    departamentos_destacados=("San Martin", "Huanuco", "Ucayali"),
-):
+    df_deforestacion_km2: pd.DataFrame,
+    comparacion_dir: str,
+    departamento_resaltado: str = "Cajamarca",
+    departamentos_destacados: tuple = ("San Martin", "Huanuco", "Ucayali"),
+) -> str:
     """
     Barras horizontales agrupadas: deforestación estimada 2025 en km² por
-    departamento y modelo, ordenadas de mayor a menor por el promedio de los 3.
-
-    Los tres modelos comparten una paleta fría para no competir visualmente
-    con el acento cálido de `departamento_resaltado` -- el único elemento
-    que el texto discute en detalle y debe notarse de inmediato en la figura.
+    departamento y modelo R11, ordenadas de mayor a menor por el promedio de
+    los 3. Idéntico en diseño a O2/r4_r5/pronostico_r7.py.
     """
     cols_km2 = [f"deforestacion_2025_{m}_km2" for m in MODELOS_CANDIDATOS]
     agregado = df_deforestacion_km2.groupby("departamento")[cols_km2].sum()
@@ -166,18 +212,15 @@ def graficar_deforestacion_departamento_km2(
 
     color_eje = "#444444"
     color_acento = "#F4A261"
-    colores_modelo = {"mlp": "#264653", "lstm": "#2A9D8F", "cnn1d": "#8AB4C4"}
+    colores_modelo = {"mlp": "#264653", "lstm": "#2A9D8F", "cnn": "#8AB4C4"}
 
     y = np.arange(len(agregado))
     alto_barra = 0.25
 
     fig, ax = plt.subplots(figsize=(8, 6.5))
 
-    y_resaltado = None
     if departamento_resaltado in agregado.index:
         y_resaltado = list(agregado.index).index(departamento_resaltado)
-        # Ceñido a la altura real del grupo de 3 barras (±0.375), con un
-        # margen mínimo (±0.4) en vez de ocupar todo el carril disponible.
         ax.axhspan(y_resaltado - 0.4, y_resaltado + 0.4, color=color_acento, alpha=0.25, zorder=0)
 
     for j, modelo in enumerate(MODELOS_CANDIDATOS):
@@ -198,9 +241,6 @@ def graficar_deforestacion_departamento_km2(
         else:
             tick_label.set_color(color_eje)
 
-    ax.set_xlim(0, 195)
-    ax.set_xticks([0, 50, 100, 150])
-
     ax.set_xlabel("Deforestación estimada (km²)", color=color_eje)
     ax.tick_params(axis="x", colors=color_eje)
     ax.tick_params(axis="y", length=0)
@@ -211,8 +251,6 @@ def graficar_deforestacion_departamento_km2(
 
     ax.grid(axis="x", linestyle="--", linewidth=0.8, color="#E0E0E0", zorder=1)
 
-    # La leyenda sigue el mismo orden visual (de arriba a abajo) que las
-    # barras dentro de cada grupo: CNN1D arriba, LSTM al centro, MLP abajo.
     handles, labels = ax.get_legend_handles_labels()
     ax.legend(handles[::-1], labels[::-1], loc="lower right", fontsize=8.5, frameon=False)
 
@@ -220,22 +258,22 @@ def graficar_deforestacion_departamento_km2(
     ruta_fig = os.path.join(comparacion_dir, "deforestacion_2025_departamento_km2.png")
     fig.savefig(ruta_fig, dpi=150, bbox_inches="tight")
     plt.close(fig)
-    print(f"[OK] {ruta_fig}")
+    logger.info(f"[OK] {ruta_fig}")
 
     return ruta_fig
 
 
 def graficar_correlacion_rmse_divergencia_2025(
-    rutas_distrito_dl, ruta_deforestacion_2025, comparacion_dir,
-    departamento_resaltado="Cajamarca",
-):
+    rutas_distrito_dl: dict,
+    ruta_deforestacion_2025: str,
+    comparacion_dir: str,
+    departamento_resaltado: str = "Cajamarca",
+) -> str:
     """
-    Dispersión por distrito: RMSE promedio de validación (MLP/LSTM/CNN1D) vs.
+    Dispersión por distrito: RMSE promedio de validación (MLP/LSTM/CNN) vs.
     divergencia entre modelos en la deforestación 2025 (desviación estándar
-    de deforestacion_2025_mlp/lstm/cnn1d, en fracción -- no en km², para ser
-    consistente con la correlación ya calculada sobre esa misma magnitud).
-    Resalta `departamento_resaltado` para visualizar si concentra a la vez
-    el mayor error de validación y la mayor falta de consenso entre modelos.
+    de deforestacion_2025_mlp/lstm/cnn, en fracción). Idéntico en diseño a
+    O2/r4_r5/pronostico_r7.py.
     """
     rmse_por_modelo = {}
     for nombre, ruta in rutas_distrito_dl.items():
@@ -284,14 +322,14 @@ def graficar_correlacion_rmse_divergencia_2025(
     ruta_fig = os.path.join(comparacion_dir, "dispersion_rmse_divergencia_2025.png")
     fig.savefig(ruta_fig, dpi=150, bbox_inches="tight")
     plt.close(fig)
-    print(f"[OK] {ruta_fig}")
+    logger.info(f"[OK] {ruta_fig}")
 
     pearson_r, pearson_p = stats.pearsonr(x, y)
     spearman_r, spearman_p = stats.spearmanr(x, y)
 
-    print(f"n={len(datos)} distritos | pendiente={pendiente:.4f}")
-    print(f"Pearson  r={pearson_r:.4f}  p={pearson_p:.4g}")
-    print(f"Spearman r={spearman_r:.4f}  p={spearman_p:.4g}")
-    print(datos.assign(resaltado=es_resaltado).groupby("resaltado")[["rmse_promedio", "divergencia_2025"]].mean())
+    logger.info(f"n={len(datos)} distritos | pendiente={pendiente:.4f}")
+    logger.info(f"Pearson  r={pearson_r:.4f}  p={pearson_p:.4g}")
+    logger.info(f"Spearman r={spearman_r:.4f}  p={spearman_p:.4g}")
+    logger.info("\n" + str(datos.assign(resaltado=es_resaltado).groupby("resaltado")[["rmse_promedio", "divergencia_2025"]].mean()))
 
     return ruta_fig

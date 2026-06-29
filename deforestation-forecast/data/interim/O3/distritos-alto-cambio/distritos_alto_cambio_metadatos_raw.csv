@@ -1,0 +1,2 @@
+categoria,tipo_fuente,archivo,ruta,crs,geom_type,n_features,bbox_minx,bbox_miny,bbox_maxx,bbox_maxy,file_size_mb
+distritos_alto_cambio,vectorial,distritos_alto_cambio.gpkg,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O1\distritos-alto-cambio\distritos_alto_cambio.gpkg,EPSG:4326,Polygon,200.0,-79.501146,-14.238132,-69.443154,-3.599445,3.43

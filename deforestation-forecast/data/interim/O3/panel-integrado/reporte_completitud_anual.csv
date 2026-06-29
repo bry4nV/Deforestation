@@ -1,0 +1,81 @@
+anio,variable,n_distritos,n_no_nulos,completitud_pct,fuente_cobertura,pix_total_promedio,pix_total_mediana,pix_total_min,pix_total_max,alerta_baja_cobertura
+1985,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+1985,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+1986,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+1986,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+1987,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+1987,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+1988,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+1988,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+1989,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+1989,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+1990,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+1990,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+1991,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+1991,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+1992,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+1992,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+1993,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+1993,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+1994,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+1994,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+1995,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+1995,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+1996,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+1996,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+1997,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+1997,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+1998,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+1998,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+1999,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+1999,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2000,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2000,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2001,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2001,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2002,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2002,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2003,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2003,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2004,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2004,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2005,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2005,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2006,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2006,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2007,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2007,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2008,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2008,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2009,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2009,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2010,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2010,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2011,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2011,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2012,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2012,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2013,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2013,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2014,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2014,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2015,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2015,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2016,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2016,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2017,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2017,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2018,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2018,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2019,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2019,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2020,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2020,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2021,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2021,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2022,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2022,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2023,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2023,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,
+2024,pct_agropecuario,200,200,100.0,raster MapBiomas - pix_total (pixeles validos),543348.9,290631.0,15721.0,5562594.0,False
+2024,pct_anp,200,200,100.0,vectorial SERNANP - sin concepto de pixeles validos,,,,,

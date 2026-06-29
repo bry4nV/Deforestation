@@ -1,0 +1,15 @@
+┌───────────────────────────────────────────────────────────────────────┐
+│  PASO 4 — Panel integrado / integrar_panel()                          │
+│                                                                       │
+│   1. Esqueleto 200×40 filas                                           │
+│   2. Merge left de todas las variables (temporales + estáticas)       │
+│   3. panel_integrado_completo.csv  (todas las columnas)               │
+│   4. panel_integrado_modelo.csv  (6 variables del modelo)             │
+│   5. left-merge O1 train + O3 modelo → panel_integrado_entrenamiento  │
+│   6. left-merge O1 gen   + O3 modelo → panel_integrado_generalizacion │
+│   7. reporte_integracion.csv (completitud por variable: base de       │
+│      cálculo según tipo, cobertura distrital, puntero a metadata_raw  │
+│   8. reporte_completitud_anual.csv (pct_agropecuario/pct_anp × año)   │
+│      — (7) y (8) se regeneran SIEMPRE, incluso si (3)-(6) ya existen  │
+│      en caché (ver §9.11)                                             │
+└───────────────────────────────────────────────────────────────────────┘

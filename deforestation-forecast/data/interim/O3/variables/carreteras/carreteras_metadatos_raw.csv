@@ -1,0 +1,4 @@
+categoria,tipo_fuente,archivo,ruta,crs,geom_type,n_features,bbox_minx,bbox_miny,bbox_maxx,bbox_maxy,file_size_mb
+carreteras_nacional,vectorial,red_vial_nacional_dic18.shp,D:\VisualCode\Tesis\deforestation-forecast\data\raw\variables-locales\redes-viales\nacional\red_vial_nacional_dic18.shp,EPSG:4326,"LineString, MultiLineString",4546.0,-81.221821,-18.31051,-68.659374,-2.445849,59.11
+carreteras_departamental,vectorial,red_vial_departamental_dic18.shp,D:\VisualCode\Tesis\deforestation-forecast\data\raw\variables-locales\redes-viales\departamental\red_vial_departamental_dic18.shp,EPSG:4326,"LineString, MultiLineString",3150.0,-81.306945,-17.889918,-68.662506,-2.361636,76.71
+carreteras_vecinal,vectorial,red_vial_vecinal_dic18.shp,D:\VisualCode\Tesis\deforestation-forecast\data\raw\variables-locales\redes-viales\vecinal\red_vial_vecinal_dic18.shp,EPSG:4326,"LineString, MultiLineString",42981.0,-81.320348,-18.335613,-68.852554,-3.429245,260.79
