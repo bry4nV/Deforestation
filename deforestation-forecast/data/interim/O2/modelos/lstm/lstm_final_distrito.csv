@@ -34,7 +34,7 @@ geocode,departamento,distrito,rmse,mae
 010307,Amazonas,Jazan,0.012059,0.01136
 220902,San Martin,Alberto Leveau,0.013391,0.011295
 250306,Ucayali,Huipoca,0.011487,0.011182
-220806,San Martin,Posic,0.012805,0.01111
+220806,San Martin,Posic,0.012806,0.01111
 220706,San Martin,San Cristobal,0.013162,0.011035
 010503,Amazonas,Cocabamba,0.011799,0.010532
 010513,Amazonas,Ocumal,0.010608,0.010452
@@ -65,7 +65,7 @@ geocode,departamento,distrito,rmse,mae
 250302,Ucayali,Irazola,0.009782,0.008333
 100608,Huanuco,Castillo Grande,0.011026,0.008285
 010514,Amazonas,Pisuquia,0.010737,0.008272
-220106,San Martin,Yantalo,0.008717,0.00824
+220106,San Martin,Yantalo,0.008717,0.008241
 220702,San Martin,Buenos Aires,0.008991,0.00816
 080903,Cusco,Huayopata,0.01033,0.008114
 160603,Loreto,Padre Marquez,0.010138,0.008045

@@ -10,12 +10,12 @@
     "lr": 0.001,
     "batch_size": 8,
     "seed": 42,
-    "rmse_train": 0.010139,
-    "mae_train": 0.007488,
-    "rmse_test": 0.011925,
-    "mae_test": 0.008169,
-    "gap_rmse": 0.001786,
-    "gap_mae": 0.00068,
-    "ratio_rmse": 1.176189,
-    "ratio_mae": 1.090825
+    "rmse_train": 0.009845,
+    "mae_train": 0.007168,
+    "rmse_test": 0.011656,
+    "mae_test": 0.007969,
+    "gap_rmse": 0.001812,
+    "gap_mae": 0.000801,
+    "ratio_rmse": 1.184018,
+    "ratio_mae": 1.111715
 }
