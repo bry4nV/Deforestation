@@ -1,0 +1,4 @@
+modelo,configuracion,rmse_fase1,mae_fase1,posicion_ranking,total_configuraciones
+MLP,"window_size=6, capas_ocultas=[64, 32], activacion=leaky_relu, dropout=0.0, epocas=50, lr=0.001, lote=16",0.01175,0.008719,1,240
+LSTM,"window_size=6, unidades_ocultas=16, num_capas=2, dropout=0.0, epocas=50, lr=0.001, lote=8",0.011067,0.007788,1,240
+CNN,"window_size=6, canales_conv=[32], kernel_size=2, activacion=relu, dropout=0.0, tamanio_denso=16, epocas=50, lr=0.001, lote=8",0.010912,0.00774,1,960
