@@ -1,0 +1,15 @@
+07:21:38 [INFO] [OK] Log de esta corrida: D:\VisualCode\Tesis\deforestation-forecast\data\logs\o4_run_debug_2026-06-30_07-21-38.log
+07:21:38 [INFO] ======================================================================
+07:21:38 [INFO] O4 — GENERALIZACIÓN ESPACIAL (R12, R13, R14)
+07:21:38 [INFO] ======================================================================
+07:21:38 [INFO] [PASO 1] R12 — Dataset de generalización
+07:21:38 [INFO] [SKIP] R12 ya verificado — cargando reporte existente
+07:21:38 [INFO] [PASO 2] R13 — Pronósticos en las zonas nuevas
+07:21:38 [INFO] [SKIP] Pronósticos CNN de generalización ya existen.
+07:21:38 [INFO] [SKIP] Pronóstico 2025 de generalización ya existe.
+07:21:38 [INFO] [PASO 3] R14 — Análisis y gráficos del informe
+07:21:38 [INFO] [SKIP] R14 ya generado — cargando informe existente
+07:21:38 [INFO] ======================================================================
+07:21:38 [INFO] O4 completado.
+modelo  n_distritos_en_muestra  n_predicciones_en_muestra  rmse_en_muestra  mae_en_muestra  n_distritos_generalizacion  n_predicciones_generalizacion  rmse_generalizacion  mae_generalizacion  diff_rmse_pct  diff_mae_pct
+   CNN                     180                        900         0.010912         0.00774                          20                            100              0.01129            0.007862          3.464         1.576

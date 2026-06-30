@@ -124,7 +124,10 @@ O1/series-temporales/entrenamiento/distritos_entrenamiento.csv
   │
   ├─ verificar_identidad_deforestacion ──► comparacion/verificacion_deforestacion.csv
   │
-  └─ generar_pronostico_2025 (R7) ──► comparacion/pronostico_2025.csv
+  └─ pipeline_r7 ──► comparacion/deforestacion_2025.csv
+                     comparacion/deforestacion_2025_departamento_km2.png
+                     comparacion/deforestacion_2025_dispersion_rmse_divergencia.png
+                     comparacion/deforestacion_2025_dispersion_stats.csv
 ```
 
 **Punto de entrada:** `python -m O2.r4_r5.main`  
@@ -636,21 +639,17 @@ Salida: `comparacion/verificacion_deforestacion.csv` (rmse/mae de nivel y de def
 
 `pronostico_r7.py` genera el pronóstico 2025 con los tres candidatos de aprendizaje profundo (MLP, LSTM, CNN1D) ya entrenados y validados en R6/R7, sin reentrenar.
 
-### 17.1 `generar_pronostico_2025` (orquestado por `main.py`)
+### 17.1 `pipeline_r7` — punto de entrada único (orquestado por `main.py`)
 
-Carga el checkpoint `.pth` de cada modelo (`CARGADORES` reconstruye la arquitectura desde la config guardada en el propio checkpoint), toma como entrada los últimos `window_size` valores **reales** de la serie (cuyo último elemento es siempre `pct_bosque_real_2024`, nunca una predicción propia) y predice 2025. No hay tasa de error para 2025 porque no existe valor observado de ese año.
+Punto de entrada único que integra en un solo paso: predicciones 2025, deforestación en fracción (`pct_bosque_real_2024 - {modelo}_pred_2025`) y en km² (usando `pix_total` de 2024 del panel de O1 y `PIXEL_AREA_KM2`), y la generación de todos los gráficos del bloque. Los cargadores de modelo (`_CARGADORES`) y las funciones de gráficos (`_graficar_*`) son privados y solo se invocan desde `pipeline_r7`.
 
-Salida: `comparacion/pronostico_2025.csv` (`geocode`, `departamento`, `distrito`, `pct_bosque_real_2024`, `mlp_pred_2025`, `lstm_pred_2025`, `cnn1d_pred_2025`).
+Salida única: `comparacion/deforestacion_2025.csv` con columnas `geocode`, `departamento`, `distrito`, `pct_bosque_real_2024`, `{mlp,lstm,cnn1d}_pred_2025`, `deforestacion_2025_{mlp,lstm,cnn1d}`, `area_km2_2024`, `deforestacion_2025_{mlp,lstm,cnn1d}_km2`.
 
-### 17.2 Deforestación en km² y gráficos de anexo (uso manual)
+### 17.2 Gráficos generados por `pipeline_r7`
 
-`calcular_deforestacion_km2`, `graficar_deforestacion_departamento_km2` y `graficar_correlacion_rmse_divergencia_2025` están definidas en el mismo archivo pero **no se invocan desde `main.py`** — se ejecutan manualmente (p. ej. desde una sesión interactiva) para producir figuras puntuales del anexo:
-
-- `calcular_deforestacion_km2`: convierte una fracción de deforestación 2025 por modelo (`deforestacion_2025_{mlp,lstm,cnn1d}`, calculada fuera de este pipeline) a km², usando `pix_total` de 2024 del panel de O1 (misma fuente que ya usó O1 para `pct_bosque`) y `PIXEL_AREA_KM2` de `O1/config.py`.
-- `graficar_deforestacion_departamento_km2`: barras horizontales agrupadas por departamento y modelo, resaltando un departamento de interés (`Cajamarca` por defecto) — usa `NOMBRES_DEPARTAMENTO_DISPLAY` de `O2/config.py` para los nombres con tildes en el eje.
-- `graficar_correlacion_rmse_divergencia_2025`: dispersión por distrito entre el RMSE promedio de validación de los 3 candidatos y la divergencia entre ellos en el pronóstico 2025 (desviación estándar de las 3 fracciones), con correlación de Pearson y Spearman impresas en consola.
-
-Estas tres funciones esperan `deforestacion_2025.csv` como insumo (con las columnas de fracción ya calculadas); ese archivo no es generado por ningún script de este repositorio.
+- `deforestacion_2025_departamento_km2.png`: barras horizontales agrupadas por departamento y modelo, ordenadas por promedio de los 3 modelos, con resaltado del departamento de interés (`Cajamarca` por defecto).
+- `deforestacion_2025_dispersion_rmse_divergencia.png`: dispersión por distrito entre RMSE promedio de validación (2020–2024) y divergencia entre modelos en el pronóstico 2025 (desviación estándar de las 3 fracciones); anotación con Pearson r y p-valor sobre la figura.
+- `deforestacion_2025_dispersion_stats.csv`: tres filas — `global` (Pearson/Spearman/pendiente para los 180 distritos), `{departamento_resaltado}` (medias de RMSE y divergencia), `excl_{departamento_resaltado}` (mismas estadísticas excluyendo ese departamento).
 
 ---
 
@@ -747,12 +746,11 @@ data/interim/O2/modelos/
     ├── heatmap_departamentos.png
     ├── boxplot_rmse_distrital_3candidatos.png
     ├── verificacion_deforestacion.csv            ← verificacion_deforestacion
-    └── pronostico_2025.csv                       ← pronostico_r7 (R7)
+    ├── deforestacion_2025.csv                    ← pipeline_r7 (R7)
+    ├── deforestacion_2025_departamento_km2.png   ← pipeline_r7 (R7)
+    ├── deforestacion_2025_dispersion_rmse_divergencia.png  ← pipeline_r7 (R7)
+    └── deforestacion_2025_dispersion_stats.csv   ← pipeline_r7 (R7)
 ```
-
-> `deforestacion_2025.csv` y las figuras `deforestacion_2025_departamento_km2.png` /
-> `dispersion_rmse_divergencia_2025.png` (helpers de `pronostico_r7.py`, ver §17.2)
-> se generan manualmente, no por `main.py` — no forman parte de este inventario automático.
 
 ---
 

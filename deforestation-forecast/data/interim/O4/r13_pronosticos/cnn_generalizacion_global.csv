@@ -1,0 +1,2 @@
+modelo,rmse,mae
+CNN_FINAL_w6_c32_k2_actrelu_d0.0_dense16_e50_lr0.001_b8,0.01129,0.007862

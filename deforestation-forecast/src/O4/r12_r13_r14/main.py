@@ -4,8 +4,9 @@ Orquestador de O4 — Generalización espacial.
 Protocolo de ejecución:
   1. R12 — verifica el dataset de las 20 zonas nuevas (no usadas en
      entrenamiento, 100% completo).
-  2. R13 — pronósticos walk-forward de ARIMA (O2) y CNN (O3/R11, modelo
-     extendido) sobre esas 20 zonas.
+  2. R13 — pronósticos walk-forward del CNN1D extendido (O3/R11, modelo
+     final del proyecto) sobre esas 20 zonas, más el pronóstico 2025
+     (ancla=2024), sin reentrenar.
   3. R14 — métricas, factores territoriales y gráficos para el informe.
 
 Uso:

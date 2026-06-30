@@ -1,0 +1,21 @@
+geocode,departamento,distrito,rmse,mae
+220509,San Martin,Shanao,0.023815,0.022294
+060905,Cajamarca,Namballe,0.020564,0.016571
+220703,San Martin,Caspisapa,0.021004,0.015145
+220709,San Martin,Tingo De Ponasa,0.014366,0.010745
+010506,Amazonas,Inguilpata,0.011701,0.008868
+250303,Ucayali,Curimana,0.010984,0.008446
+080917,Cusco,Manitea,0.008132,0.007174
+220406,San Martin,Tingo De Saposoa,0.008544,0.007049
+220801,San Martin,Rioja,0.008658,0.006272
+220104,San Martin,Jepelacio,0.007173,0.006261
+220903,San Martin,Cacatachi,0.006962,0.006093
+160201,Loreto,Yurimaguas,0.007925,0.006019
+100603,Huanuco,Hermilio Valdizan,0.006507,0.005924
+100702,Huanuco,Cholon,0.005588,0.005419
+220103,San Martin,Habana,0.006599,0.005377
+060805,Cajamarca,Huabal,0.007146,0.005367
+220105,San Martin,Soritor,0.007854,0.005215
+010101,Amazonas,Chachapoyas,0.003559,0.003341
+010116,Amazonas,Olleros,0.005198,0.002989
+010113,Amazonas,Mariscal Castilla,0.00276,0.002664

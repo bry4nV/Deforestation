@@ -1,0 +1,8 @@
+| variable_local | pearson_r | p_valor_pearson | spearman_rho | p_valor_spearman | interpretacion_territorial |
+| --- | --- | --- | --- | --- | --- |
+| pct_agropecuario | 0.1266 | 0.5949 | 0.3203 | 0.1686 | presión antrópica |
+| elev_media_m | -0.3959 | 0.0840 | -0.4962 | 0.0261 | condición biofísica |
+| pendiente_media_deg | -0.0779 | 0.7442 | -0.1669 | 0.4818 | relieve |
+| pct_anp | 0.3911 | 0.0881 | -0.1672 | 0.4811 | protección territorial |
+| densidad_rios_km_km2 | 0.2293 | 0.3307 | 0.2393 | 0.3097 | condición hidrográfica |
+| densidad_carreteras_km_km2 | 0.3636 | 0.1151 | -0.0045 | 0.9849 | accesibilidad antrópica |

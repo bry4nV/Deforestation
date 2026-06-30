@@ -1,0 +1,86 @@
+16:06:25 [INFO] [OK] Log de esta corrida: D:\VisualCode\Tesis\deforestation-forecast\data\logs\o4_run_debug_2026-06-29_16-06-25.log
+16:06:25 [INFO] ======================================================================
+16:06:25 [INFO] O4 — GENERALIZACIÓN ESPACIAL (R12, R13, R14)
+16:06:25 [INFO] ======================================================================
+16:06:25 [INFO] [PASO 1] R12 — Dataset de generalización
+16:06:26 [INFO] Geometrías cargadas: 20 distritos
+16:06:26 [INFO] Cargando panel: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\panel-integrado\panel_integrado_entrenamiento.csv
+16:06:26 [INFO] Panel: 180 distritos × 40 años (1985–2024) × 7 canales
+16:06:26 [INFO] Panel construido: shape=(180, 40, 7), dtype=float32
+16:06:26 [INFO] Cargando panel: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\panel-integrado\panel_integrado_generalizacion.csv
+16:06:26 [INFO] Panel: 20 distritos × 40 años (1985–2024) × 7 canales
+16:06:26 [INFO] Panel construido: shape=(20, 40, 7), dtype=float32
+16:06:26 [INFO] [OK] CSV guardado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r12_dataset_generalizacion\reporte_r12.csv
+16:06:26 [INFO] [OK] R12 verificado: 20 zonas, 0 solapadas con entrenamiento, 100% completas (800 filas sin NaN).
+16:06:26 [INFO] [PASO 2] R13 — Pronósticos en las zonas nuevas
+16:06:26 [INFO] ======================================================================
+16:06:26 [INFO] ARIMA — Pronósticos de generalización espacial (20 zonas nuevas)
+16:06:29 [INFO] [OK] CSV guardado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r13_pronosticos\arima_generalizacion_distrito.csv
+16:06:29 [INFO] [OK] CSV guardado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r13_pronosticos\arima_generalizacion_departamento.csv
+16:06:29 [INFO] [OK] CSV guardado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r13_pronosticos\arima_generalizacion_predicciones.csv
+16:06:29 [INFO] [OK] CSV guardado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r13_pronosticos\arima_generalizacion_global.csv
+16:06:29 [INFO] [OK] ARIMA generalización — RMSE=0.011444  MAE=0.008045
+16:06:29 [INFO] ======================================================================
+16:06:29 [INFO] CNN (R11) — Pronósticos de generalización espacial (20 zonas nuevas)
+16:06:29 [INFO] Cargando panel: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\panel-integrado\panel_integrado_generalizacion.csv
+16:06:29 [INFO] Panel: 20 distritos × 40 años (1985–2024) × 7 canales
+16:06:29 [INFO] Panel construido: shape=(20, 40, 7), dtype=float32
+16:06:29 [INFO]   log1p aplicado a canal 2 (pct_anp)
+16:06:29 [INFO]   log1p aplicado a canal 3 (densidad_carreteras_km_km2)
+16:06:29 [INFO]   log1p aplicado a canal 4 (densidad_rios_km_km2)
+16:06:29 [INFO] [OK] Escalador cargado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\modelos\escalador\escalador_standard.pkl
+16:06:29 [INFO] Panel escalado: shape=(20, 40, 7)
+16:06:29 [INFO] [OK] CNN cargado desde D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\modelos\cnn\cnn_final_model.pth — config: CNN_FINAL_w6_c32_k2_actrelu_d0.0_dense16_e50_lr0.001_b8
+16:06:29 [INFO] [OK] CSV guardado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r13_pronosticos\cnn_generalizacion_distrito.csv
+16:06:29 [INFO] [OK] CSV guardado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r13_pronosticos\cnn_generalizacion_departamento.csv
+16:06:29 [INFO] [OK] CSV guardado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r13_pronosticos\cnn_generalizacion_predicciones.csv
+16:06:29 [INFO] [OK] CSV guardado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r13_pronosticos\cnn_generalizacion_global.csv
+16:06:29 [INFO] [OK] CNN generalización — RMSE=0.011290  MAE=0.007862
+16:06:29 [INFO] ======================================================================
+16:06:29 [INFO] CNN (R11) — Pronóstico 2025 en las 20 zonas de generalización
+16:06:29 [INFO] Cargando panel: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\panel-integrado\panel_integrado_generalizacion.csv
+16:06:29 [INFO] Panel: 20 distritos × 40 años (1985–2024) × 7 canales
+16:06:29 [INFO] Panel construido: shape=(20, 40, 7), dtype=float32
+16:06:29 [INFO]   log1p aplicado a canal 2 (pct_anp)
+16:06:29 [INFO]   log1p aplicado a canal 3 (densidad_carreteras_km_km2)
+16:06:29 [INFO]   log1p aplicado a canal 4 (densidad_rios_km_km2)
+16:06:29 [INFO] [OK] Escalador cargado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\modelos\escalador\escalador_standard.pkl
+16:06:29 [INFO] Panel escalado: shape=(20, 40, 7)
+16:06:29 [INFO] Pronóstico 2025 — CNN: cargando D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\modelos\cnn\cnn_final_model.pth
+16:06:29 [INFO] [OK] CNN: pronóstico generado para 20 distritos (window_size=6)
+16:06:29 [INFO] [OK] CSV guardado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r13_pronosticos\cnn_generalizacion_pronostico_2025.csv
+16:06:29 [INFO] [OK] Pronóstico 2025 generado para 20 zonas nuevas.
+16:06:29 [INFO] [PASO 3] R14 — Análisis y gráficos del informe
+16:06:29 [INFO] ======================================================================
+16:06:29 [INFO] R14 — Análisis de generalización espacial
+16:06:30 [INFO] [OK] CSV guardado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r14_informe\informe_generalizacion.csv
+16:06:30 [INFO] 
+modelo  rmse_en_muestra  mae_en_muestra  rmse_generalizacion  mae_generalizacion  diff_rmse_pct  diff_mae_pct
+ ARIMA         0.011521        0.008288             0.011444            0.008045         -0.668        -2.932
+   CNN         0.010912        0.007740             0.011290            0.007862          3.464         1.576
+16:06:30 [INFO] [OK] CSV guardado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r14_informe\factores_generalizacion.csv
+16:06:30 [INFO] 
+modelo                     factor  n_zonas  r_pearson  p_pearson  r_spearman  p_spearman
+ ARIMA           pct_agropecuario       20     0.0232     0.9228      0.1218      0.6090
+ ARIMA                    pct_anp       20     0.4640     0.0393     -0.3284      0.1574
+ ARIMA densidad_carreteras_km_km2       20    -0.1225     0.6069     -0.2451      0.2976
+ ARIMA       densidad_rios_km_km2       20    -0.1194     0.6162     -0.0505      0.8326
+ ARIMA               elev_media_m       20    -0.4568     0.0429     -0.6060      0.0046
+ ARIMA        pendiente_media_deg       20    -0.1888     0.4253     -0.3729      0.1053
+   CNN           pct_agropecuario       20     0.1295     0.5865      0.2602      0.2680
+   CNN                    pct_anp       20     0.3820     0.0965     -0.1655      0.4856
+   CNN densidad_carreteras_km_km2       20     0.3636     0.1151     -0.0045      0.9849
+   CNN       densidad_rios_km_km2       20     0.2293     0.3307      0.2393      0.3097
+   CNN               elev_media_m       20    -0.3959     0.0840     -0.4962      0.0261
+   CNN        pendiente_media_deg       20    -0.0779     0.7442     -0.1669      0.4818
+16:06:30 [INFO] [OK] D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r14_informe\grafico_en_muestra_vs_generalizacion.png
+16:06:31 [INFO] [OK] D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r14_informe\grafico_factores_territoriales.png
+16:06:31 [INFO] [OK] D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r14_informe\grafico_boxplot_departamento.png
+16:06:31 [INFO] [OK] D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r14_informe\grafico_mejor_peor_zona.png
+16:06:31 [INFO] [OK] D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r14_informe\informe_generalizacion.md
+16:06:31 [INFO] [OK] R14 completado.
+16:06:31 [INFO] ======================================================================
+16:06:31 [INFO] O4 completado.
+modelo  rmse_en_muestra  mae_en_muestra  rmse_generalizacion  mae_generalizacion  diff_rmse_pct  diff_mae_pct
+ ARIMA         0.011521        0.008288             0.011444            0.008045         -0.668        -2.932
+   CNN         0.010912        0.007740             0.011290            0.007862          3.464         1.576

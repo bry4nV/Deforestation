@@ -1,0 +1,22 @@
+| departamento | distrito | rmse | mae | sesgo | clasificacion |
+| --- | --- | --- | --- | --- | --- |
+| Amazonas | Mariscal Castilla | 0.002760 | 0.002664 | -0.000890 | menor error |
+| Amazonas | Chachapoyas | 0.003559 | 0.003341 | -0.003341 | menor error |
+| Amazonas | Olleros | 0.005198 | 0.002989 | -0.002226 | menor error |
+| Huanuco | Cholon | 0.005588 | 0.005419 | -0.003268 | menor error |
+| Huanuco | Hermilio Valdizan | 0.006507 | 0.005924 | -0.002084 | menor error |
+| San Martin | Habana | 0.006599 | 0.005377 | 0.000182 | menor error |
+| San Martin | Cacatachi | 0.006962 | 0.006093 | 0.004575 | menor error |
+| Cajamarca | Huabal | 0.007146 | 0.005367 | 0.005367 | error medio |
+| San Martin | Jepelacio | 0.007173 | 0.006261 | 0.005601 | error medio |
+| San Martin | Soritor | 0.007854 | 0.005215 | 0.002383 | error medio |
+| Loreto | Yurimaguas | 0.007925 | 0.006019 | -0.002357 | error medio |
+| Cusco | Manitea | 0.008132 | 0.007174 | -0.006582 | error medio |
+| San Martin | Tingo De Saposoa | 0.008544 | 0.007049 | 0.002518 | error medio |
+| San Martin | Rioja | 0.008658 | 0.006272 | 0.004603 | mayor error |
+| Ucayali | Curimana | 0.010984 | 0.008446 | -0.002621 | mayor error |
+| Amazonas | Inguilpata | 0.011701 | 0.008868 | -0.008387 | mayor error |
+| San Martin | Tingo De Ponasa | 0.014366 | 0.010745 | -0.009857 | mayor error |
+| Cajamarca | Namballe | 0.020564 | 0.016571 | -0.001902 | mayor error |
+| San Martin | Caspisapa | 0.021004 | 0.015145 | 0.002800 | mayor error |
+| San Martin | Shanao | 0.023815 | 0.022294 | 0.018287 | mayor error |

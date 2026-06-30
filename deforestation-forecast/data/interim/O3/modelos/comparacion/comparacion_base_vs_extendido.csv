@@ -2,8 +2,8 @@ etiqueta,modelo,rmse,mae,conjunto
 R11_CNN,CNN_FINAL_w6_c32_k2_actrelu_d0.0_dense16_e50_lr0.001_b8,0.010912,0.00774,extendido_R11
 R11_LSTM,LSTM_FINAL_w6_h16_l2_d0.0_e50_lr0.001_b8,0.011067,0.007788,extendido_R11
 O2_ARIMA,ARIMA_WF_w32_p1_d1_q0,0.011521,0.008288,base_O2
-O2_MLP,MLP_FINAL_w3_h128x64x32_actleaky_relu_d0.0_e50_lr0.001_b16,0.011695,0.007993,base_O2
+O2_CNN,CNN_FINAL_w5_c16x32_k3_actrelu_d0.0_dense32_e50_lr0.001_b8,0.011656,0.007969,base_O2
+O2_MLP,MLP_FINAL_w3_h128x64x32_actleaky_relu_d0.0_e50_lr0.001_b16,0.011678,0.007947,base_O2
 O2_LSTM,LSTM_FINAL_w6_h64_l1_d0.0_e50_lr0.001_b16,0.01173,0.007968,base_O2
 R11_MLP,MLP_FINAL_w6_h64x32_actleaky_relu_d0.0_e50_lr0.001_b16,0.01175,0.008719,extendido_R11
-O2_CNN,CNN_FINAL_w5_c16x32_k3_actrelu_d0.0_dense32_e50_lr0.001_b8,0.011925,0.008169,base_O2
 O2_PERSISTENCIA,Persistencia_WF,0.013409,0.009766,base_O2

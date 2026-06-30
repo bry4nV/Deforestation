@@ -918,7 +918,7 @@ src/O3/r11/
 | `pipeline_lstm.py` | Igual que MLP pero arquitectura LSTM |
 | `pipeline_cnn.py` | Igual que MLP pero arquitectura CNN 1D |
 | `pipeline_comparacion.py` | Tabla O2-vs-R11, gráficos de mejores/peores distritos, comparación por departamento, boxplot distrital |
-| `pronostico_2025.py` | Pronóstico 2025 con los 3 modelos finales; helpers de deforestación en km² y gráficos de anexo (uso manual) |
+| `pronostico_2025.py` | `pipeline_r11` — pronóstico 2025, deforestación en fracción y km², y gráficos; `generar_predicciones` (función pública reutilizada por O4/R13) |
 | `main.py` | Orquesta: panel → escalado → datasets → Fase 1/2 de los 3 modelos → verificación → comparación → pronóstico 2025 |
 
 ---
@@ -950,7 +950,10 @@ data/interim/O3/panel-integrado/panel_integrado_entrenamiento.csv
   │                          comparacion/comparacion_departamentos.csv + heatmap_departamentos.png
   │                          comparacion/boxplot_rmse_distrital_3candidatos.png
   │
-  └─ generar_pronostico_2025 ──► comparacion/pronostico_2025.csv
+  └─ pipeline_r11 ──► comparacion/deforestacion_2025.csv
+                      comparacion/deforestacion_2025_departamento_km2.png
+                      comparacion/deforestacion_2025_dispersion_rmse_divergencia.png
+                      comparacion/deforestacion_2025_dispersion_stats.csv
 ```
 
 **Punto de entrada:** `python -m O3.r11.main`  
@@ -1195,17 +1198,25 @@ Idéntica en diseño a `O2_DOCUMENTATION.md` §15.6, aplicada a los 3 modelos de
 
 ## 26. Pronóstico 2025
 
-`pronostico_2025.py` es el análogo multivariable de `O2/r4_r5/pronostico_r7.py` (ver `O2_DOCUMENTATION.md` §17) — mismo diseño, adaptado a que las predicciones viven en espacio escalado y deben invertirse.
+`pronostico_2025.py` es el análogo multivariable de `O2/r4_r5/pronostico_r7.py` (ver `O2_DOCUMENTATION.md` §17) — mismo diseño, adaptado a que las predicciones viven en espacio escalado y deben invertirse con `inversa_pct_bosque`.
 
-### 26.1 `generar_pronostico_2025` (orquestado por `main.py`)
+### 26.1 `pipeline_r11` — punto de entrada único (orquestado por `main.py`)
 
-Carga el checkpoint `.pth` de cada modelo final (`CARGADORES` reconstruye la arquitectura exacta desde la config guardada en el propio checkpoint), toma como entrada los últimos `window_size` años del panel **escalado** (cuyo último año es 2024) y predice 2025 en espacio escalado; `inversa_pct_bosque` lo convierte a la escala original antes de guardarlo. El ancla explícita es siempre `pct_bosque_real_2024` tomado del panel **original** (sin escalar), nunca una predicción propia — misma disciplina que en O2.
+Punto de entrada único que integra en un solo paso: predicciones 2025 (`generar_predicciones`, función pública también importada por O4), deforestación en fracción (`pct_bosque_real_2024 - {modelo}_pred_2025`) y en km² (usando `pix_total` de 2024 del `PANEL_ENTRENAMIENTO_CSV` de O3 y `PIXEL_AREA_KM2`), y la generación de todos los gráficos. Los cargadores (`CARGADORES`) y las funciones de gráficos (`_graficar_*`) son privados a este módulo.
 
-Salida: `comparacion/pronostico_2025.csv` (`geocode`, `departamento`, `distrito`, `pct_bosque_real_2024`, `mlp_pred_2025`, `lstm_pred_2025`, `cnn_pred_2025`).
+Salida única: `comparacion/deforestacion_2025.csv` con columnas `geocode`, `departamento`, `distrito`, `pct_bosque_real_2024`, `{mlp,lstm,cnn}_pred_2025`, `deforestacion_2025_{mlp,lstm,cnn}`, `area_km2_2024`, `deforestacion_2025_{mlp,lstm,cnn}_km2`.
 
-### 26.2 Deforestación en km² y gráficos de anexo (uso manual)
+### 26.2 Gráficos generados por `pipeline_r11`
 
-`calcular_deforestacion_km2`, `graficar_deforestacion_departamento_km2` y `graficar_correlacion_rmse_divergencia_2025` están definidas en el mismo archivo pero **no se invocan desde `main.py`**, igual que sus equivalentes de O2 — se ejecutan manualmente sobre un `deforestacion_2025.csv` con las fracciones de deforestación ya calculadas (insumo externo al pipeline). `calcular_deforestacion_km2` usa `pix_total` de 2024 del propio panel de O3 (`PANEL_ENTRENAMIENTO_CSV`), no de O1 directamente, porque el panel de O3 ya lo incluye.
+Idénticos en diseño a los de O2 (ver §17.2 de `O2_DOCUMENTATION.md`):
+
+- `deforestacion_2025_departamento_km2.png`: barras horizontales agrupadas por departamento y modelo.
+- `deforestacion_2025_dispersion_rmse_divergencia.png`: dispersión RMSE de validación vs. divergencia entre modelos 2025, con anotación de Pearson r y p-valor.
+- `deforestacion_2025_dispersion_stats.csv`: tres filas — `global`, `{departamento_resaltado}` y `excl_{departamento_resaltado}` con Pearson/Spearman/pendiente y medias de RMSE y divergencia.
+
+### 26.3 `generar_predicciones` — función pública auxiliar
+
+Extrae solo la lógica de inferencia (carga checkpoint → ventana escalada → predicción → inversión de escala) como función independiente. Es importada por `O4/r12_r13_r14/pipeline_pronosticos.py` para generar el pronóstico 2025 sobre las 20 zonas de generalización sin duplicar el protocolo de ancla e inversión de escala.
 
 ---
 
@@ -1279,12 +1290,11 @@ data/interim/O3/modelos/
     ├── comparacion_departamentos.csv
     ├── heatmap_departamentos.png
     ├── boxplot_rmse_distrital_3candidatos.png
-    └── pronostico_2025.csv
+    ├── deforestacion_2025.csv                    ← pipeline_r11
+    ├── deforestacion_2025_departamento_km2.png   ← pipeline_r11
+    ├── deforestacion_2025_dispersion_rmse_divergencia.png  ← pipeline_r11
+    └── deforestacion_2025_dispersion_stats.csv   ← pipeline_r11
 ```
-
-> `deforestacion_2025.csv` y las figuras `deforestacion_2025_departamento_km2.png` /
-> `dispersion_rmse_divergencia_2025.png` (helpers de `pronostico_2025.py`, ver §26.2)
-> se generan manualmente, no por `main.py` — no forman parte de este inventario automático.
 
 **Estado de ejecución (a la fecha de esta documentación):** solo CNN tiene Fase 1 y Fase 2 completas; MLP y LSTM tienen su configuración final ya escrita en `final_configs.py` pero ninguna corrida todavía, por lo que `comparacion/` está vacío hasta que se completen las 3 fases 2.
 

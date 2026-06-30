@@ -1,0 +1,4 @@
+grupo_error,n_distritos,rmse_promedio,pct_agropecuario,pct_anp,densidad_carreteras_km_km2,densidad_rios_km_km2,elev_media_m,pendiente_media_deg
+menor error,7,0.00531,0.35266,0.01251,0.42875,0.0203,1951.81043,15.45907
+error medio,6,0.007796,0.47315,1e-05,0.39585,0.04393,1101.34227,15.87876
+mayor error,7,0.01587,0.42283,0.09814,0.46919,0.03355,1036.08374,14.02442

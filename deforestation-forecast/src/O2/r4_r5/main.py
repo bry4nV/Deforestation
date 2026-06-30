@@ -30,7 +30,7 @@ from O2.r4_r5.pipeline_lstm import pipeline_lstm, entrenar_config_final_lstm
 from O2.r4_r5.pipeline_cnn import pipeline_cnn, entrenar_config_final_cnn
 from O2.r4_r5.pipeline_comparacion import pipeline_comparacion
 from O2.r4_r5.verificacion_deforestacion import verificar_identidad_deforestacion
-from O2.r4_r5.pronostico_r7 import generar_pronostico_2025
+from O2.r4_r5.pronostico_r7 import pipeline_r7
 
 
 def main():
@@ -330,24 +330,19 @@ def main():
         # PASO 6 (R7): PRONÓSTICO DEL AÑO SIGUIENTE
         # =================================================================
 
-        ruta_pronostico_2025 = os.path.join(COMPARACION_DIR, "pronostico_2025.csv")
-        if os.path.exists(ruta_pronostico_2025):
-            print(f"\n[SKIP] Pronóstico 2025 — ya existe {ruta_pronostico_2025}.")
+        ruta_deforestacion_2025 = os.path.join(COMPARACION_DIR, "deforestacion_2025.csv")
+        if os.path.exists(ruta_deforestacion_2025):
+            print(f"\n[SKIP] Pronóstico 2025 — ya existe {ruta_deforestacion_2025}.")
         else:
-            print("\n" + "=" * 70)
-            print(" R7: PRONÓSTICO 2025 (sin reentrenamiento, ancla = pct_bosque_real_2024) ")
-            print("=" * 70)
             rutas_modelo_r7 = {
                 "MLP":   os.path.join(MLP_DIR, "mlp_final_model.pth"),
                 "LSTM":  os.path.join(LSTM_DIR, "lstm_final_model.pth"),
                 "CNN1D": os.path.join(CNN_DIR, "cnn_final_model.pth"),
             }
-            df_pronostico_2025 = generar_pronostico_2025(
-                series, df_distritos_info, rutas_modelo_r7, anio_anchor=anios[-1],
+            pipeline_r7(
+                series, df_distritos_info, rutas_modelo_r7, ruta_series,
+                COMPARACION_DIR, rutas_distrito_dl, anio_anchor=anios[-1],
             )
-            df_pronostico_2025.to_csv(ruta_pronostico_2025, index=False)
-            print(f"[OK] {ruta_pronostico_2025}")
-            print(df_pronostico_2025.head().to_string(index=False))
 
 
 if __name__ == "__main__":

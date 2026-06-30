@@ -1,0 +1,4 @@
+| conjunto_evaluado | n_distritos | n_predicciones | rmse | mae |
+| --- | --- | --- | --- | --- |
+| Desarrollo experimental | 180 | 900 | 0.010912 | 0.007740 |
+| Generalización espacial | 20 | 100 | 0.011290 | 0.007862 |

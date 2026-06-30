@@ -1,7 +1,6 @@
 """
-Carga de los modelos ya finalizados que se van a generalizar a las 20 zonas
-nuevas: ARIMA (O2, sin pesos persistidos — se reajusta por distrito en cada
-paso walk-forward) y CNN (O3/R11, pesos entrenados persistidos en .pth).
+Carga del CNN1D extendido (O3/R11, modelo final del proyecto) ya finalizado,
+para generalizarlo a las 20 zonas nuevas sin reentrenar.
 """
 
 import logging
@@ -10,14 +9,9 @@ import torch
 
 from O3.r11.pipeline_cnn import CNN1D, _parsear_canales
 
-from O4.config import ARIMA_D, ARIMA_P, ARIMA_Q, ARIMA_WINDOW, R11_CNN_MODEL_PTH
+from O4.config import R11_CNN_MODEL_PTH
 
 logger = logging.getLogger(__name__)
-
-
-def obtener_orden_arima() -> tuple:
-    """(p, d, q), window — hiperparámetros ya finalizados en O2 (ver config.py)."""
-    return (ARIMA_P, ARIMA_D, ARIMA_Q), ARIMA_WINDOW
 
 
 def cargar_cnn_entrenado(ruta_pth: str = R11_CNN_MODEL_PTH) -> tuple:

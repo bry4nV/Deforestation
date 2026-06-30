@@ -1,0 +1,67 @@
+16:23:23 [INFO] [OK] Log de esta corrida: D:\VisualCode\Tesis\deforestation-forecast\data\logs\o4_run_debug_2026-06-29_16-23-23.log
+16:23:23 [INFO] ======================================================================
+16:23:23 [INFO] O4 — GENERALIZACIÓN ESPACIAL (R12, R13, R14)
+16:23:23 [INFO] ======================================================================
+16:23:23 [INFO] [PASO 1] R12 — Dataset de generalización
+16:23:23 [INFO] [SKIP] R12 ya verificado — cargando reporte existente
+16:23:23 [INFO] [PASO 2] R13 — Pronósticos en las zonas nuevas
+16:23:23 [INFO] [SKIP] Pronósticos CNN de generalización ya existen.
+16:23:23 [INFO] [SKIP] Pronóstico 2025 de generalización ya existe.
+16:23:23 [INFO] [PASO 3] R14 — Análisis y gráficos del informe
+16:23:23 [INFO] ======================================================================
+16:23:23 [INFO] R14 — Análisis de generalización espacial
+16:23:23 [INFO] [OK] CSV guardado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r14_informe\informe_generalizacion.csv
+16:23:23 [INFO] 
+modelo  n_distritos_en_muestra  n_predicciones_en_muestra  rmse_en_muestra  mae_en_muestra  n_distritos_generalizacion  n_predicciones_generalizacion  rmse_generalizacion  mae_generalizacion  diff_rmse_pct  diff_mae_pct
+   CNN                     180                        900         0.010912         0.00774                          20                            100              0.01129            0.007862          3.464         1.576
+16:23:23 [INFO] [OK] CSV guardado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r14_informe\tabla_distrital_completa.csv
+16:23:23 [INFO] 
+geocode departamento          distrito     rmse      mae     sesgo clasificacion
+ 010113     Amazonas Mariscal Castilla 0.002760 0.002664 -0.000890   menor error
+ 010101     Amazonas       Chachapoyas 0.003559 0.003341 -0.003341   menor error
+ 010116     Amazonas           Olleros 0.005198 0.002989 -0.002226   menor error
+ 100702      Huanuco            Cholon 0.005588 0.005419 -0.003268   menor error
+ 100603      Huanuco Hermilio Valdizan 0.006507 0.005924 -0.002084   menor error
+ 220103   San Martin            Habana 0.006599 0.005377  0.000182   menor error
+ 220903   San Martin         Cacatachi 0.006962 0.006093  0.004575   menor error
+ 060805    Cajamarca            Huabal 0.007146 0.005367  0.005367   error medio
+ 220104   San Martin         Jepelacio 0.007173 0.006261  0.005601   error medio
+ 220105   San Martin           Soritor 0.007854 0.005215  0.002383   error medio
+ 160201       Loreto        Yurimaguas 0.007925 0.006019 -0.002357   error medio
+ 080917        Cusco           Manitea 0.008132 0.007174 -0.006582   error medio
+ 220406   San Martin  Tingo De Saposoa 0.008544 0.007049  0.002518   error medio
+ 220801   San Martin             Rioja 0.008658 0.006272  0.004603   mayor error
+ 250303      Ucayali          Curimana 0.010984 0.008446 -0.002621   mayor error
+ 010506     Amazonas        Inguilpata 0.011701 0.008868 -0.008387   mayor error
+ 220709   San Martin   Tingo De Ponasa 0.014366 0.010745 -0.009857   mayor error
+ 060905    Cajamarca          Namballe 0.020564 0.016571 -0.001902   mayor error
+ 220703   San Martin         Caspisapa 0.021004 0.015145  0.002800   mayor error
+ 220509   San Martin            Shanao 0.023815 0.022294  0.018287   mayor error
+16:23:23 [INFO] [OK] CSV guardado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r14_informe\casos_extremos.csv
+16:23:23 [INFO] 
+geocode departamento          distrito     rmse      mae       grupo
+ 010113     Amazonas Mariscal Castilla 0.002760 0.002664 menor error
+ 010101     Amazonas       Chachapoyas 0.003559 0.003341 menor error
+ 010116     Amazonas           Olleros 0.005198 0.002989 menor error
+ 220509   San Martin            Shanao 0.023815 0.022294 mayor error
+ 220703   San Martin         Caspisapa 0.021004 0.015145 mayor error
+ 060905    Cajamarca          Namballe 0.020564 0.016571 mayor error
+16:23:23 [INFO] [OK] CSV guardado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r14_informe\factores_generalizacion.csv
+16:23:23 [INFO] 
+modelo                     factor  n_zonas  r_pearson  p_pearson  r_spearman  p_spearman  media_grupo_menor_error  media_grupo_mayor_error  diferencia_grupos
+   CNN           pct_agropecuario       20     0.1295     0.5865      0.2602      0.2680                  0.19487                  0.43014            0.23527
+   CNN                    pct_anp       20     0.3820     0.0965     -0.1655      0.4856                  0.01771                  0.11872            0.10101
+   CNN densidad_carreteras_km_km2       20     0.3636     0.1151     -0.0045      0.9849                  0.39908                  0.78407            0.38498
+   CNN       densidad_rios_km_km2       20     0.2293     0.3307      0.2393      0.3097                  0.03274                  0.05225            0.01951
+   CNN               elev_media_m       20    -0.3959     0.0840     -0.4962      0.0261               2833.03473                944.49173        -1888.54299
+   CNN        pendiente_media_deg       20    -0.0779     0.7442     -0.1669      0.4818                 18.91918                 15.73216           -3.18701
+16:23:23 [INFO] [OK] D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r14_informe\grafico_en_muestra_vs_generalizacion.png
+16:23:24 [INFO] [OK] D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r14_informe\grafico_factores_territoriales.png
+16:23:24 [INFO] [OK] D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r14_informe\grafico_boxplot_departamento.png
+16:23:24 [INFO] [OK] D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r14_informe\grafico_mejor_peor_zona.png
+16:23:24 [INFO] [OK] D:\VisualCode\Tesis\deforestation-forecast\data\interim\O4\r14_informe\informe_generalizacion.md
+16:23:24 [INFO] [OK] R14 completado.
+16:23:24 [INFO] ======================================================================
+16:23:24 [INFO] O4 completado.
+modelo  n_distritos_en_muestra  n_predicciones_en_muestra  rmse_en_muestra  mae_en_muestra  n_distritos_generalizacion  n_predicciones_generalizacion  rmse_generalizacion  mae_generalizacion  diff_rmse_pct  diff_mae_pct
+   CNN                     180                        900         0.010912         0.00774                          20                            100              0.01129            0.007862          3.464         1.576

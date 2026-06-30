@@ -1,0 +1,2 @@
+modelo,n_distritos_en_muestra,n_predicciones_en_muestra,rmse_en_muestra,mae_en_muestra,n_distritos_generalizacion,n_predicciones_generalizacion,rmse_generalizacion,mae_generalizacion,diff_rmse_pct,diff_mae_pct
+CNN,180,900,0.010912,0.00774,20,100,0.01129,0.007862,3.464,1.576

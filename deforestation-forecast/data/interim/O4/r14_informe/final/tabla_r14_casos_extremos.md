@@ -1,0 +1,8 @@
+| grupo | departamento | distrito | rmse | pct_agropecuario | elev_media_m | pendiente_media_deg | pct_anp | densidad_rios_km_km2 | densidad_carreteras_km_km2 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| menor error | Amazonas | Mariscal Castilla | 0.002760 | 0.2201 | 2905.49 | 16.90 | 0.0110 | 0.0426 | 0.4198 |
+| menor error | Amazonas | Chachapoyas | 0.003559 | 0.2407 | 2429.97 | 20.77 | 0.0419 | 0.0556 | 0.7339 |
+| menor error | Amazonas | Olleros | 0.005198 | 0.0911 | 3163.65 | 19.09 | 0.0346 | 0.0000 | 0.0436 |
+| mayor error | Cajamarca | Namballe | 0.020564 | 0.3239 | 1988.52 | 25.17 | 0.5411 | 0.0031 | 0.2606 |
+| mayor error | San Martin | Caspisapa | 0.021004 | 0.4715 | 343.68 | 9.43 | 0.0000 | 0.0306 | 0.5647 |
+| mayor error | San Martin | Shanao | 0.023815 | 0.4992 | 501.27 | 12.60 | 0.0000 | 0.1230 | 1.5270 |

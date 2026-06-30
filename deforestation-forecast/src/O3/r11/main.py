@@ -24,6 +24,7 @@ import pandas as pd
 from O3.config import (
     ANIO_INICIO,
     DL_VENTANAS,
+    PANEL_ENTRENAMIENTO_CSV,
     R11_CNN_DIR,
     R11_COMPARACION_DIR,
     R11_LSTM_DIR,
@@ -34,7 +35,7 @@ from O3.r11.seleccion_fase1 import generar_seleccion_final
 from O3.r11.cargar_panel import cargar_panel
 from O3.r11.construir_dataset import construir_datasets
 from O3.r11.escalador import ajustar_y_escalar
-from O3.r11.pronostico_2025 import generar_pronostico_2025
+from O3.r11.pronostico_2025 import pipeline_r11
 from O3.r11.transformaciones import aplicar_transformaciones
 from O3.utils import iniciar_log_archivo
 from O3.r11.final_configs import FINAL_CONFIG_CNN, FINAL_CONFIG_LSTM, FINAL_CONFIG_MLP
@@ -278,25 +279,22 @@ def main() -> None:
         # PASO 8: PRONÓSTICO 2025 (sin reentrenamiento, ancla = pct_bosque_real_2024)
         # =====================================================================
 
-        ruta_pronostico_2025 = os.path.join(R11_COMPARACION_DIR, "pronostico_2025.csv")
-        if os.path.exists(ruta_pronostico_2025):
-            logger.info(f"[SKIP] Pronóstico 2025 — ya existe {ruta_pronostico_2025}.")
+        ruta_deforestacion_2025 = os.path.join(R11_COMPARACION_DIR, "deforestacion_2025.csv")
+        if os.path.exists(ruta_deforestacion_2025):
+            logger.info(f"[SKIP] Pronóstico 2025 — ya existe {ruta_deforestacion_2025}.")
         else:
-            logger.info("=" * 70)
-            logger.info("PRONÓSTICO 2025 — MLP/LSTM/CNN multivariables")
-            logger.info("=" * 70)
             rutas_modelo_2025 = {
                 "mlp":  os.path.join(R11_MLP_DIR,  "mlp_final_model.pth"),
                 "lstm": os.path.join(R11_LSTM_DIR, "lstm_final_model.pth"),
                 "cnn":  os.path.join(R11_CNN_DIR,  "cnn_final_model.pth"),
             }
-            df_pronostico_2025 = generar_pronostico_2025(
+            pipeline_r11(
                 panel_escalado, panel, df_distritos_info, rutas_modelo_2025, escalador,
+                ruta_panel_origen=PANEL_ENTRENAMIENTO_CSV,
+                comparacion_dir=R11_COMPARACION_DIR,
+                rutas_distrito_dl=rutas_distrito_dl,
                 anio_anchor=anios[-1],
             )
-            df_pronostico_2025.to_csv(ruta_pronostico_2025, index=False)
-            logger.info(f"[OK] {ruta_pronostico_2025}")
-            logger.info("\n" + df_pronostico_2025.head().to_string(index=False))
 
 
 if __name__ == "__main__":

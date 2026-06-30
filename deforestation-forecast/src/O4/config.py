@@ -40,19 +40,6 @@ from O3.config import (  # noqa: E402
 R11_CNN_MODEL_PTH = os.path.join(R11_CNN_DIR, "cnn_final_model.pth")
 R11_CNN_GLOBAL_CSV = os.path.join(R11_CNN_DIR, "cnn_final_global.csv")
 
-from O2.config import COMPARACION_DIR as O2_COMPARACION_DIR  # noqa: E402
-
-O2_COMPARACION_MODELOS_CSV = os.path.join(O2_COMPARACION_DIR, "comparacion_modelos.csv")
-
-# O2 — hiperparámetros del ARIMA ya finalizado (ganador de la comparación O2,
-# ver data/interim/O2/modelos/arima/old/arima_final_config.json). Se
-# hardcodean aquí porque ese archivo quedó archivado manualmente bajo
-# .../arima/old/ — es un resultado ya fijo, no se recalcula. El RMSE/MAE "en
-# muestra" de ese mismo modelo NO se duplica aquí — R14 lo lee directo de
-# O2_COMPARACION_MODELOS_CSV para tener una sola fuente de verdad.
-ARIMA_P, ARIMA_D, ARIMA_Q = 1, 1, 0
-ARIMA_WINDOW = 30
-
 # ============================================================
 # RUTAS — SALIDAS DE O4
 # ============================================================

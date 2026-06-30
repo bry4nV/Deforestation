@@ -1,0 +1,83 @@
+07:08:01 [INFO] [OK] Log de esta corrida: D:\VisualCode\Tesis\deforestation-forecast\data\logs\r11_run_debug_2026-06-30_07-08-01.log
+07:08:01 [INFO] ======================================================================
+07:08:01 [INFO] R11 — PIPELINE DE MODELOS MULTIVARIABLES
+07:08:01 [INFO] ======================================================================
+07:08:01 [INFO] Cargando panel: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\panel-integrado\panel_integrado_entrenamiento.csv
+07:08:01 [INFO] Panel: 180 distritos × 40 años (1985–2024) × 7 canales
+07:08:02 [INFO] Panel construido: shape=(180, 40, 7), dtype=float32
+07:08:02 [INFO] Aplicando transformaciones (log1p) antes de escalar...
+07:08:02 [INFO]   log1p aplicado a canal 2 (pct_anp)
+07:08:02 [INFO]   log1p aplicado a canal 3 (densidad_carreteras_km_km2)
+07:08:02 [INFO]   log1p aplicado a canal 4 (densidad_rios_km_km2)
+07:08:02 [INFO] [SKIP] Escalador ya existe — cargando desde disco.
+07:08:02 [INFO] [OK] Escalador cargado: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\modelos\escalador\escalador_standard.pkl
+07:08:02 [INFO] Panel escalado: shape=(180, 40, 7)
+07:08:02 [INFO] Construyendo datasets de ventanas deslizantes multivariables...
+07:08:02 [INFO] w=3 | X_train=(5760, 3, 7) y_train=(5760, 1) X_test=(900, 3, 7) y_test=(900, 1)
+07:08:02 [INFO] w=4 | X_train=(5580, 4, 7) y_train=(5580, 1) X_test=(900, 4, 7) y_test=(900, 1)
+07:08:02 [INFO] w=5 | X_train=(5400, 5, 7) y_train=(5400, 1) X_test=(900, 5, 7) y_test=(900, 1)
+07:08:02 [INFO] w=6 | X_train=(5220, 6, 7) y_train=(5220, 1) X_test=(900, 6, 7) y_test=(900, 1)
+07:08:02 [INFO] w=7 | X_train=(5040, 7, 7) y_train=(5040, 1) X_test=(900, 7, 7) y_test=(900, 1)
+07:08:02 [INFO] [SKIP] MLP Fase 1 — ya existe. Revisar mlp_resultados.csv.
+07:08:02 [INFO] [SKIP] MLP Fase 2 — cargando resultados existentes.
+07:08:02 [INFO] [SKIP] LSTM Fase 1 — ya existe. Revisar lstm_resultados.csv.
+07:08:02 [INFO] [SKIP] LSTM Fase 2 — cargando resultados existentes.
+07:08:02 [INFO] [SKIP] CNN Fase 1 — ya existe. Revisar cnn_resultados.csv.
+07:08:02 [INFO] [SKIP] CNN Fase 2 — cargando resultados existentes.
+07:08:02 [INFO] ======================================================================
+07:08:02 [INFO] VERIFICACIÓN DE CONFIGURACIONES FINALES
+07:08:02 [INFO] ======================================================================
+07:08:02 [INFO] [OK] Selección final verificada: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\modelos\comparacion\seleccion_configuraciones_finales.csv
+07:08:02 [INFO] 
+modelo                                                                                                                configuracion  rmse_fase1  mae_fase1  posicion_ranking  total_configuraciones
+   MLP                      window_size=6, capas_ocultas=[64, 32], activacion=leaky_relu, dropout=0.0, epocas=50, lr=0.001, lote=16    0.011750   0.008719                 1                    240
+  LSTM                                    window_size=6, unidades_ocultas=16, num_capas=2, dropout=0.0, epocas=50, lr=0.001, lote=8    0.011067   0.007788                 1                    240
+   CNN window_size=6, canales_conv=[32], kernel_size=2, activacion=relu, dropout=0.0, tamanio_denso=16, epocas=50, lr=0.001, lote=8    0.010912   0.007740                 1                    960
+07:08:02 [INFO] ============================================================
+07:08:02 [INFO] COMPARACIÓN O2 (base) vs R11 (extendido)
+07:08:02 [INFO] ============================================================
+07:08:02 [INFO] [OK] Tabla de comparación guardada: D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\modelos\comparacion\comparacion_base_vs_extendido.csv
+07:08:02 [INFO] 
+       etiqueta     rmse      mae      conjunto
+        R11_CNN 0.010912 0.007740 extendido_R11
+       R11_LSTM 0.011067 0.007788 extendido_R11
+       O2_ARIMA 0.011521 0.008288       base_O2
+         O2_CNN 0.011656 0.007969       base_O2
+         O2_MLP 0.011678 0.007947       base_O2
+        O2_LSTM 0.011730 0.007968       base_O2
+        R11_MLP 0.011750 0.008719 extendido_R11
+O2_PERSISTENCIA 0.013409 0.009766       base_O2
+07:08:02 [INFO] Generando gráficos de predicciones por distrito (R11)...
+07:08:02 [INFO] [OK] mejores_01_120303.png
+07:08:03 [INFO] [OK] mejores_02_220909.png
+07:08:04 [INFO] [OK] mejores_03_010602.png
+07:08:04 [INFO] [OK] peores_01_060901.png
+07:08:04 [INFO] [OK] peores_02_060810.png
+07:08:04 [INFO] [OK] peores_03_060904.png
+07:08:04 [INFO] Generando comparación por departamento (modelos R11)...
+07:08:05 [INFO] [OK] D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\modelos\comparacion\comparacion_departamentos.csv
+07:08:05 [INFO] [OK] D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\modelos\comparacion\heatmap_departamentos.png
+07:08:05 [INFO] Generando boxplot de RMSE distrital (modelos R11)...
+07:08:05 [INFO] [OK] D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\modelos\comparacion\boxplot_rmse_distrital_3candidatos.png
+07:08:05 [INFO] [GANADOR] R11_CNN  RMSE=0.0109  MAE=0.0077
+07:08:05 [INFO] ======================================================================
+07:08:05 [INFO] R11: PRONÓSTICO 2025 (ancla = pct_bosque_real_2024)
+07:08:05 [INFO] ======================================================================
+07:08:05 [INFO] MLP: cargando D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\modelos\mlp\mlp_final_model.pth
+07:08:05 [INFO] [OK] MLP: 180 distritos (window_size=6)
+07:08:05 [INFO] LSTM: cargando D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\modelos\lstm\lstm_final_model.pth
+07:08:05 [INFO] [OK] LSTM: 180 distritos (window_size=6)
+07:08:05 [INFO] CNN: cargando D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\modelos\cnn\cnn_final_model.pth
+07:08:05 [INFO] [OK] CNN: 180 distritos (window_size=6)
+07:08:05 [INFO] [OK] D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\modelos\comparacion\deforestacion_2025.csv
+07:08:06 [INFO] [OK] D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\modelos\comparacion\deforestacion_2025_departamento_km2.png
+07:08:06 [INFO] [OK] D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\modelos\comparacion\deforestacion_2025_dispersion_rmse_divergencia.png
+07:08:06 [INFO] [OK] D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\modelos\comparacion\deforestacion_2025_dispersion_stats.csv
+07:08:06 [INFO] n=180 | pendiente=0.1728
+07:08:06 [INFO] Pearson  r=0.3331  p=4.896e-06
+07:08:06 [INFO] Spearman r=0.2537  p=0.0005883
+07:08:06 [INFO] 
+           rmse_promedio  divergencia_2025
+resaltado                                 
+False           0.009046          0.003598
+True            0.019147          0.005766

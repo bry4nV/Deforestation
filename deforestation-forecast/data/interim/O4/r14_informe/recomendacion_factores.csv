@@ -1,0 +1,7 @@
+factor,max_abs_r,min_p,diff_estandarizada,rank_correlacion,rank_significancia,rank_grupos,score_combinado,recomendado_top
+elev_media_m,0.4962,0.0261,0.9256,6.0,6.0,6.0,6.0,True
+pct_anp,0.3911,0.0881,0.7042,5.0,5.0,5.0,5.0,True
+pct_agropecuario,0.3203,0.1686,0.3058,3.0,3.0,3.0,3.0,True
+densidad_carreteras_km_km2,0.3636,0.1151,0.1154,4.0,4.0,1.0,3.0,False
+densidad_rios_km_km2,0.2393,0.3097,0.3467,2.0,2.0,4.0,2.67,False
+pendiente_media_deg,0.1669,0.4818,0.1981,1.0,1.0,2.0,1.33,False

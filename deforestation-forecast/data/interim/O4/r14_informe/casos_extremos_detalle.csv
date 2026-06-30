@@ -1,0 +1,7 @@
+geocode,departamento,distrito,grupo,rmse,pct_agropecuario,pct_anp,densidad_carreteras_km_km2,densidad_rios_km_km2,elev_media_m,pendiente_media_deg
+010113,Amazonas,Mariscal Castilla,menor error,0.00276,0.2201,0.01102,0.41978,0.04262,2905.48819,16.89758
+010101,Amazonas,Chachapoyas,menor error,0.003559,0.24074,0.04193,0.73392,0.05559,2429.96933,20.77252
+010116,Amazonas,Olleros,menor error,0.005198,0.09114,0.03463,0.04355,0.0,3163.64666,19.08744
+220509,San Martin,Shanao,mayor error,0.023815,0.49916,0.0,1.52697,0.12304,501.27412,12.5991
+220703,San Martin,Caspisapa,mayor error,0.021004,0.47155,0.0,0.56468,0.03059,343.67737,9.43027
+060905,Cajamarca,Namballe,mayor error,0.020564,0.32393,0.54108,0.26055,0.00311,1988.52372,25.16711

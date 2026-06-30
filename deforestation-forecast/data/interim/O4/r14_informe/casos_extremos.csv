@@ -1,0 +1,7 @@
+geocode,departamento,distrito,rmse,mae,grupo
+010113,Amazonas,Mariscal Castilla,0.00276,0.002664,menor error
+010101,Amazonas,Chachapoyas,0.003559,0.003341,menor error
+010116,Amazonas,Olleros,0.005198,0.002989,menor error
+220509,San Martin,Shanao,0.023815,0.022294,mayor error
+220703,San Martin,Caspisapa,0.021004,0.015145,mayor error
+060905,Cajamarca,Namballe,0.020564,0.016571,mayor error

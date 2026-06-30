@@ -1,0 +1,2 @@
+n_zonas_generalizacion,n_anios_por_zona,n_filas_panel,n_geocodes_solapados_con_entrenamiento,pct_completitud_variables_entrada,n_geometrias_gpkg,fuente_geometrias,fuente_panel
+20,40,800,0,100.0,20,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O1\series-temporales\generalizacion-espacial\distritos_generalizacion_espacial.gpkg,D:\VisualCode\Tesis\deforestation-forecast\data\interim\O3\panel-integrado\panel_integrado_generalizacion.csv
