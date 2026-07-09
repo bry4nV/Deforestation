@@ -13,3 +13,9 @@ __pycache__/
 *.tif
 *.hgt
 *.rmf*
+
+# Evaluar despues si conviene ignorar artefactos generados.
+# Por ahora se conservan porque sirven como evidencia de ejecucion/resultados.
+# *.log
+# *.pth
+# *.npy

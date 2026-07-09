@@ -3,35 +3,35 @@
 [![Python](https://img.shields.io/badge/Python-3.10%2B-blue.svg)](https://www.python.org/downloads/)
 [![Status](https://img.shields.io/badge/Status-En%20Desarrollo-yellow.svg)]()
 
-**Proyecto de tesis:** Aplicación de deep learning para el pronóstico anual de zonas de riesgo de deforestación basada en series temporales (1985-2024).
+**Proyecto de tesis:** Aplicación de modelos de aprendizaje profundo para el pronóstico anual de deforestación en la Amazonía peruana a partir de series temporales de cobertura boscosa y variables territoriales.
 
 ---
 
 ## 📋 Descripción General
 
-Este proyecto desarrolla una metodología para **predecir la deforestación anual** en la Amazonía peruana utilizando:
+Este proyecto desarrolla una metodología para **pronosticar la deforestación anual** en la Amazonía peruana utilizando:
 
 - **Datos históricos:** Mapas anuales de cobertura bosque/no bosque (1985-2024) de MapBiomas
-- **Zonificación espacial:** Identificación de áreas dinámicas de cambio de bosque
-- **Series temporales:** Panel zona-año para análisis predictivo
-- **Variables locales:** Integración de factores socioeconómicos, demográficos, infraestructura, etc.
-- **Deep Learning:** Modelos de series temporales (LSTM, ...)
-- **Capacidad de generalización:** Evaluación en distintas zonas de estudio
+- **Zonificación espacial:** Identificación de distritos amazónicos con dinámica relevante de cambio de bosque
+- **Series temporales:** Panel distrito-año para análisis predictivo
+- **Variables locales:** Integración de factores agropecuarios, infraestructura vial, hidrografía, áreas naturales protegidas y topografía
+- **Deep Learning:** Modelos de series temporales y comparación entre enfoques base y multivariables
+- **Capacidad de generalización:** Evaluación en distritos no utilizados durante el entrenamiento
 
-**Objetivo:** Predecir la pérdida de cobertura forestal (km²) por zona para el año t+1, proporcionando herramientas para políticas de conservación y monitoreo temprano.
+**Objetivo:** Estimar la cobertura boscosa futura y la deforestación anual esperada, proporcionando evidencia reproducible para apoyar el monitoreo temprano y la toma de decisiones territoriales.
 
 ---
 
 ## 🎯 Objetivos del Proyecto
 
 ### Objetivo General
-Desarrollar un sistema de pronóstico de deforestación anual en la Amazonía peruana mediante modelos de deep learning entrenados sobre series temporales de pérdida de cobertura forestal por zona.
+Desarrollar un sistema de pronóstico de deforestación anual en la Amazonía peruana mediante modelos de aprendizaje profundo entrenados sobre series temporales distritales de cobertura forestal.
 
 ### Objetivos Específicos
-1. 🔄 **[En desarrollo]** Identificar y delimitar zonas de estudio potenciales a partir de MapBiomas Perú y construir series históricas anuales de pérdida de bosque por zona.
-2. ⏳ **[Pendiente]** Diseñar y evaluar un modelo de pronóstico a partir de las series históricas de deforestación por zona, para estimar la pérdida de bosque en km² en horizonte anual.
-3. ⏳ **[Pendiente]** Integrar un conjunto de variables locales en el modelo de pronóstico y evaluar su aporte en las estimaciones anuales por zona.
-4. ⏳ **[Pendiente]** Evaluar la capacidad de generalización espacial de los pronósticos de deforestación en distintas zonas de estudio.
+1. ✅ **[Completado]** Identificar y delimitar distritos amazónicos de interés a partir de MapBiomas Perú y construir series históricas anuales de cobertura boscosa.
+2. ✅ **[Implementado]** Diseñar y evaluar modelos base de pronóstico temporal para estimar la cobertura boscosa futura.
+3. ✅ **[Implementado]** Integrar variables locales al modelo de pronóstico y evaluar su aporte frente al enfoque base.
+4. ✅ **[Implementado]** Evaluar la capacidad de generalización espacial de los pronósticos en distritos no utilizados durante el entrenamiento.
 
 ---
 
@@ -55,11 +55,18 @@ Tesis/
 │   │   │   ├── r1_r2/              # R1/R2: Procesamiento y reclasificación
 │   │   │   └── r3/                 # R3: Detección de cambios y zonificación espacial
 │   │   │
-│   │   ├── O2/                     # ⏳ Objetivo 2: Modelo pronóstico temporal de pérdida anual de bosque
-│   │   ├── O3/                     # ⏳ Objetivo 3: Modelado pronóstico temporal extendido con variables locales
-│   │   └── O4/                     # ⏳ Objetivo 4: Evaluación de capacidad de generalización
+│   │   ├── O2/                     # Objetivo 2: Modelos base de pronóstico temporal
+│   │   ├── O3/                     # Objetivo 3: Variables locales y modelos multivariables
+│   │   └── O4/                     # Objetivo 4: Evaluación de capacidad de generalización
 │   │
-│   ├── outputs/                    # Resultados finales (gráficos, reportes)
+│   ├── outputs/                    # Artefactos consolidados de salida
+│   │   ├── figures/                # Figuras y gráficos generados
+│   │   ├── logs/                   # Logs consolidados de ejecución
+│   │   └── debug/                  # Salidas auxiliares de depuración
+│   │
+│   ├── scripts/                    # Scripts auxiliares no centrales
+│   │   └── exploracion/            # Análisis exploratorios puntuales
+│   │
 │   ├── requirements.txt            # Dependencias de Python
 │   └── venv/                       # Entorno virtual (no en repo)
 │
@@ -152,25 +159,89 @@ zona_id | año | pixeles_perdida | perdida_km2
 
 ---
 
-### ⏳ Objetivo 2 (O2): Modelo pronóstico temporal de pérdida anual de bosque
-**Estado:** Pendiente
+### 📌 Objetivo 2 (O2): Modelos base de pronóstico temporal
+**Estado:** ✅ Implementado
+
+Entrenamiento y evaluación de modelos base a partir de la serie histórica de cobertura boscosa. Incluye modelos de referencia y modelos de aprendizaje profundo.
+
+**Código:** [`deforestation-forecast/src/O2/r4_r5/`](deforestation-forecast/src/O2/r4_r5/)
+
+**Ejecución:**
+```bash
+cd deforestation-forecast/src
+python -m O2.r4_r5.main
+```
+
+> **📂 Entregables:**
+> - [x] Resultados por modelo: persistencia, ARIMA, MLP, LSTM y CNN
+> - [x] Métricas globales, distritales y departamentales
+> - [x] Comparación de modelos y selección de configuraciones finales
+
+**Ubicación:** `deforestation-forecast/data/interim/O2/modelos/`
 
 ---
 
-### ⏳ Objetivo 3 (O3): Modelado pronóstico temporal extendido con variables locales
-**Estado:** Pendiente
+### 📌 Objetivo 3 (O3): Variables locales y modelos multivariables
+**Estado:** ✅ Implementado
+
+Construcción de variables territoriales locales e integración con el panel de cobertura boscosa. Este objetivo permite comparar el enfoque base de O2 con modelos multivariables.
+
+**Variables integradas:**
+- Cobertura agropecuaria
+- Áreas naturales protegidas
+- Densidad de carreteras
+- Densidad de ríos
+- Elevación media
+- Pendiente media
+
+**Código:** [`deforestation-forecast/src/O3/`](deforestation-forecast/src/O3/)
+
+**Ejecución:**
+```bash
+cd deforestation-forecast/src
+python -m O3.r8_r9_r10.main
+python -m O3.eda_panel
+python -m O3.r11.main
+```
+
+> **📂 Entregables:**
+> - [x] Variables locales por distrito
+> - [x] Panel integrado distrito-año
+> - [x] EDA metodológico de variables predictoras
+> - [x] Modelos multivariables MLP, LSTM y CNN
+> - [x] Comparación O2 base vs. O3 extendido
+
+**Ubicación:** `deforestation-forecast/data/interim/O3/`
 
 ---
 
-### ⏳ Objetivo 4 (O4): Evaluación de capacidad de generalización
-**Estado:** Pendiente
+### 📌 Objetivo 4 (O4): Evaluación de capacidad de generalización
+**Estado:** ✅ Implementado
+
+Evaluación del desempeño del modelo seleccionado en distritos no utilizados durante el entrenamiento, con análisis de error por distrito, departamento y factores territoriales.
+
+**Código:** [`deforestation-forecast/src/O4/r12_r13_r14/`](deforestation-forecast/src/O4/r12_r13_r14/)
+
+**Ejecución:**
+```bash
+cd deforestation-forecast/src
+python -m O4.r12_r13_r14.main
+```
+
+> **📂 Entregables:**
+> - [x] Dataset de generalización espacial
+> - [x] Pronósticos para distritos fuera de muestra
+> - [x] Informe de generalización
+> - [x] Tablas y figuras finales de evaluación
+
+**Ubicación:** `deforestation-forecast/data/interim/O4/`
 
 ---
 
 ## 🚀 Instalación y Uso
 
 ### Requisitos Previos
-- Python 3.8+
+- Python 3.10+
 - 8-16 GB RAM
 - ~50 GB espacio en disco
 
@@ -200,10 +271,26 @@ matplotlib >= 3.10.0
 
 ## 🗺️ Datos
 
-**Fuente:** [MapBiomas Perú](https://peru.mapbiomas.org/)  
+**Fuente principal:** [MapBiomas Perú](https://peru.mapbiomas.org/)  
 **Período:** 1985-2024  
 **Resolución:** ~30m  
+**Unidad de análisis:** distrito amazónico por año  
 **CRS:** EPSG:4326
+
+---
+
+## 🗂️ Organización de Artefactos
+
+El proyecto conserva una estructura cercana a la organización original por objetivos (`O1`, `O2`, `O3`, `O4`). Los primeros ajustes de ordenamiento consolidan archivos auxiliares sin cambiar los módulos principales:
+
+- `data/raw/`: fuentes originales.
+- `data/interim/`: productos intermedios y resultados por objetivo.
+- `outputs/logs/`: logs consolidados de ejecución, conservados como evidencia de corridas.
+- `outputs/figures/`: figuras auxiliares y gráficos generados.
+- `outputs/debug/`: salidas temporales de depuración.
+- `scripts/exploracion/`: scripts exploratorios que no forman parte del pipeline principal.
+
+Los modelos, predicciones binarias y logs no se ignoran por defecto en Git en esta etapa. La decisión queda documentada en `.gitignore` como comentario para evaluarla más adelante según peso, trazabilidad y reproducibilidad.
 
 ---
 
@@ -215,4 +302,4 @@ Pontificia Universidad Católica del Perú | Tesis de pregrado en Ingeniería In
 ---
 
 **Estado:** 🟡 En desarrollo  
-**Última actualización:** Abril 2024
+**Última actualización:** Julio 2026
