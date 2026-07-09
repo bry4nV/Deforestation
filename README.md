@@ -45,9 +45,10 @@ Tesis/
 │   │   ├── raw/                    # Datos originales de MapBiomas
 │   │   └── interim/                # Datos procesados intermedios
 │   │       └── O1/
-│   │           ├── mapas-reclas/   # Mapas reclasificados bosque/no bosque
-│   │           ├── mapas-cambios/  # Mapas de detección de cambios
-│   │           └── zonas/          # Mapas de zonificación y estadísticas
+│   │           ├── mapas-reclasificados/   # Mapas reclasificados bosque/no bosque
+│   │           ├── mapas-cambios/           # Mapas de detección de cambios
+│   │           ├── metricas-distritos/      # Métricas distritales de cambio
+│   │           └── series-temporales/       # Paneles de entrenamiento y generalización
 │   │
 │   ├── src/                        # Código fuente
 │   │   ├── O1/                     # Objetivo 1: Identificación de zonas de estudio de deforestación
@@ -154,7 +155,7 @@ zona_id | año | pixeles_perdida | perdida_km2
 > - [x] **Visualizaciones de series temporales**
 > - [ ] Documento de criterios de delimitación  
 
-**Ubicación:** `deforestation-forecast/data/interim/O1/zonas/`  
+**Ubicación:** `deforestation-forecast/data/interim/O1/series-temporales/`  
 **Documentación:** [`deforestation-forecast/src/O1/r3/README.md`](deforestation-forecast/src/O1/r3/README.md)
 
 ---
@@ -254,6 +255,29 @@ python -m venv venv
 source venv/bin/activate  # Linux/Mac
 # venv\Scripts\activate  # Windows
 pip install -r requirements.txt
+```
+
+### Flujo de Ejecución Recomendado
+
+Los módulos están organizados por objetivos y se ejecutan en orden metodológico:
+
+```bash
+cd deforestation-forecast/src
+
+# O1: preparación espacial y series históricas
+python -m O1.r1_r2.main
+python -m O1.r3.main
+
+# O2: modelos base
+python -m O2.r4_r5.main
+
+# O3: variables locales, EDA y modelos multivariables
+python -m O3.r8_r9_r10.main
+python -m O3.eda_panel
+python -m O3.r11.main
+
+# O4: generalización espacial
+python -m O4.r12_r13_r14.main
 ```
 
 ### Dependencias Principales

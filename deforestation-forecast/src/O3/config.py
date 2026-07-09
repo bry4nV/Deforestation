@@ -14,8 +14,9 @@ logging.basicConfig(
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 DATA_DIR = os.path.join(BASE_DIR, "data")
+OUTPUTS_DIR = os.path.join(BASE_DIR, "outputs")
 RAW_DIR  = os.path.join(DATA_DIR, "raw")
-LOGS_DIR = os.path.join(DATA_DIR, "logs")
+LOGS_DIR = os.path.join(OUTPUTS_DIR, "logs")
 os.makedirs(LOGS_DIR, exist_ok=True)
 
 VARIABLES_LOCALES_RAW_DIR = os.path.join(RAW_DIR, "variables-locales")
@@ -26,8 +27,7 @@ O3_INTERIM_DIR = os.path.join(DATA_DIR, "interim", "O3")
 # RUTAS — FUENTES RAW POR VARIABLE
 # ============================================================
 
-# --- Carreteras (red vial MTC — diciembre 2018) ---
-# Tres capas separadas; se concatenan en construir_carreteras.py
+# Red vial MTC, diciembre 2018.
 CARRETERAS_NACIONAL_SHP      = os.path.join(
     VARIABLES_LOCALES_RAW_DIR, "redes-viales", "nacional",
     "red_vial_nacional_dic18.shp",
@@ -41,11 +41,9 @@ CARRETERAS_VECINAL_SHP       = os.path.join(
     "red_vial_vecinal_dic18.shp",
 )
 
-# --- Rios (red hidrografica ANA) ---
 RIOS_SHP = os.path.join(VARIABLES_LOCALES_RAW_DIR, "rios", "Rios.shp")
 
-# --- ANP (SERNANP) — cuatro categorías a unificar en construir_anp.py ---
-# Rutas a cada capa shapefile
+# ANP SERNANP: cuatro categorias unificadas en construir_anp.py.
 ANP_SHP     = os.path.join(
     VARIABLES_LOCALES_RAW_DIR, "anp", "ANP Nacional Definitivas",
     "ANPNacionalDefinitivas.shp",
@@ -63,23 +61,17 @@ ANP_ACP_SHP = os.path.join(
     "AreasdeConservacionPrivada.shp",
 )
 
-# Campo de fecha de establecimiento en cada shapefile original (prefijo distinto por capa)
 ANP_COL_FECHA     = "anp_felec"    # ANP Nacional Definitivas
 ANP_ZR_COL_FECHA  = "zr_felec"     # Zonas Reservadas
 ANP_ACR_COL_FECHA = "acr_felec"    # Áreas de Conservación Regional
 ANP_ACP_COL_FECHA = "acp_felec"    # Áreas de Conservación Privada
-# ACP tiene además acp_fecad (caducidad), ignorada — se asume renovación continua
-
-# Nombre de columna unificado tras estandarización en construir_anp.py
 ANP_COL_FECHA_STD = "felec"
 
-# Campos de código, nombre y categoría solo en ANP Nacional (referencia descriptiva)
 ANP_COL_CODIGO    = "anp_codi"
 ANP_COL_NOMBRE    = "anp_nomb"
 ANP_COL_CATEGORIA = "anp_cate"
 
-# --- Elevacion y pendiente (SRTM 1 arc-second / 30 m) ---
-# Cada tile vive dentro de su propio subdirectorio: elevacion/S##W###.SRTMGL1.hgt/S##W###.hgt
+# SRTM 1 arc-second / 30 m.
 SRTM_TILES = sorted(
     glob.glob(
         os.path.join(VARIABLES_LOCALES_RAW_DIR, "elevacion", "**", "*.hgt"),
@@ -94,8 +86,6 @@ SRTM_TILES = sorted(
 O1_INTERIM_DIR        = os.path.join(DATA_DIR, "interim", "O1")
 O1_MAPAS_AMAZONIA_DIR = os.path.join(O1_INTERIM_DIR, "mapas-amazonia")
 
-# Rasters anuales MapBiomas C3 ya recortados a Amazonia (salida de O1 R1).
-# Usados por: construir_agropecuaria, construir_rios_lagos, construir_urbano.
 MAPBIOMAS_AMAZONIA_PATRON = os.path.join(
     O1_MAPAS_AMAZONIA_DIR, "peru_amazonia_{anio}.tif"
 )
@@ -112,7 +102,6 @@ DISTRITOS_ALTO_CAMBIO_GPKG   = os.path.join(
     O1_INTERIM_DIR, "distritos-alto-cambio", "distritos_alto_cambio.gpkg",
 )
 
-# Columnas del GeoDataFrame distritos_alto_cambio.gpkg (GADM)
 GPKG_COL_GEOCODE      = "GEOCODE"
 GPKG_COL_DEPARTAMENTO = "LEVEL_2"
 GPKG_COL_DISTRITO     = "LEVEL_4"
@@ -136,14 +125,7 @@ VAR_URBANO_DIR       = os.path.join(O3_INTERIM_DIR, "variables-respaldo", "urban
 # Panel integrado
 PANEL_DIR = os.path.join(O3_INTERIM_DIR, "panel-integrado")
 
-# Metadata de fuentes RAW (PASO 0 — antes de construir cualquier variable).
-# La metadata cruda de cada fuente se reparte en la carpeta de la variable
-# que la consume (ver metadata_fuentes.py); "distritos_alto_cambio" es la
-# única fuente sin carpeta de variable propia (los 8 construir_*.py la
-# reciben por igual vía distritos_gdf), así que tiene su propia carpeta,
-# nombrada igual que la de O1 (distritos-alto-cambio/) en vez de un archivo
-# suelto en O3_INTERIM_DIR -- ningún otro archivo de O3 vive fuera de una
-# carpeta de variable.
+# Metadata RAW del insumo distrital compartido por las variables.
 DISTRITOS_METADATA_RAW_DIR = os.path.join(O3_INTERIM_DIR, "distritos-alto-cambio")
 DISTRITOS_METADATA_RAW_CSV = os.path.join(DISTRITOS_METADATA_RAW_DIR, "distritos_alto_cambio_metadatos_raw.csv")
 

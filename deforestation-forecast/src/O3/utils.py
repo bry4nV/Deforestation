@@ -62,12 +62,7 @@ def log_config():
 
 def validar_fuentes():
     """
-    Verifica que todas las rutas de fuentes configuradas en config.py existen
-    y son legibles antes de ejecutar el pipeline.
-
-    Lanza RuntimeError con lista completa de archivos faltantes si alguno no existe.
-    No valida un raster MapBiomas por cada uno de los 40 anos — solo el primero y
-    el ultimo, asumiendo que la serie es continua.
+    Verifica fuentes requeridas y reporta todas las rutas faltantes juntas.
     """
     fuentes = {
         "ANP shapefile":                      ANP_SHP,
@@ -103,20 +98,7 @@ def validar_fuentes():
 
 
 def iniciar_log_archivo(nombre_pipeline: str) -> str:
-    """
-    Agrega un FileHandler con timestamp al root logger, además de la consola
-    ya configurada por logging.basicConfig(). Todo lo que pase por `logger.*`
-    en cualquier módulo de O3 a partir de este punto queda duplicado en el
-    archivo (los `print()` sueltos de las cabeceras/banners no, solo los logs).
-
-    Se agrega un handler nuevo (no reconfigura uno existente), por lo que
-    funciona sin importar si logging.basicConfig() ya corrió antes (siempre
-    corre al importar O3.config).
-
-    Returns
-    -------
-    ruta_log : ruta del archivo .log creado, en data/logs/.
-    """
+    """Crea un log con timestamp en outputs/logs y lo conecta al root logger."""
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     ruta_log = os.path.join(LOGS_DIR, f"{nombre_pipeline}_run_debug_{timestamp}.log")
 

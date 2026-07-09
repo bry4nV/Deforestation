@@ -16,11 +16,8 @@ DATA_DIR = os.path.join(BASE_DIR, "data")
 O4_INTERIM_DIR = os.path.join(DATA_DIR, "interim", "O4")
 
 # ============================================================
-# RUTAS — INSUMOS YA EXISTENTES DE O1/O2/O3 (reusadas, no recalculadas)
+# RUTAS — INSUMOS YA EXISTENTES DE O1/O2/O3
 # ============================================================
-# Importadas desde los config.py de O1/O2/O3 en vez de reconstruir las
-# mismas rutas aquí — si esos módulos cambian de estructura, O4 no se
-# desincroniza silenciosamente.
 
 from O1.config import SERIES_GENERALIZACION_ESPACIAL_DIR  # noqa: E402
 
@@ -50,7 +47,7 @@ R14_DIR = os.path.join(O4_INTERIM_DIR, "r14_informe")
 
 REPORTE_R12_CSV = os.path.join(R12_DIR, "reporte_r12.csv")
 
-ANIO_FIN = 2024  # ANIO_INICIO y TAMANIO_ENTRENAMIENTO se reusan de O3.config
+ANIO_FIN = 2024
 
 for _dir in [O4_INTERIM_DIR, R12_DIR, R13_DIR, R14_DIR]:
     os.makedirs(_dir, exist_ok=True)

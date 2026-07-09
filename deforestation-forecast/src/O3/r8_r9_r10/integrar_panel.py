@@ -49,13 +49,7 @@ _COLS_MODELO_VARS = [
     "pendiente_media_deg",
 ]
 
-# Carpeta de origen y tipo (temporal/estática) de cada variable del panel —
-# usado por el reporte de completitud para (a) reportar la base de cálculo
-# correcta por tipo y (b) apuntar al `{variable}_metadatos_raw.csv` de
-# metadata_fuentes.py (trazabilidad fuente → variable → completitud, ver
-# §9.11 de O3_DOCUMENTATION.md). "temporal" = varía por año (merge en
-# geocode+anio); "estatica" = un valor por distrito, replicado en sus 40
-# filas anuales (merge en geocode solo).
+# Origen y tipo de cada variable para reportes de completitud y trazabilidad.
 _ORIGEN_VARIABLE = {
     "pct_agropecuario":           (VAR_AGROPECUARIA_DIR, "temporal"),
     "pct_anp":                    (VAR_ANP_DIR, "temporal"),
@@ -91,18 +85,7 @@ def cargar_si_existe(ruta, nombre):
 
 
 def _generar_reporte_integracion(panel: pd.DataFrame) -> pd.DataFrame:
-    """Completitud por variable, con base de cálculo explícita por tipo.
-
-    Para variables "temporal" (merge en geocode+anio) la base es el panel
-    completo (n_distritos × 40 años). Para "estatica" (merge en geocode) el
-    valor se replica idéntico en las 40 filas anuales de cada distrito, así
-    que la base conceptualmente correcta son los distritos, no las filas
-    (aunque numéricamente da el mismo % porque la réplica es perfecta — un
-    distrito nunca tiene 39 filas no nulas y 1 nula para una variable
-    estática). `metadatos_raw_csv` apunta al `{variable}_metadatos_raw.csv`
-    de `metadata_fuentes.py` (PASO 0) para trazabilidad fuente → variable →
-    completitud sin fusionar ambos reportes (ver §9.11).
-    """
+    """Completitud por variable, usando base temporal o distrital segun tipo."""
     n_filas_total     = len(panel)
     n_distritos_total = panel["geocode"].nunique()
     variables_presentes = [
@@ -161,23 +144,7 @@ def _generar_reporte_integracion(panel: pd.DataFrame) -> pd.DataFrame:
 
 
 def _generar_reporte_completitud_anual(panel: pd.DataFrame) -> pd.DataFrame:
-    """Desagrega por año (1985-2024) la completitud de pct_agropecuario/pct_anp.
-
-    Ambas variables nunca quedan NaN por diseño: `construir_agropecuario` y
-    `construir_anp` devuelven 0.0 (no NaN) cuando no hay píxeles/área válida
-    en un distrito-año (ver construir_agropecuaria.py, construir_anp.py). Por
-    eso `completitud_pct` siempre sale 100% aquí y NO es la métrica que
-    detectaría una caída real de cobertura (p. ej. nubosidad alta en el
-    raster MapBiomas de un año). El único indicador real para eso es
-    `pix_total` (píxeles válidos por distrito-año, ya excluyendo la clase "no
-    observado" del denominador — ver AGROPECUARIA_CSV / §9.6), agregado por
-    año, con una alerta si el promedio de ese año cae más de 2 desviaciones
-    estándar por debajo de la media de la serie 1985-2024. `pct_anp` no tiene
-    un indicador equivalente porque proviene de capas vectoriales SERNANP
-    (acumulación de polígonos), no de píxeles satelitales — se documenta
-    explícitamente en `fuente_cobertura` en vez de fabricar una métrica que
-    no aplica.
-    """
+    """Completitud anual de pct_agropecuario/pct_anp y cobertura raster."""
     filas = []
     for variable in ("pct_agropecuario", "pct_anp"):
         if variable not in panel.columns:
@@ -211,9 +178,7 @@ def _generar_reporte_completitud_anual(panel: pd.DataFrame) -> pd.DataFrame:
         pix_anual["pix_total_promedio"] = pix_anual["pix_total_promedio"].round(1)
         pix_anual["pix_total_mediana"]  = pix_anual["pix_total_mediana"].round(1)
 
-        # Split + concat en vez de asignar columnas nuevas por máscara: evita
-        # el FutureWarning de pandas al mezclar bool/float/NaN en un .loc[] de
-        # columnas que no existían antes del merge en las filas de pct_anp.
+        # Evita mezclar columnas nuevas con tipos distintos al unir pct_anp.
         es_agro = reporte["variable"] == "pct_agropecuario"
         reporte = pd.concat([
             reporte[es_agro].merge(pix_anual, on="anio", how="left"),

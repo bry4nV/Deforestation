@@ -31,38 +31,24 @@ from O4.config import (
 
 logger = logging.getLogger(__name__)
 
-# Las 6 variables locales de O3 (ver eda_panel.py sección 7 para la
-# clasificación dinámica/estática empírica). pct_agropecuario y pct_anp son
-# DINAMICAS (se agregan por media sobre el panel); el resto son ESTATICAS
-# (atributos territoriales fijos, se toma el primer valor).
+# Variables locales O3: dinamicas por promedio, estaticas por primer valor.
 FACTORES_DINAMICOS = ["pct_agropecuario", "pct_anp"]
 FACTORES_ESTATICOS = ["densidad_carreteras_km_km2", "densidad_rios_km_km2", "elev_media_m", "pendiente_media_deg"]
 FACTORES_TERRITORIALES = FACTORES_DINAMICOS + FACTORES_ESTATICOS
 
-# Departamentos amazónicos limítrofes con Cajamarca (ya identificado como el
-# caso estructuralmente difícil en R6/R11) presentes en las 20 zonas nuevas.
 DEPARTAMENTOS_VECINOS_CAJAMARCA = ["Amazonas", "San Martin"]
 
-# n de casos extremos a reportar (mismo criterio 3+3 que el resto del proyecto,
-# ver pipeline_comparacion.py de O2/R11).
 N_CASOS_EXTREMOS = 3
 
 INFORME_CSV = os.path.join(R14_DIR, "informe_generalizacion.csv")
 FACTORES_CSV = os.path.join(R14_DIR, "factores_generalizacion.csv")
 TABLA_DISTRITAL_CSV = os.path.join(R14_DIR, "tabla_distrital_completa.csv")
 CASOS_EXTREMOS_CSV = os.path.join(R14_DIR, "casos_extremos.csv")
-# Salidas adicionales del análisis explicativo de factores (R14):
-#  - factores_por_grupo: bloque 2 (perfil territorial promedio por tercil de error)
-#  - casos_extremos_detalle: bloque 3 (3+3 distritos con sus 6 variables locales)
-#  - recomendacion_factores: bloque 4 (ranking combinado de evidencia)
 FACTORES_POR_GRUPO_CSV = os.path.join(R14_DIR, "factores_por_grupo.csv")
 CASOS_EXTREMOS_DETALLE_CSV = os.path.join(R14_DIR, "casos_extremos_detalle.csv")
 RECOMENDACION_FACTORES_CSV = os.path.join(R14_DIR, "recomendacion_factores.csv")
 INFORME_MD = os.path.join(R14_DIR, "informe_generalizacion.md")
 
-# Entregables finales del R14 — versiones limpias (CSV + Markdown + figuras)
-# de los cuadros y gráficos que entran al cuerpo del informe. Se guardan
-# aparte para no mezclar artefactos intermedios con los que cita la tesis.
 FINAL_DIR = os.path.join(R14_DIR, "final")
 INTERPRETACION_FACTORES = {
     "pct_agropecuario":           "presión antrópica",
@@ -72,8 +58,6 @@ INTERPRETACION_FACTORES = {
     "densidad_rios_km_km2":       "condición hidrográfica",
     "densidad_carreteras_km_km2": "accesibilidad antrópica",
 }
-# Orden de las 6 variables en las tablas finales — biofísicas y antrópicas
-# alternadas, igual que el orden de discusión en el informe.
 ORDEN_FACTORES_FINAL = [
     "pct_agropecuario", "elev_media_m", "pendiente_media_deg",
     "pct_anp", "densidad_rios_km_km2", "densidad_carreteras_km_km2",
@@ -84,11 +68,7 @@ DECIMALES_FACTOR_FINAL = {
     "elev_media_m": 2, "pendiente_media_deg": 2,
 }
 
-# Umbral para considerar significativo el ranking de un factor: mismo p<0.05
-# del resto del proyecto (ver pipeline_comparacion.py de O2/R5).
 P_SIGNIFICATIVO = 0.05
-# n de factores territoriales principales a recomendar como "factores
-# explicativos del error" en el informe (bloque 4 de R14).
 N_FACTORES_RECOMENDADOS = 3
 
 
@@ -104,9 +84,7 @@ def _cargar_distrito(modelo: str = "cnn") -> pd.DataFrame:
 
 
 def _anios_evaluacion() -> list:
-    """Años del periodo de prueba — los 5 años (2020-2024) sobre los que se
-    mide el RMSE de generalización en R13. Se infieren del CSV de
-    predicciones para no acoplar este análisis a una constante hardcoded."""
+    """Anios de prueba inferidos desde las predicciones de R13."""
     df = pd.read_csv(
         os.path.join(R13_DIR, "cnn_generalizacion_predicciones.csv"),
         usecols=["anio"],
@@ -115,15 +93,7 @@ def _anios_evaluacion() -> list:
 
 
 def _cargar_factores_territoriales(anios_evaluacion: list = None) -> pd.DataFrame:
-    """Un registro por distrito: factores estáticos (first) + dinámicos (mean
-    sobre `anios_evaluacion`).
-
-    Para las dinámicas (pct_agropecuario, pct_anp) se promedia solo sobre los
-    5 años del periodo de prueba, no sobre los 40 del panel completo —
-    coherente con la sección 6.5.5 del informe (factores territoriales del
-    análisis explicativo de O3/R11), donde el "valor del factor" para cada
-    distrito es su promedio en la ventana donde el modelo es evaluado, no
-    en toda su historia."""
+    """Un registro por distrito con factores estaticos y dinamicos."""
     df = pd.read_csv(PANEL_GENERALIZACION_CSV, dtype={"geocode": str})
     if anios_evaluacion is None:
         anios_evaluacion = _anios_evaluacion()
@@ -138,10 +108,7 @@ def _cargar_factores_territoriales(anios_evaluacion: list = None) -> pd.DataFram
 
 
 def _cargar_sesgo_distrital(modelo: str = "cnn") -> pd.DataFrame:
-    """Sesgo por distrito = media(predicho - observado) sobre los 5 años de
-    prueba. La columna 'error' de *_predicciones.csv ya está en esa
-    convención (predicho - observado), ver pipeline_cnn._evaluar_geografico /
-    O3.r11.utils.construir_df_predicciones."""
+    """Sesgo por distrito: media de predicho - observado."""
     ruta = os.path.join(R13_DIR, f"{modelo}_generalizacion_predicciones.csv")
     df = pd.read_csv(ruta, dtype={"geocode": str})
     return df.groupby("geocode")["error"].mean().rename("sesgo").reset_index()
@@ -159,9 +126,7 @@ def _rmse_en_muestra() -> tuple:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _rmse_generalizacion_global(modelo: str = "cnn") -> tuple:
-    """RMSE/MAE global de generalización (pooled sobre todas las zonas-año),
-    ya calculado por R13 — NO se recalcula como promedio de RMSE por zona,
-    que es una agregación distinta (y daría un número distinto)."""
+    """RMSE/MAE global de generalizacion ya calculado por R13."""
     df = pd.read_csv(os.path.join(R13_DIR, f"{modelo}_generalizacion_global.csv"))
     fila = df.iloc[0]
     return float(fila["rmse"]), float(fila["mae"])
@@ -189,9 +154,7 @@ def construir_tabla_metricas(df_cnn: pd.DataFrame, n_distritos_en_muestra: int =
 
 
 def construir_tabla_distrital_completa(df_cnn: pd.DataFrame) -> pd.DataFrame:
-    """Tabla distrital completa (punto 2 de R14): geocode, departamento,
-    distrito, rmse, mae, sesgo (predicho-observado) y clasificación por
-    terciles de RMSE dentro de las 20 zonas."""
+    """Tabla distrital con metricas, sesgo y tercil de error."""
     sesgo = _cargar_sesgo_distrital("cnn")
     tabla = df_cnn.merge(sesgo, on="geocode", how="left").sort_values("rmse").reset_index(drop=True)
     tabla["clasificacion"] = pd.qcut(
@@ -202,9 +165,7 @@ def construir_tabla_distrital_completa(df_cnn: pd.DataFrame) -> pd.DataFrame:
 
 
 def identificar_casos_extremos(tabla_distrital: pd.DataFrame, n: int = N_CASOS_EXTREMOS) -> pd.DataFrame:
-    """n distritos de menor error + n de mayor error (mismo formato y criterio
-    3+3 de los casos extremos de R6/R11: geocode, departamento, distrito,
-    rmse, mae)."""
+    """Selecciona n distritos de menor error y n de mayor error."""
     columnas = ["geocode", "departamento", "distrito", "rmse", "mae"]
     mejores = tabla_distrital.nsmallest(n, "rmse")[columnas].copy()
     mejores["grupo"] = "menor error"
