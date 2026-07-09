@@ -318,6 +318,15 @@ Los modelos, predicciones binarias y logs no se ignoran por defecto en Git en es
 
 ---
 
+## 📚 Documentación Técnica
+
+- [`O1_DOCUMENTATION.md`](deforestation-forecast/src/O1/O1_DOCUMENTATION.md): preparación espacial y series históricas.
+- [`O2_DOCUMENTATION.md`](deforestation-forecast/src/O2/O2_DOCUMENTATION.md): modelos base de pronóstico.
+- [`O3_DOCUMENTATION.md`](deforestation-forecast/src/O3/O3_DOCUMENTATION.md): variables locales y modelos multivariables.
+- [`O4_DOCUMENTATION.md`](deforestation-forecast/src/O4/O4_DOCUMENTATION.md): evaluación de generalización espacial.
+
+---
+
 ## 👤 Autor
 
 **Bryan Valdiviezo**  

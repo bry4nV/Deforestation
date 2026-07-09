@@ -1077,7 +1077,7 @@ FINAL_CONFIG_MLP = {"window_size": 6, "capas_ocultas": [64, 32],
                     "epocas": 50, "lr": 0.001, "lote": 16}
 ```
 
-**Estado:** Fase 1 y Fase 2 de MLP aún no se han ejecutado en R11 (`data/interim/O3/modelos/mlp/` vacío) — esta config está escrita pero pendiente de correr.
+**Estado:** Fase 1 y Fase 2 de MLP ejecutadas; las salidas finales se encuentran en `data/interim/O3/modelos/mlp/`.
 
 ---
 
@@ -1192,7 +1192,7 @@ Salidas: `comparacion/comparacion_departamentos.csv`, `comparacion/heatmap_depar
 
 Idéntica en diseño a `O2_DOCUMENTATION.md` §15.6, aplicada a los 3 modelos de R11. Salida: `comparacion/boxplot_rmse_distrital_3candidatos.png`.
 
-**Condición de ejecución:** las 3 secciones anteriores (25.1–25.4) solo corren si los 3 modelos R11 (MLP, LSTM, CNN) tienen Fase 2 completa; mientras falte alguno, `main.py` imprime `[PENDIENTE]` y omite todo el bloque de comparación (y, en consecuencia, también el pronóstico 2025 de §26).
+**Condición de ejecución:** las secciones anteriores (25.1–25.4) requieren que MLP, LSTM y CNN tengan Fase 2 completa. En el estado actual, los tres modelos cuentan con salidas finales y el bloque de comparación puede ejecutarse completo.
 
 ---
 
@@ -1279,8 +1279,8 @@ data/interim/O3/modelos/
 │   ├── mlp_final_predicciones.csv
 │   └── mlp_final_ypred.npy
 │
-├── lstm/                                 ← misma estructura que mlp/ (pendiente de Fase 1+2)
-├── cnn/                                  ← misma estructura que mlp/ (único con Fase 2 corrida)
+├── lstm/                                 ← misma estructura que mlp/
+├── cnn/                                  ← misma estructura que mlp/
 │
 └── comparacion/
     ├── seleccion_configuraciones_finales.csv   ← seleccion_fase1
